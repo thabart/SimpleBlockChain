@@ -1,16 +1,16 @@
 ﻿using SimpleBlockChain.Interop;
 using System;
 
-namespace SimpleBlockChain
+namespace SimpleBlockChain.Server
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var iid = Guid.NewGuid();
+            var iid = Constants.InterfaceId;
             using (var server = new RpcServerApi(iid, 1234, -1, true))
             {
-                server.AddProtocol(RpcProtseq.ncacn_np, @"\pipe\testpipename", 5);
+                server.AddProtocol(RpcProtseq.ncacn_ip_tcp, "8801", 5);
                 server.StartListening();
                 Console.WriteLine("Is listening");
                 server.OnExecute +=
@@ -19,14 +19,7 @@ namespace SimpleBlockChain
                     string tmp = "";
                     return new byte[0];
                 };
-
-                using (RpcClientApi client = new RpcClientApi(iid, RpcProtseq.ncacn_np, null, @"\pipe\testpipename"))
-                {
-                    // client.AuthenticateAs(RpcClientApi.Self);
-                    byte[] response = client.Execute(new byte[0]);
-                }
                 Console.ReadLine();
-                string s = "";
             }
         }
     }

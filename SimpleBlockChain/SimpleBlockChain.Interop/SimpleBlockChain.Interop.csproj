@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{06F3EE56-AE79-4385-AA37-6959823B0102}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{CAAA77BC-12F3-49D6-A13B-332C4D735822}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimpleBlockChain</RootNamespace>
-    <AssemblyName>SimpleBlockChain</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>SimpleBlockChain.Interop</RootNamespace>
+    <AssemblyName>SimpleBlockChain.Interop</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,7 +22,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -42,11 +40,41 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="COMM_FAULT_OFFSETS.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Delegates.cs" />
+    <Compile Include="FunctionPtr.cs" />
+    <Compile Include="IRpcClientInfo.cs" />
+    <Compile Include="MIDL_SERVER_INFO.cs" />
+    <Compile Include="MIDL_STUB_DESC.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
+    <Compile Include="Ptr.cs" />
+    <Compile Include="RpcApi.cs" />
+    <Compile Include="RpcAuthentication.cs" />
+    <Compile Include="RpcCallClientLocality.cs" />
+    <Compile Include="RpcCallStatus.cs" />
+    <Compile Include="RpcCallType.cs" />
+    <Compile Include="RpcClientApi.cs" />
+    <Compile Include="RpcClientInfo.cs" />
+    <Compile Include="RpcError.cs" />
+    <Compile Include="RpcException.cs" />
+    <Compile Include="RpcHandle.cs" />
+    <Compile Include="RpcLocalAddressFormat.cs" />
+    <Compile Include="RpcProtectionLevel.cs" />
+    <Compile Include="RpcProtoseqType.cs" />
+    <Compile Include="RpcProtseq.cs" />
+    <Compile Include="RpcServerApi.cs" />
+    <Compile Include="RPC_CALL_ATTRIBUTES_FLAGS.cs" />
+    <Compile Include="RPC_CALL_ATTRIBUTES_V2.cs" />
+    <Compile Include="RPC_CALL_LOCAL_ADDRESS_V1.cs" />
+    <Compile Include="RPC_CLIENT_INTERFACE.cs" />
+    <Compile Include="RPC_DISPATCH_TABLE.cs" />
+    <Compile Include="RPC_DISPATCH_TABLE_Entry.cs" />
+    <Compile Include="RPC_SERVER_INTERFACE.cs" />
+    <Compile Include="RPC_SYNTAX_IDENTIFIER.cs" />
+    <Compile Include="RPC_VERSION.cs" />
+    <Compile Include="SEC_WINNT_AUTH_IDENTITY.cs" />
+    <Compile Include="UsageCounter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -54,8 +54,7 @@ namespace SimpleBlockChain.Interop
             this.IID = iid;
             this._maxCalls = maxCalls;
             this._handle = (RpcHandle)new RpcServerApi.RpcServerHandle();
-            if (Guid.Empty.Equals(iid))
-                return;
+            if (Guid.Empty.Equals(iid)) return;
             RpcServerApi.ServerRegisterInterface(this._handle, this.IID, new RpcExecute(this.RpcEntryPoint), maxCalls, maxRequestBytes, allowAnonTcp);
         }
 
@@ -184,9 +183,9 @@ namespace SimpleBlockChain.Interop
             }
             else
             {
-                // ISSUE: reference to a compiler-generated method
                 RpcException.Assert(RpcServerApi.RpcServerRegisterIf2(ptr.Handle, IntPtr.Zero, IntPtr.Zero, Flags, maxCalls <= 0 ? (int)byte.MaxValue : maxCalls, maxRequestBytes <= 0 ? 81920 : maxRequestBytes, hProc));
             }
+
             handle.Handle = ptr.Handle;
         }
 
