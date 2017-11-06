@@ -8,5 +8,10 @@
             public const string TestNet = "18333";
             public const string RegTest = "18444";
         }
+
+        public class MessageNames
+        {
+            public const string Ping = "ping";
+        }
     }
 }

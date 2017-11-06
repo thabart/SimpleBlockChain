@@ -52,6 +52,7 @@
     <Compile Include="Messages\ControlMessages\PingMessage.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageHeader.cs" />
+    <Compile Include="Networks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
