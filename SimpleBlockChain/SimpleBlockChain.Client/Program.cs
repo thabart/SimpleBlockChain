@@ -8,7 +8,7 @@ namespace SimpleBlockChain.Client
         static void Main(string[] args)
         {
             var iid = Constants.InterfaceId;
-            using (RpcClientApi client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, "localhost", "8801"))
+            using (RpcClientApi client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, "localhost", Core.Constants.Ports.MainNet))
             {
                 // client.AuthenticateAs(RpcClientApi.Self);
                 byte[] response = client.Execute(new byte[0]);

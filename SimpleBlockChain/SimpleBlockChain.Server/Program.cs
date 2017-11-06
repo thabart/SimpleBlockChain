@@ -10,7 +10,7 @@ namespace SimpleBlockChain.Server
             var iid = Constants.InterfaceId;
             using (var server = new RpcServerApi(iid, 1234, -1, true))
             {
-                server.AddProtocol(RpcProtseq.ncacn_ip_tcp, "8801", 5);
+                server.AddProtocol(RpcProtseq.ncacn_ip_tcp, Core.Constants.Ports.MainNet, 5);
                 server.StartListening();
                 Console.WriteLine("Is listening");
                 server.OnExecute +=
@@ -21,6 +21,11 @@ namespace SimpleBlockChain.Server
                 };
                 Console.ReadLine();
             }
+        }
+
+        private static void SendPing()
+        {
+
         }
     }
 }
