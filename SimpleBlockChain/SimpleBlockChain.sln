@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Interop", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Server", "SimpleBlockChain.Server\SimpleBlockChain.Server.csproj", "{DE008347-07DF-457D-A312-D34D6A5F297A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Core", "SimpleBlockChain.Core\SimpleBlockChain.Core.csproj", "{40A7A6F1-B60D-48B3-AAC1-2D6541AC0B8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{DE008347-07DF-457D-A312-D34D6A5F297A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE008347-07DF-457D-A312-D34D6A5F297A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE008347-07DF-457D-A312-D34D6A5F297A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40A7A6F1-B60D-48B3-AAC1-2D6541AC0B8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40A7A6F1-B60D-48B3-AAC1-2D6541AC0B8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40A7A6F1-B60D-48B3-AAC1-2D6541AC0B8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40A7A6F1-B60D-48B3-AAC1-2D6541AC0B8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
