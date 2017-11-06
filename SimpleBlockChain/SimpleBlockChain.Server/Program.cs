@@ -13,23 +13,21 @@ namespace SimpleBlockChain.Server
             LaunchServer();
             Console.WriteLine("Ping the PEER ?");
             Console.ReadLine();
-            // SendPing();
+            SendPing();
 
         }
 
         private static void LaunchServer()
         {
             var iid = Constants.InterfaceId;
-            using (var server = new RpcServerApi(iid, 1234, -1, true))
+            var server = new RpcServerApi(iid, 1234, -1, true);
+            server.AddProtocol(RpcProtseq.ncacn_ip_tcp, Core.Constants.Ports.MainNet, 5);
+            server.StartListening();
+            Console.WriteLine("Is listening");
+            server.OnExecute += delegate (IRpcClientInfo client, byte[] arg)
             {
-                server.AddProtocol(RpcProtseq.ncacn_ip_tcp, Core.Constants.Ports.MainNet, 5);
-                server.StartListening();
-                Console.WriteLine("Is listening");
-                server.OnExecute += delegate (IRpcClientInfo client, byte[] arg)
-                {
-                    return new byte[0];
-                };
-            }
+                return new byte[0];
+            };
         }
 
         private static void SendPing()
