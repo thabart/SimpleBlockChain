@@ -31,7 +31,8 @@ namespace SimpleBlockChain.Core.Messages
 
             result.AddRange(commandNameBuffer);
             var content = GetSerializedContent();
-            result.AddRange(BitConverter.GetBytes(content.Length));
+            var size = BitConverter.GetBytes(content.Length);
+            result.AddRange(size);
             byte[] checksum = null;
             if (content == null)
             {
@@ -50,6 +51,6 @@ namespace SimpleBlockChain.Core.Messages
         }
 
         protected abstract byte[] GetSerializedContent();
-        protected abstract string GetCommandName();
+        public abstract string GetCommandName();
     }
 }

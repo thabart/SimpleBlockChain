@@ -49,10 +49,16 @@
     <Compile Include="Blocks\Transaction.cs" />
     <Compile Include="Blocks\TransactionIn.cs" />
     <Compile Include="Blocks\TransactionOut.cs" />
+    <Compile Include="ErrorCodes.cs" />
+    <Compile Include="Exceptions\InterpretMessageException.cs" />
+    <Compile Include="Exceptions\ParseMessageException.cs" />
+    <Compile Include="Launchers\MessageLauncher.cs" />
     <Compile Include="Messages\ControlMessages\PingMessage.cs" />
+    <Compile Include="Messages\ControlMessages\PongMessage.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageHeader.cs" />
     <Compile Include="Networks.cs" />
+    <Compile Include="Parsers\MessageParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

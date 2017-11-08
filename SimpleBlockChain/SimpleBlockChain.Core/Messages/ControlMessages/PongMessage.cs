@@ -2,11 +2,11 @@
 
 namespace SimpleBlockChain.Core.Messages.ControlMessages
 {
-    public class PingMessage : Message
+    public class PongMessage : Message
     {
         public ulong Nonce { get; private set; }
 
-        public PingMessage(ulong nonce, Networks network) : base(network)
+        public PongMessage(ulong nonce, Networks network) : base(network)
         {
             Nonce = nonce;
         }
@@ -18,7 +18,7 @@ namespace SimpleBlockChain.Core.Messages.ControlMessages
 
         public override string GetCommandName()
         {
-            return Constants.MessageNames.Ping;
+            return Constants.MessageNames.Pong;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using SimpleBlockChain.Core.Messages.ControlMessages;
+﻿using SimpleBlockChain.Core.Launchers;
+using SimpleBlockChain.Core.Messages.ControlMessages;
+using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Interop;
 using System;
 
@@ -14,7 +16,6 @@ namespace SimpleBlockChain.Server
             Console.WriteLine("Ping the PEER ?");
             Console.ReadLine();
             SendPing();
-
         }
 
         private static void LaunchServer()
@@ -26,7 +27,11 @@ namespace SimpleBlockChain.Server
             Console.WriteLine("Is listening");
             server.OnExecute += delegate (IRpcClientInfo client, byte[] arg)
             {
-                return new byte[0];
+                var messageParser = new MessageParser();
+                var messageLauncher = new MessageLauncher();
+                var message = messageParser.Parse(arg);
+                var response =  messageLauncher.Launch(message);
+                return response.Serialize();
             };
         }
 
@@ -39,6 +44,7 @@ namespace SimpleBlockChain.Server
                 var pingMessage = new PingMessage(nonce, Core.Networks.MainNet);
                 var payload = pingMessage.Serialize();
                 byte[] response = client.Execute(payload);
+                string s = "";
             }
         }
 
