@@ -17,6 +17,7 @@ namespace SimpleBlockChain.Core
         {
             public const string Ping = "ping";
             public const string Pong = "pong";
+            public const string Addr = "addr";
         }
     }
 }
