@@ -1,4 +1,6 @@
-﻿namespace SimpleBlockChain.Core.Blocks
+﻿using SimpleBlockChain.Core.Common;
+
+namespace SimpleBlockChain.Core.Blocks
 {
     public class TransactionIn
     {

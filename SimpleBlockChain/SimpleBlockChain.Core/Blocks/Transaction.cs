@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SimpleBlockChain.Core.Common;
+using System.Collections.Generic;
 
 namespace SimpleBlockChain.Core.Blocks
 {

@@ -43,7 +43,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Blocks\Block.cs" />
     <Compile Include="Blocks\BlockHeader.cs" />
-    <Compile Include="Blocks\CompactSize.cs" />
+    <Compile Include="Common\CompactSize.cs" />
     <Compile Include="Blocks\Outpoint.cs" />
     <Compile Include="Blocks\RawTransaction.cs" />
     <Compile Include="Blocks\Transaction.cs" />
@@ -53,6 +53,7 @@
     <Compile Include="Exceptions\InterpretMessageException.cs" />
     <Compile Include="Exceptions\ParseMessageException.cs" />
     <Compile Include="Launchers\MessageLauncher.cs" />
+    <Compile Include="Messages\ControlMessages\AddrMessage.cs" />
     <Compile Include="Messages\ControlMessages\PingMessage.cs" />
     <Compile Include="Messages\ControlMessages\PongMessage.cs" />
     <Compile Include="Messages\Message.cs" />
