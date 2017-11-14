@@ -1,4 +1,4 @@
-﻿namespace SimpleBlockChain.Core.Blocks
+﻿namespace SimpleBlockChain.Core.Transactions
 {
     public class Outpoint
     {

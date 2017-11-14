@@ -1,16 +1,15 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Common;
-using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
+using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace SimpleBlockChain.Server
 {
@@ -163,11 +162,21 @@ namespace SimpleBlockChain.Server
         {
             // https://bitcoin.org/en/developer-guide#transactions
             // Scenario : Bob spends alice's transaction.
-            var blockChainAddress = new BlockChainAddress(BlockChainAddressTypes.P2PKH, Networks.MainNet); // Bob generates a bitcoin address.
+            var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, Networks.MainNet); // Bob generates a bitcoin address.
             blockChainAddress.New();
             string adr = blockChainAddress.GetAddress();
             Console.WriteLine($"BOB's address is {adr}");
             var receivedBlockChainAddress = BlockChainAddress.Parse(adr); // Alice parse the bitcoin address.
+            var publicKeyHash = receivedBlockChainAddress.PublicKeyHash;
+            if (receivedBlockChainAddress.Type == ScriptTypes.P2PKH)
+            {
+                var transactionBuilder = new TransactionBuilder();
+                var scriptBuilder = new ScriptBuilder();
+                var script = scriptBuilder.CreateP2PKHScript(publicKeyHash);
+                transactionBuilder.AddOutput(49, script);
+            }
+            // Create the P2PKH transaction.
+
             return null;
         }
     }
