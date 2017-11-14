@@ -28,7 +28,7 @@ namespace SimpleBlockChain.Server
 
         static void Main(string[] args)
         {
-            GeneratePublicKey();
+            CreateTransaction();
             /*
             LaunchServer();
             LaunchClient();
@@ -159,12 +159,15 @@ namespace SimpleBlockChain.Server
             return (ulong)BitConverter.ToInt64(buffer, 0);
         }
 
-        private static string GeneratePublicKey()
+        private static string CreateTransaction()
         {
-            var blockChainAddress = new BlockChainAddress(BlockChainAddressTypes.P2PKH, Networks.MainNet);
+            // https://bitcoin.org/en/developer-guide#transactions
+            // Scenario : Bob spends alice's transaction.
+            var blockChainAddress = new BlockChainAddress(BlockChainAddressTypes.P2PKH, Networks.MainNet); // Bob generates a bitcoin address.
             blockChainAddress.New();
             string adr = blockChainAddress.GetAddress();
-            Console.WriteLine($"BitCoin address is {adr}");
+            Console.WriteLine($"BOB's address is {adr}");
+            var receivedBlockChainAddress = BlockChainAddress.Parse(adr); // Alice parse the bitcoin address.
             return null;
         }
     }

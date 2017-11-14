@@ -1,5 +1,7 @@
 ﻿using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Encoding;
+using SimpleBlockChain.Core.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -27,6 +29,48 @@ namespace SimpleBlockChain.Core
         public void New()
         {
             _key = new Key();            
+        }
+
+        public static BlockChainAddress Parse(string hash)
+        {
+            if (hash == null)
+            {
+                throw new ArgumentNullException(nameof(hash));
+            }
+
+            var type = BlockChainAddressTypes.P2PKH;
+            var network = Networks.MainNet;
+            var decoded = Base58Encoding.Decode(hash);
+            var versionPayload = decoded.First();
+            if (versionPayload == 0x00)
+            {
+                type = BlockChainAddressTypes.P2PKH;
+                network = Networks.MainNet;
+            }
+            else if (versionPayload == 0x6f)
+            {
+                type = BlockChainAddressTypes.P2PKH;
+                network = Networks.TestNet;
+            }
+            else if (versionPayload == 0x05)
+            {
+                type = BlockChainAddressTypes.P2SH;
+                network = Networks.MainNet;
+            }
+            else if (versionPayload == 0xc4)
+            {
+                type = BlockChainAddressTypes.P2SH;
+                network = Networks.TestNet;
+            }
+
+            var checksum = decoded.Skip(decoded.Length - 4).Take(4);
+            var content = decoded.Skip(1).Take(decoded.Length - 4);
+            if (!checksum.SequenceEqual(content.Take(4)))
+            {
+                throw new ParseMessageException(ErrorCodes.InvalidChecksum);
+            }
+
+            return new BlockChainAddress(type, network);
         }
 
         public string GetAddress()
