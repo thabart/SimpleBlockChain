@@ -60,6 +60,7 @@
     <Compile Include="Transactions\Script.cs" />
     <Compile Include="Transactions\ScriptBuilder.cs" />
     <Compile Include="Transactions\Transaction.cs" />
+    <Compile Include="Transactions\TransactionBuilder.cs" />
     <Compile Include="Transactions\TransactionIn.cs" />
     <Compile Include="Transactions\TransactionOut.cs" />
     <Compile Include="Crypto\Key.cs" />
