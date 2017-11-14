@@ -74,6 +74,10 @@ namespace SimpleBlockChain.Core.Parsers
                 var nonce = BitConverter.ToUInt64(contentPayload, 0);
                 message = new PingMessage(nonce, network);
             }
+            else if (commandName == Constants.MessageNames.Addr)
+            {
+                message = AddrMessage.Deserialize(contentPayload, network);
+            }
 
             return message;
         }

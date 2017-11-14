@@ -52,15 +52,19 @@
     <Compile Include="ErrorCodes.cs" />
     <Compile Include="Exceptions\InterpretMessageException.cs" />
     <Compile Include="Exceptions\ParseMessageException.cs" />
+    <Compile Include="Exceptions\SerializeException.cs" />
     <Compile Include="Launchers\MessageLauncher.cs" />
     <Compile Include="Messages\ControlMessages\AddrMessage.cs" />
+    <Compile Include="Messages\ControlMessages\IpAddress.cs" />
     <Compile Include="Messages\ControlMessages\PingMessage.cs" />
     <Compile Include="Messages\ControlMessages\PongMessage.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessageHeader.cs" />
+    <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Networks.cs" />
     <Compile Include="Parsers\MessageParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceFlags.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Messages\DataMessages\" />

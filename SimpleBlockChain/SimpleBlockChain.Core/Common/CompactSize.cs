@@ -36,5 +36,44 @@ namespace SimpleBlockChain.Core.Common
 
             return null;
         }
+
+        public static KeyValuePair<CompactSize, int> Deserialize(byte[] payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            var firstB = payload.First();
+            ulong result = 0;
+            int nbBytes = 0;
+            if (firstB == 0xfd)
+            {
+                var val = payload.Skip(1).Take(2);
+                result = Convert.ToUInt16(val.ToArray());
+                nbBytes = 3;
+            }
+            else if (firstB == 0xfe)
+            {
+                var val = payload.Skip(1).Take(4);
+                result = Convert.ToUInt32(val.ToArray());
+                nbBytes = 5;
+            }
+            else if (firstB == 0xff)
+            {
+                var val = payload.Skip(1).Take(8);
+                result = Convert.ToUInt64(val.ToArray());
+                nbBytes = 9;
+            }
+            else
+            {
+                result = Convert.ToUInt16((sbyte)firstB);
+                nbBytes = 1;
+            }
+
+            var r = new CompactSize();
+            r.Size = result;
+            return new KeyValuePair<CompactSize, int>(r, nbBytes);
+        }
     }
 }

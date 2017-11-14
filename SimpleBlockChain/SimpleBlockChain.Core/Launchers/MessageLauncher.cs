@@ -21,6 +21,13 @@ namespace SimpleBlockChain.Core.Launchers
                 return pong;
             }
 
+            if (message.GetCommandName() == Constants.MessageNames.Addr)
+            {
+                var msg = message as AddrMessage;
+                Console.WriteLine("register the address ");
+                return null;
+            }
+
             throw new InterpretMessageException(ErrorCodes.MessageNotSupported);
         }
     }

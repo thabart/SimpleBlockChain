@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Common;
+﻿using SimpleBlockChain.Core;
+using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
@@ -6,6 +7,8 @@ using SimpleBlockChain.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
 namespace SimpleBlockChain.Server
 {
@@ -19,10 +22,12 @@ namespace SimpleBlockChain.Server
             { 3, Quit }
         };
         private static RpcServerApi _server;
+        private static RpcClientApi _client;
 
         static void Main(string[] args)
         {
             LaunchServer();
+            LaunchClient();
             DisplayMenu();
         }
 
@@ -39,6 +44,7 @@ namespace SimpleBlockChain.Server
         private static void Quit()
         {
             _server.Dispose();
+            _client.Dispose();
             Console.WriteLine("bye bye");
             Console.ReadLine();
             Environment.Exit(0);
@@ -64,7 +70,7 @@ namespace SimpleBlockChain.Server
 
         private static void LaunchServer()
         {
-            var iid = Constants.InterfaceId;
+            var iid = Interop.Constants.InterfaceId;
             _server = new RpcServerApi(iid, 1234, -1, true);
             _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, Core.Constants.Ports.MainNet, 5);
             _server.StartListening();
@@ -76,32 +82,65 @@ namespace SimpleBlockChain.Server
                 var message = messageParser.Parse(arg);
                 Console.WriteLine(string.Format("A message has been received {0}", message.GetCommandName()));
                 var response =  messageLauncher.Launch(message);
+                if (response == null)
+                {
+                    return new byte[0];
+                }
+
                 return response.Serialize();
             };
         }
 
-        private static void SendPing() // Send ping.
+        private static void LaunchClient()
         {
-            var iid = Constants.InterfaceId;
-            using (RpcClientApi client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, _host, Core.Constants.Ports.MainNet))
-            {
-                var nonce = GetNonce();
-                var pingMessage = new PingMessage(nonce, Core.Networks.MainNet);
-                var payload = pingMessage.Serialize();
-                byte[] response = client.Execute(payload);
-                string s = "";
-            }
+            var iid = Interop.Constants.InterfaceId;
+            _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, _host, Core.Constants.Ports.MainNet);
         }
 
-        private static void SendAddr() // Send addr.
+        private static void SendPing() // Send ping.
         {
-            var iid = Constants.InterfaceId;
-            using (RpcClientApi client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, _host, Core.Constants.Ports.MainNet))
+            var nonce = GetNonce();
+            var pingMessage = new PingMessage(nonce, Core.Networks.MainNet);
+            var payload = pingMessage.Serialize();
+            byte[] response = _client.Execute(payload);
+            string s = "";
+        }
+
+        private static void SendAddr() // Send my addr.
+        {
+            var ipv6 = GetIpv4();      
+            var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, Core.Networks.MainNet);
+            addrMessage.IpAddresses.Add(new IpAddress(DateTime.UtcNow, ServiceFlags.NODE_NETWORK, ipv6, ushort.Parse(Core.Constants.Ports.MainNet)));
+            var payload = addrMessage.Serialize();
+            byte[] response = _client.Execute(payload);
+        }
+
+        private static byte[] GetIpV6() // Get local IPV6 address.
+        {
+            var hostName = Dns.GetHostName();
+            var ipEntry = Dns.GetHostEntry(hostName);
+            var addr = ipEntry.AddressList;
+            var ipv6Addr = addr.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetworkV6);
+            if (ipv6Addr == null)
             {
-                var addrMessage = new AddrMessage(new CompactSize { Size = 0xffffffffffffffff }, Core.Networks.MainNet);
-                var tmp = addrMessage.CompactSize.Serialize();
-                string ss = "";
+                return null;
             }
+
+            return ipv6Addr.GetAddressBytes();
+        }
+
+        private static byte[] GetIpv4() // Get IPV4 transformed into IPV6 format.
+        {
+            var hostName = Dns.GetHostName();
+            var ipEntry = Dns.GetHostEntry(hostName);
+            var addr = ipEntry.AddressList;
+            var ipv4Addr = addr.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+            if (ipv4Addr == null)
+            {
+                return null;
+            }
+
+            return ipv4Addr.MapToIPv6().GetAddressBytes();
         }
 
         private static ulong GetNonce()
