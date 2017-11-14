@@ -43,7 +43,7 @@ namespace SimpleBlockChain.Core.Parsers
             }
 
             var commandNamePayload = header.Skip(4).Take(12).Where(b => b != 0x00).ToArray();
-            var commandName = Encoding.ASCII.GetString(commandNamePayload);            
+            var commandName = System.Text.Encoding.ASCII.GetString(commandNamePayload);            
             var payloadSizePayload = header.Skip(16).Take(4).ToArray();
             var payloadSize = BitConverter.ToInt32(payloadSizePayload, 0);
             var checkSum = header.Skip(20).Take(4);

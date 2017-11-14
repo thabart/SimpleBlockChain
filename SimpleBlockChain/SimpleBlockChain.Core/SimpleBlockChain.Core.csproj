@@ -30,8 +30,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.1\lib\BouncyCastle.Crypto.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlockChainAddress.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Blocks\Block.cs" />
     <Compile Include="Blocks\BlockHeader.cs" />
@@ -49,10 +59,13 @@
     <Compile Include="Blocks\Transaction.cs" />
     <Compile Include="Blocks\TransactionIn.cs" />
     <Compile Include="Blocks\TransactionOut.cs" />
+    <Compile Include="Crypto\Key.cs" />
+    <Compile Include="Encoding\Base58Encoding.cs" />
     <Compile Include="ErrorCodes.cs" />
     <Compile Include="Exceptions\InterpretMessageException.cs" />
     <Compile Include="Exceptions\ParseMessageException.cs" />
     <Compile Include="Exceptions\SerializeException.cs" />
+    <Compile Include="Helpers\ArrayHelpers.cs" />
     <Compile Include="Launchers\MessageLauncher.cs" />
     <Compile Include="Messages\ControlMessages\AddrMessage.cs" />
     <Compile Include="Messages\ControlMessages\IpAddress.cs" />
@@ -65,9 +78,13 @@
     <Compile Include="Parsers\MessageParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceFlags.cs" />
+    <Compile Include="Storages\PeersStorage.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Messages\DataMessages\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

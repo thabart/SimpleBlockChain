@@ -1,5 +1,6 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace SimpleBlockChain.Server
 {
@@ -26,9 +28,12 @@ namespace SimpleBlockChain.Server
 
         static void Main(string[] args)
         {
+            GeneratePublicKey();
+            /*
             LaunchServer();
             LaunchClient();
             DisplayMenu();
+            */
         }
 
         private static void DisplayMenu()
@@ -152,6 +157,15 @@ namespace SimpleBlockChain.Server
             buffer[7] = (byte)(hi >> 8);
             buffer[6] = (byte)hi;
             return (ulong)BitConverter.ToInt64(buffer, 0);
+        }
+
+        private static string GeneratePublicKey()
+        {
+            var blockChainAddress = new BlockChainAddress(BlockChainAddressTypes.P2PKH, Networks.MainNet);
+            blockChainAddress.New();
+            string adr = blockChainAddress.GetAddress();
+            Console.WriteLine($"BitCoin address is {adr}");
+            return null;
         }
     }
 }

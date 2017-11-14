@@ -23,7 +23,7 @@ namespace SimpleBlockChain.Core.Messages
             var result = new List<byte>();
             result.AddRange(MessageHeader.GetStartString());
             var commandName = GetCommandName();
-            List<byte> commandNameBuffer = Encoding.ASCII.GetBytes(commandName).ToList();
+            List<byte> commandNameBuffer = System.Text.Encoding.ASCII.GetBytes(commandName).ToList();
             for (var i = commandNameBuffer.Count(); i < 12; i++)
             {
                 commandNameBuffer.Add(0x00);
