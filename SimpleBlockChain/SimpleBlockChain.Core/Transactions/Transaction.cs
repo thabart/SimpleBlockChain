@@ -69,7 +69,12 @@ namespace SimpleBlockChain.Core.Transactions
             currentStartIndex += transactionOutputCompactSize.Value;
             if (transactionOutputCompactSize.Key.Size > 0)
             {
-
+                for (var i = 0; i < (int)transactionOutputCompactSize.Key.Size; i++)
+                {
+                    var kvp = Transactions.TransactionOut.Deserialize(payload.Skip(currentStartIndex).ToArray());
+                    result.TransactionOut.Add(kvp.Key);
+                    currentStartIndex += kvp.Value;
+                }
             }
 
             result.LockTime = BitConverter.ToUInt32(payload.Skip(payload.Count() - 4).Take(4).ToArray(), 0);

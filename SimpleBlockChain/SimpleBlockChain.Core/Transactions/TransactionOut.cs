@@ -40,9 +40,9 @@ namespace SimpleBlockChain.Core.Transactions
             startIndex = 8;
             var compactSize = CompactSize.Deserialize(payload.Skip(startIndex).ToArray());
             startIndex += compactSize.Value;
-            
+            var script = new Script(payload.Skip(startIndex).Take((int)compactSize.Key.Size));
             startIndex += (int)compactSize.Key.Size;
-            return new KeyValuePair<TransactionOut, int>(new TransactionOut(value, null), startIndex);
+            return new KeyValuePair<TransactionOut, int>(new TransactionOut(value, script), startIndex);
         }
     }
 }

@@ -176,8 +176,12 @@ namespace SimpleBlockChain.Server
                 transactionBuilder.AddOutput(49, script);
                 var transaction = transactionBuilder.Build();
                 var serializedTransaction = transaction.Serialize(); // Alice creates the first transaction - only one output and no input.
+                Console.WriteLine("The first transaction has been braodcast by ALICE");
 
-                // Bob receives the transaction and deserialize it : SPEND Unspent Transaction Ouput (UTXO).
+                var deserializedTransaction = Transaction.Deserialize(serializedTransaction); // Bob receives the transaction and deserialize it : SPEND Unspent Transaction Ouput (UTXO).
+                Console.WriteLine("Bob received the first transaction and create a new one");
+
+                string s = "";
             }
             // Create the P2PKH transaction.
 
