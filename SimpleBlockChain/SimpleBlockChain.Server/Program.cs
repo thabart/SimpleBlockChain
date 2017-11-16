@@ -162,25 +162,42 @@ namespace SimpleBlockChain.Server
         {
             // https://bitcoin.org/en/developer-guide#transactions
             // Scenario : Bob spends alice's transaction.
-            var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, Networks.MainNet); // Bob generates a bitcoin address.
+            var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, Networks.MainNet); // BOB generates a bitcoin address.
             blockChainAddress.New();
             string adr = blockChainAddress.GetAddress();
             Console.WriteLine($"BOB's address is {adr}");
-            var receivedBlockChainAddress = BlockChainAddress.Parse(adr); // Alice parse the bitcoin address.
+            var receivedBlockChainAddress = BlockChainAddress.Parse(adr); // ALICE parses the bitcoin address.
             var publicKeyHash = receivedBlockChainAddress.PublicKeyHash;
             if (receivedBlockChainAddress.Type == ScriptTypes.P2PKH)
             {
                 var transactionBuilder = new TransactionBuilder();
-                var scriptBuilder = new ScriptBuilder();
-                var script = scriptBuilder.CreateP2PKHScript(publicKeyHash);
+                var script = Script.CreateP2PKHScript(publicKeyHash);
                 transactionBuilder.AddOutput(49, script);
                 var transaction = transactionBuilder.Build();
-                var serializedTransaction = transaction.Serialize(); // Alice creates the first transaction - only one output and no input.
+                var serializedTransaction = transaction.Serialize(); // ALICE creates the first transaction - only one output and no input.
                 Console.WriteLine("The first transaction has been braodcast by ALICE");
 
-                var deserializedTransaction = Transaction.Deserialize(serializedTransaction); // Bob receives the transaction and deserialize it : SPEND Unspent Transaction Ouput (UTXO).
+                var deserializedTransaction = Transaction.Deserialize(serializedTransaction); // BOB receives the transaction and deserialize it : SPEND Unspent Transaction Ouput (UTXO).
                 Console.WriteLine("Bob received the first transaction and create a new one");
+                var firstTransactionOutput = deserializedTransaction.TransactionOut.First();
+                var transactionInputBuilder = new TransactionInputBuilder();
+                transactionInputBuilder.AddOutput(deserializedTransaction.GetTxId(), 0);
+                transactionBuilder.New()
+                    .AddOutput(firstTransactionOutput.Value, firstTransactionOutput.Script)
+                    .AddInput(transactionInputBuilder.Create());
+                switch(firstTransactionOutput.Script.Type)
+                {
+                    case ScriptTypes.P2PKH:
+                        var stack = firstTransactionOutput.Script.ScriptRecords.First(sr => sr.Type == ScriptRecordType.Stack);
+                        var publicKey = blockChainAddress.GetPublicKey();
+                        var tmpSecondTransaction = transactionBuilder.Build();
+                        var tmpSecondTransactionPayload = tmpSecondTransaction.Serialize();
+                        var signature = blockChainAddress.GetKey().Sign(tmpSecondTransactionPayload);
+                        transactionInputBuilder.AddSignatureScript(signature, publicKey);
+                        break;
+                }
 
+                var secondTransactionPayload = transactionBuilder.Build().Serialize();
                 string s = "";
             }
             // Create the P2PKH transaction.

@@ -3,6 +3,7 @@ using SimpleBlockChain.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace SimpleBlockChain.Core.Transactions
 {
@@ -47,6 +48,13 @@ namespace SimpleBlockChain.Core.Transactions
             return result;
         }
 
+        public IEnumerable<byte> GetTxId()
+        {
+            var payload = Serialize();
+            var mySHA256 = SHA256Managed.Create();
+            return mySHA256.ComputeHash(mySHA256.ComputeHash(payload.ToArray()));
+        }
+
         public static Transaction Deserialize(IEnumerable<byte> payload)
         {
             if (payload == null)
@@ -61,7 +69,6 @@ namespace SimpleBlockChain.Core.Transactions
             var transactionInCompactSize = CompactSize.Deserialize(payload.Skip(currentStartIndex).ToArray());
             if (transactionInCompactSize.Key.Size > 0)
             {
-
             }
 
             currentStartIndex += transactionInCompactSize.Value;

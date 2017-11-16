@@ -34,6 +34,15 @@ namespace SimpleBlockChain.Core
         public IEnumerable<byte> PublicKeyHash { get; private set; }
         public ScriptTypes Type { get; private set; }
         public Networks Network { get; private set; }
+        public IEnumerable<byte> GetPublicKey()
+        {
+            return _key.PublicKey;
+        }
+
+        public Key GetKey()
+        {
+            return _key;
+        }
 
         public static BlockChainAddress Parse(string hash)
         {

@@ -58,10 +58,10 @@
     <Compile Include="Transactions\Outpoint.cs" />
     <Compile Include="Blocks\RawTransaction.cs" />
     <Compile Include="Transactions\Script.cs" />
-    <Compile Include="Transactions\ScriptBuilder.cs" />
     <Compile Include="Transactions\Transaction.cs" />
     <Compile Include="Transactions\TransactionBuilder.cs" />
     <Compile Include="Transactions\TransactionIn.cs" />
+    <Compile Include="Transactions\TransactionInputBuilder.cs" />
     <Compile Include="Transactions\TransactionOut.cs" />
     <Compile Include="Crypto\Key.cs" />
     <Compile Include="Encoding\Base58Encoding.cs" />

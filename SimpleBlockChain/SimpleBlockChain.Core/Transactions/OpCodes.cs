@@ -1,10 +1,11 @@
 ﻿namespace SimpleBlockChain.Core.Transactions
 {
-    public enum OpCodes : uint
+    public enum OpCodes : byte
     {
-        OP_DUP = 118,
-        OP_HASH160 = 169,
-        OP_EQUALVERIFY = 136,
-        OP_CHECKSIG = 172
+        OP_DATA = 0x00, // Push data to a stack.
+        OP_DUP = 0x76,
+        OP_HASH160 = 0xa9,
+        OP_EQUALVERIFY = 0x88,
+        OP_CHECKSIG = 0xac
     }
 }

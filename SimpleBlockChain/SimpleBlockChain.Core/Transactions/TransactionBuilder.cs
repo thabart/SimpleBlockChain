@@ -9,9 +9,10 @@
             _transaction = new Transaction();
         }
 
-        public void New()
+        public TransactionBuilder New()
         {
             _transaction = new Transaction();
+            return this;
         }
 
         public TransactionBuilder AddOutput(long value, Script script)
@@ -21,8 +22,9 @@
             return this;
         }
 
-        public TransactionBuilder AddInput()
+        public TransactionBuilder AddInput(TransactionIn transactionIn)
         {
+            _transaction.TransactionIn.Add(transactionIn);
             return this;
         }
 

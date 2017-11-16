@@ -5,17 +5,19 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Security;
-using SimpleBlockChain.Core.Encoding;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace SimpleBlockChain.Core.Crypto
 {
     public class Key
     {
+        private ECPrivateKeyParameters _privateKey;
         private static SecureRandom _secureRandom;
         private static X9ECParameters _curve;
-        private static ECDomainParameters _domain;
-        
+        private static ECDomainParameters _domain;        
 
         public Key(bool isCompressed = false)
         {
@@ -38,15 +40,28 @@ namespace SimpleBlockChain.Core.Crypto
             return hashed;
         }
 
+        public IEnumerable<byte> Sign(IEnumerable<byte> payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            var signer = SignerUtilities.GetSigner("ECDSA");
+            signer.Init(true, _privateKey);
+            signer.BlockUpdate(payload.ToArray(), 0, payload.Count());
+            return signer.GenerateSignature();
+        }
+
         private void Generate(bool isCompressed)
         {
             var gen = new ECKeyPairGenerator();
             var keygenParams = new ECKeyGenerationParameters(_domain, _secureRandom);
             gen.Init(keygenParams);
             var keyPair = gen.GenerateKeyPair();
-            var privParams = (ECPrivateKeyParameters)keyPair.Private;
+            _privateKey = (ECPrivateKeyParameters)keyPair.Private;
             var publicParams = (ECPublicKeyParameters)keyPair.Public;
-            PrivateKey = privParams.D;
+            PrivateKey = _privateKey.D;
             IsCompressed = isCompressed;
             if (isCompressed)
             {

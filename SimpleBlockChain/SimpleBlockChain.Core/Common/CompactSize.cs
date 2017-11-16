@@ -12,7 +12,7 @@ namespace SimpleBlockChain.Core.Common
         {
             if (Size >= 0 && Size <= 252)
             {
-                var sb = Convert.ToSByte(Size);
+                var sb = Convert.ToByte(Size);
                 return new byte[] { (byte)sb };
             }
             else if (Size >= 253 && Size <= 0xffff)
