@@ -174,6 +174,10 @@ namespace SimpleBlockChain.Server
                 var scriptBuilder = new ScriptBuilder();
                 var script = scriptBuilder.CreateP2PKHScript(publicKeyHash);
                 transactionBuilder.AddOutput(49, script);
+                var transaction = transactionBuilder.Build();
+                var serializedTransaction = transaction.Serialize(); // Alice creates the first transaction - only one output and no input.
+
+                // Bob receives the transaction and deserialize it : SPEND Unspent Transaction Ouput (UTXO).
             }
             // Create the P2PKH transaction.
 

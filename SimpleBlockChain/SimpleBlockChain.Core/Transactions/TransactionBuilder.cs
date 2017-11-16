@@ -20,5 +20,15 @@
             _transaction.TransactionOut.Add(transactionOutput);
             return this;
         }
+
+        public TransactionBuilder AddInput()
+        {
+            return this;
+        }
+
+        public Transaction Build()
+        {
+            return _transaction;
+        }
     }
 }

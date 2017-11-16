@@ -27,5 +27,22 @@ namespace SimpleBlockChain.Core.Transactions
             result.AddRange(scriptPayload);
             return result;
         }
+
+        public static KeyValuePair<TransactionOut, int> Deserialize(IEnumerable<byte> payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            int startIndex = 0;
+            var value = BitConverter.ToInt64(payload.Take(8).ToArray(), 0);
+            startIndex = 8;
+            var compactSize = CompactSize.Deserialize(payload.Skip(startIndex).ToArray());
+            startIndex += compactSize.Value;
+            
+            startIndex += (int)compactSize.Key.Size;
+            return new KeyValuePair<TransactionOut, int>(new TransactionOut(value, null), startIndex);
+        }
     }
 }
