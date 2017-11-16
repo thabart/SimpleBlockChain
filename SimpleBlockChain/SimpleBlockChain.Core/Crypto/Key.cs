@@ -14,6 +14,7 @@ namespace SimpleBlockChain.Core.Crypto
 {
     public class Key
     {
+        private ECPublicKeyParameters _publicKey;
         private ECPrivateKeyParameters _privateKey;
         private static SecureRandom _secureRandom;
         private static X9ECParameters _curve;
@@ -24,12 +25,27 @@ namespace SimpleBlockChain.Core.Crypto
             _secureRandom = new SecureRandom();
             _curve = SecNamedCurves.GetByName("secp256k1");
             _domain = new ECDomainParameters(_curve.Curve, _curve.G, _curve.N, _curve.H);
-            Generate(isCompressed);
+            Generate();
         }
 
         public BigInteger PrivateKey { get; private set; }
         public byte[] PublicKey { get; private set; }
-        public bool IsCompressed { get; private set; }
+
+        /// <summary>
+        /// Get public key.
+        /// </summary>
+        /// <param name="isCompressed"></param>
+        /// <returns></returns>
+        public IEnumerable<byte> GetPublicKey(bool isCompressed = false)
+        {
+            if (isCompressed)
+            {
+                var q = _publicKey.Q;
+                return (new FpPoint(_domain.Curve, q.X, q.Y, true)).GetEncoded();
+            }
+
+            return _publicKey.Q.GetEncoded();
+        }
 
         public byte[] GetPublicKeyHashed()
         {
@@ -40,6 +56,11 @@ namespace SimpleBlockChain.Core.Crypto
             return hashed;
         }
 
+        /// <summary>
+        ///  Sign the payload.
+        /// </summary>
+        /// <param name="payload"></param>
+        /// <returns></returns>
         public IEnumerable<byte> Sign(IEnumerable<byte> payload)
         {
             if (payload == null)
@@ -53,25 +74,40 @@ namespace SimpleBlockChain.Core.Crypto
             return signer.GenerateSignature();
         }
 
-        private void Generate(bool isCompressed)
+        /// <summary>
+        /// Check the signature.
+        /// </summary>
+        /// <param name="payload"></param>
+        /// <returns></returns>
+        public bool CheckSignature(IEnumerable<byte> payload, IEnumerable<byte> signature)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            if (signature == null)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
+            var signer = SignerUtilities.GetSigner("ECDSA");
+            signer.Init(false, _publicKey);
+            signer.BlockUpdate(payload.ToArray(), 0, payload.Count());
+            return signer.VerifySignature(signature.ToArray());
+        }
+
+        /// <summary>
+        /// Generate a new key (Private & Public).
+        /// </summary>
+        private void Generate()
         {
             var gen = new ECKeyPairGenerator();
             var keygenParams = new ECKeyGenerationParameters(_domain, _secureRandom);
             gen.Init(keygenParams);
             var keyPair = gen.GenerateKeyPair();
             _privateKey = (ECPrivateKeyParameters)keyPair.Private;
-            var publicParams = (ECPublicKeyParameters)keyPair.Public;
-            PrivateKey = _privateKey.D;
-            IsCompressed = isCompressed;
-            if (isCompressed)
-            {
-                var q = publicParams.Q;
-                PublicKey = (new FpPoint(_domain.Curve, q.X, q.Y, true)).GetEncoded();
-            }
-            else
-            {
-                PublicKey = publicParams.Q.GetEncoded();
-            }
+            _publicKey = (ECPublicKeyParameters)keyPair.Public;
         }
     }
 }
