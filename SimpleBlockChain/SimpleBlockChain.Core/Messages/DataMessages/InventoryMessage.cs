@@ -15,11 +15,9 @@ namespace SimpleBlockChain.Core.Messages.DataMessages
             Type = type;
         }
 
-        public Inventory(InventoryTypes type, IEnumerable<byte> payload)
+        public Inventory(InventoryTypes type, IEnumerable<byte> hash)
         {
             Type = type;
-            var mySHA256 = SHA256Managed.Create();
-            Hash = mySHA256.ComputeHash(mySHA256.ComputeHash(payload.ToArray()));
         }
 
         public InventoryTypes Type { get; private set; }

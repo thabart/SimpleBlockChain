@@ -43,13 +43,13 @@ namespace SimpleBlockChain.Core
 
         private void DisplayMenu(Networks network)
         {
-            Console.WriteLine("Generate a new address");
+            Console.WriteLine("\t Generate a new address");
             Console.ReadLine();
             _serializedHash = GenerateNewAddress(network);
-            Console.WriteLine("Create the first transaction");
+            Console.WriteLine("\t Create the first transaction");
             Console.ReadLine();
             CreateTransaction(network);
-            Console.WriteLine("Broadcast the transaction");
+            Console.WriteLine("\t Broadcast the transaction");
             Console.ReadLine();
             BroadCastTransaction();
         }
@@ -59,7 +59,7 @@ namespace SimpleBlockChain.Core
             var key = new Key();
             var blockChainAddress = new BlockChainAddress(Transactions.ScriptTypes.P2PKH, network, key);
             var adr = blockChainAddress.GetSerializedHash();
-            Console.WriteLine($"BOB is sending it's address to alice via QR code or another way : {adr}");
+            Console.WriteLine($"\t \t BOB is sending it's address to alice via QR code or another way : {adr}");
             return adr;
         }
         
@@ -69,8 +69,10 @@ namespace SimpleBlockChain.Core
             var receivedBlockChain = BlockChainAddress.Deserialize(_serializedHash);
             var publicKeyHash = receivedBlockChain.PublicKeyHash;
             var transactionBuilder = new TransactionBuilder();
-            Console.WriteLine("Please enter the number of BC to spend");
+            Console.WriteLine("\t \t Please enter the number of BC to spend");
             var value = EnterNumber();
+            var script = Script.CreateP2PKHScript(publicKeyHash);
+            transactionBuilder.AddOutput(49, script);
             _transaction = transactionBuilder.Build();
         }
 
@@ -86,11 +88,11 @@ namespace SimpleBlockChain.Core
             _server = new RpcServerApi(iid, 1234, -1, true);
             _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, PortsHelper.GetPort(network), 5);
             _server.StartListening();
-            Console.WriteLine("The NODE is listening");
+            Console.WriteLine("\t The NODE is listening");
             _server.OnExecute += delegate (IRpcClientInfo client, byte[] arg)
             {
                 var message = _messageParser.Parse(arg);
-                Console.WriteLine(string.Format("A message has been received {0}", message.GetCommandName()));
+                Console.WriteLine(string.Format("\t A message has been received {0}", message.GetCommandName()));
                 var peerConnectionLst = instance.GetPeerConnectionLst();
                 Message response = null;
                 if (message.GetCommandName() == Constants.MessageNames.Version)
@@ -102,7 +104,7 @@ namespace SimpleBlockChain.Core
                 {
                     var verackMessage = message as VerackMessage;
                     response = _messageLauncher.Launch(verackMessage, _ipAdrHelper.ParseRpcIpAddress(client));
-                    Console.WriteLine("Server : Connected to a peer");
+                    Console.WriteLine("\t Server : Connected to a peer");
                 }
                 else
                 {
@@ -120,10 +122,10 @@ namespace SimpleBlockChain.Core
 
         private static Networks ChooseNetwork()
         {
-            Console.WriteLine("Choose on which network you want to connect");
-            Console.WriteLine("1. MainNet");
-            Console.WriteLine("2. TestNet");
-            Console.WriteLine("3. RegTest");
+            Console.WriteLine("\t Choose on which network you want to connect");
+            Console.WriteLine("\t \t 1. MainNet");
+            Console.WriteLine("\t \t 2. TestNet");
+            Console.WriteLine("\t \t 3. RegTest");
             var number = EnterNumber();
             switch (number)
             {
@@ -138,9 +140,9 @@ namespace SimpleBlockChain.Core
 
         private static ServiceFlags ChooseNodeType()
         {
-            Console.WriteLine("Choose the type of node");
-            Console.WriteLine("1. Lightweight node");
-            Console.WriteLine("2. Full node"); // https://en.bitcoin.it/wiki/Full_node
+            Console.WriteLine("\t Choose the type of node");
+            Console.WriteLine("\t \t 1. Lightweight node");
+            Console.WriteLine("\t \t 2. Full node"); // https://en.bitcoin.it/wiki/Full_node
             var number = EnterNumber();
             switch (number)
             {

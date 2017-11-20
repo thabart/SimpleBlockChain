@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Messages.DataMessages;
+using SimpleBlockChain.Core.Messages.RpcMessages;
 using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -31,8 +32,7 @@ namespace SimpleBlockChain.Core.Connectors
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var inventories = new List<Inventory> { new Inventory(InventoryTypes.MSG_TX, transaction.GetTxId()) };
-            var inventoryMessage = new InventoryMessage(inventories, _network);
+            var inventoryMessage = new SendRawTransactionMessage(transaction, _network);
             foreach(var peerConnector in _peerConnectorLst)
             {
                 peerConnector.Execute(inventoryMessage.Serialize());

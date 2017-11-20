@@ -55,6 +55,12 @@ namespace SimpleBlockChain.Core.Transactions
             return mySHA256.ComputeHash(mySHA256.ComputeHash(payload.ToArray()));
         }
 
+        public bool Check()
+        {
+            // TODO : Check the transaction is correct.
+            return true;
+        }
+
         public static Transaction Deserialize(IEnumerable<byte> payload)
         {
             if (payload == null)

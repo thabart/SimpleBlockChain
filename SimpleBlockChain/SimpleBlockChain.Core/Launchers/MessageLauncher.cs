@@ -2,8 +2,10 @@
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
+using SimpleBlockChain.Core.Messages.RpcMessages;
 using SimpleBlockChain.Core.States;
 using SimpleBlockChain.Core.Storages;
+using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Linq;
 
@@ -64,7 +66,37 @@ namespace SimpleBlockChain.Core.Launchers
 
             }
 
+            if (message.GetCommandName() == Constants.MessageNames.SendRawTransactionMessage)
+            {
+                var msg = message as SendRawTransactionMessage;
+                AddTransaction(msg.Transaction);
+            }
+
             throw new InterpretMessageException(ErrorCodes.MessageNotSupported);
+        }
+
+        private static void AddTransaction(Transaction transaction)
+        {
+            if (transaction == null)
+            {
+                return;
+            }
+
+            var instance = MemoryPool.Instance();
+            var transactions = instance.GetTransactions();
+            if (transactions.Any(t => t.GetTxId().SequenceEqual(transaction.GetTxId())))
+            {
+                return;
+            }
+
+            // TODO : Check the BLOCK CHAIN CONTAINS THE TRANSACTION.
+
+            if (!transaction.Check())
+            {
+                return;
+            }
+
+            instance.AddTransaction(transaction);
         }
 
         public Message Launch(VerackMessage verackMessage, byte[] ipAdr)
