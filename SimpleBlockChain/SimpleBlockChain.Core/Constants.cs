@@ -24,6 +24,7 @@ namespace SimpleBlockChain.Core
             public const string Version = "version";
             public const string Verack = "verack";
             public const string GetAddr = "getaddr";
+            public const string Transaction = "tx";
         }
     }
 }

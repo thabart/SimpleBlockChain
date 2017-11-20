@@ -1,18 +1,20 @@
 ﻿using SimpleBlockChain.Core.Connectors;
+using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Storages;
+using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.Interop;
 using System;
-using System.Net;
 
 namespace SimpleBlockChain.Core
 {
     public class NodeLauncher : IDisposable
     {
+        private string _serializedHash;
         private static RpcServerApi _server;
         private IpAdrHelper _ipAdrHelper;
         private MessageParser _messageParser;
@@ -34,6 +36,39 @@ namespace SimpleBlockChain.Core
             ConfigurationStorage.Instance().SetMyIpAddress(new IpAddress(DateTime.UtcNow, serviceFlag, _ipAdrHelper.GetIpv4Address(), ushort.Parse(PortsHelper.GetPort(network))));
             StartNode(network);
             _p2pNetworkConnector.Listen(network);
+            DisplayMenu(network);
+        }
+
+        private void DisplayMenu(Networks network)
+        {
+            Console.WriteLine("Generate a new address");
+            Console.ReadLine();
+            _serializedHash = GenerateNewAddress(network);
+            Console.WriteLine("Create the first transaction & broadcast it");
+            Console.ReadLine();
+            CreateTransaction(network);
+        }
+
+        private string GenerateNewAddress(Networks network)
+        {
+            var key = new Key();
+            var blockChainAddress = new BlockChainAddress(Transactions.ScriptTypes.P2PKH, network, key);
+            var adr = blockChainAddress.GetSerializedHash();
+            Console.WriteLine($"BOB is sending it's address to alice via QR code or another way : {adr}");
+            return adr;
+        }
+        
+        private void CreateTransaction(Networks network)
+        {
+
+            var receivedBlockChain = BlockChainAddress.Deserialize(_serializedHash);
+            var publicKeyHash = receivedBlockChain.PublicKeyHash;
+            var transactionBuilder = new TransactionBuilder();
+            Console.WriteLine("Please enter the number of BC to spend");
+            var value = EnterNumber();
+            var transaction = transactionBuilder.Build();
+            var serializedTransaction = transaction.Serialize();
+            Console.WriteLine("ALICE is parsing the address & create the first transaction & broadcast it to the network");
         }
 
         private void StartNode(Networks network)
