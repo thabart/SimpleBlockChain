@@ -59,6 +59,11 @@ namespace SimpleBlockChain.Core.Launchers
                 return null;
             }
 
+            if (message.GetCommandName() == Constants.MessageNames.Inventory)
+            {
+
+            }
+
             throw new InterpretMessageException(ErrorCodes.MessageNotSupported);
         }
 

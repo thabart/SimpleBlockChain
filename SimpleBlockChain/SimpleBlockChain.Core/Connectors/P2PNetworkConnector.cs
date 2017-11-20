@@ -1,4 +1,6 @@
-﻿using SimpleBlockChain.Core.Storages;
+﻿using SimpleBlockChain.Core.Messages.DataMessages;
+using SimpleBlockChain.Core.Storages;
+using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 
@@ -22,6 +24,21 @@ namespace SimpleBlockChain.Core.Connectors
             DiscoverNodes();
         }
 
+        public void Broadcast(Transaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            var inventories = new List<Inventory> { new Inventory(InventoryTypes.MSG_TX, transaction.GetTxId()) };
+            var inventoryMessage = new InventoryMessage(inventories, _network);
+            foreach(var peerConnector in _peerConnectorLst)
+            {
+                peerConnector.Execute(inventoryMessage.Serialize());
+            }
+        }
+
         private void DiscoverNodes()
         {
             var seedNodes = GetSeedNodes();
@@ -41,7 +58,7 @@ namespace SimpleBlockChain.Core.Connectors
         {
             return new []
             {
-                "192.168.76.134"
+                "192.168.1.6"
             };
         }
 

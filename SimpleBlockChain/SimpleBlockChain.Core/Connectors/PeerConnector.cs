@@ -59,6 +59,11 @@ namespace SimpleBlockChain.Core.Connectors
             Parse(result);
         }
 
+        public void Execute(byte[] input)
+        {
+            _client.Execute(input);
+        }
+
         private void Parse(byte[] payload)
         {
             var message = _messageParser.Parse(payload);

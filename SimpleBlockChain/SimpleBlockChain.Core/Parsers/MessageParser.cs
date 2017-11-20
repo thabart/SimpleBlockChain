@@ -1,6 +1,7 @@
 ﻿using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
+using SimpleBlockChain.Core.Messages.DataMessages;
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -88,6 +89,10 @@ namespace SimpleBlockChain.Core.Parsers
             else if (commandName == Constants.MessageNames.GetAddr)
             {
                 message = new GetAddressMessage(network);
+            }
+            else if (commandName == Constants.MessageNames.Inventory)
+            {
+                message = InventoryMessage.Deserialize(contentPayload, network);
             }
 
             return message;

@@ -4,6 +4,7 @@ using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
+using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Transactions;
@@ -15,6 +16,7 @@ namespace SimpleBlockChain.Core
     public class NodeLauncher : IDisposable
     {
         private string _serializedHash;
+        private Transaction _transaction;
         private static RpcServerApi _server;
         private IpAdrHelper _ipAdrHelper;
         private MessageParser _messageParser;
@@ -44,9 +46,12 @@ namespace SimpleBlockChain.Core
             Console.WriteLine("Generate a new address");
             Console.ReadLine();
             _serializedHash = GenerateNewAddress(network);
-            Console.WriteLine("Create the first transaction & broadcast it");
+            Console.WriteLine("Create the first transaction");
             Console.ReadLine();
             CreateTransaction(network);
+            Console.WriteLine("Broadcast the transaction");
+            Console.ReadLine();
+            BroadCastTransaction();
         }
 
         private string GenerateNewAddress(Networks network)
@@ -66,9 +71,12 @@ namespace SimpleBlockChain.Core
             var transactionBuilder = new TransactionBuilder();
             Console.WriteLine("Please enter the number of BC to spend");
             var value = EnterNumber();
-            var transaction = transactionBuilder.Build();
-            var serializedTransaction = transaction.Serialize();
-            Console.WriteLine("ALICE is parsing the address & create the first transaction & broadcast it to the network");
+            _transaction = transactionBuilder.Build();
+        }
+
+        private void BroadCastTransaction()
+        {
+            _p2pNetworkConnector.Broadcast(_transaction);
         }
 
         private void StartNode(Networks network)
