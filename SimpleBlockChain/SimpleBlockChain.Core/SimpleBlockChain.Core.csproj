@@ -50,12 +50,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlockChainAddress.cs" />
+    <Compile Include="Connectors\P2PNetworkConnector.cs" />
+    <Compile Include="Connectors\PeerConnector.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Blocks\Block.cs" />
     <Compile Include="Blocks\BlockHeader.cs" />
     <Compile Include="Common\CompactSize.cs" />
+    <Compile Include="Factories\NonceFactory.cs" />
+    <Compile Include="Helpers\IpAdrHelper.cs" />
+    <Compile Include="Helpers\PortsHelper.cs" />
     <Compile Include="Messages\ControlMessages\VerackMessage.cs" />
     <Compile Include="Messages\ControlMessages\VersionMessage.cs" />
+    <Compile Include="NodeLauncher.cs" />
+    <Compile Include="States\PeerConnection.cs" />
+    <Compile Include="States\PeerConnectionStates.cs" />
+    <Compile Include="Storages\ConfigurationStorage.cs" />
     <Compile Include="Transactions\OpCodes.cs" />
     <Compile Include="Transactions\Outpoint.cs" />
     <Compile Include="Blocks\RawTransaction.cs" />
@@ -91,6 +100,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimpleBlockChain.Interop\SimpleBlockChain.Interop.csproj">
+      <Project>{caaa77bc-12f3-49d6-a13b-332c4d735822}</Project>
+      <Name>SimpleBlockChain.Interop</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

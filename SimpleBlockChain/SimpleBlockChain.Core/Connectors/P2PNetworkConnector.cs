@@ -1,38 +1,36 @@
-﻿using SimpleBlockChain.Core;
-using SimpleBlockChain.Core.Storages;
+﻿using SimpleBlockChain.Core.Storages;
 using System;
 using System.Collections.Generic;
 
-namespace SimpleBlockChain.Client
+namespace SimpleBlockChain.Core.Connectors
 {
     public class P2PNetworkConnector : IDisposable
     {
-        private readonly Networks _network;
+        private Networks _network;
         private PeersStorage _peersStorage;
         private IList<PeerConnector> _peerConnectorLst;
 
-        public P2PNetworkConnector(Networks network)
+        public P2PNetworkConnector()
         {
             _peersStorage = new PeersStorage();
             _peerConnectorLst = new List<PeerConnector>();
-            _network = network;
         }
         
-        public void Listen()
+        public void Listen(Networks network)
         {
+            _network = network;
             DiscoverNodes();
         }
 
         private void DiscoverNodes()
         {
             var seedNodes = GetSeedNodes();
-            var peerConnector = new PeerConnector(_network);
             foreach(var seedNode in seedNodes)
             {
-                peerConnector.Connect(seedNode);
+                var peerConnector = new PeerConnector(_network);
+                peerConnector.Connect(seedNode, ServiceFlags.NODE_NETWORK);
+                _peerConnectorLst.Add(peerConnector);
             }
-
-            _peerConnectorLst.Add(peerConnector);
         }
 
         /// <summary>
@@ -43,7 +41,7 @@ namespace SimpleBlockChain.Client
         {
             return new []
             {
-                "127.0.0.1"
+                "192.168.76.134"
             };
         }
 

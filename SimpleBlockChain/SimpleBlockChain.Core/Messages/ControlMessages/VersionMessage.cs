@@ -70,7 +70,7 @@ namespace SimpleBlockChain.Core.Messages.ControlMessages
             var transmittingIpV6Payload = TransmittingNode.Ipv6;
             var transmittingPortPayload = BitConverter.GetBytes(TransmittingNode.Port);
             var noncePayload = BitConverter.GetBytes(Nonce);
-            var userAgentPayload = System.Text.Encoding.UTF8.GetBytes(UserAgent);
+            var userAgentPayload = string.IsNullOrWhiteSpace(UserAgent) ? new byte[0] : System.Text.Encoding.UTF8.GetBytes(UserAgent);
             var compactSize = new CompactSize();
             compactSize.Size = (ulong)userAgentPayload.Count();
             var startHeightPayload = BitConverter.GetBytes(StartHeight);

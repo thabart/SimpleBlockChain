@@ -82,6 +82,10 @@ namespace SimpleBlockChain.Core.Parsers
             {
                 message = VersionMessage.Deserialize(contentPayload, network);
             }
+            else if (commandName == Constants.MessageNames.Verack)
+            {
+                message = new VerackMessage(network);
+            }
 
             return message;
         }

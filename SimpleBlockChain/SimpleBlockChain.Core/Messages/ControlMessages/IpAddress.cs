@@ -14,6 +14,13 @@ namespace SimpleBlockChain.Core.Messages.ControlMessages
         public byte[] Ipv6 { get; private set; }
         public UInt16 Port { get; private set; }
 
+        public IpAddress(ServiceFlags serviceFlag, byte[] ipv6, UInt16 port)
+        {
+            ServiceFlag = serviceFlag;
+            Ipv6 = ipv6;
+            Port = port;
+        }
+
         public IpAddress(DateTime time, ServiceFlags serviceFlag, byte[] ipv6, UInt16 port)
         {
             Time = time;

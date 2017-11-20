@@ -1,11 +1,17 @@
-﻿namespace SimpleBlockChain.Client
+﻿using SimpleBlockChain.Core;
+using System;
+
+namespace SimpleBlockChain.Client
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var p2pNetworkConnector = new P2PNetworkConnector(Core.Networks.TestNet);
-            p2pNetworkConnector.Listen();
+            Console.WriteLine("==== Welcome to SimpleBlockChain ====");
+            var launcher = new NodeLauncher();
+            launcher.Launch();
+            Console.ReadLine();
+            launcher.Dispose();
         }
     }
 }
