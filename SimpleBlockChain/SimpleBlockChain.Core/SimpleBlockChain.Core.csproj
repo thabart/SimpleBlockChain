@@ -54,6 +54,8 @@
     <Compile Include="Blocks\Block.cs" />
     <Compile Include="Blocks\BlockHeader.cs" />
     <Compile Include="Common\CompactSize.cs" />
+    <Compile Include="Messages\ControlMessages\VerackMessage.cs" />
+    <Compile Include="Messages\ControlMessages\VersionMessage.cs" />
     <Compile Include="Transactions\OpCodes.cs" />
     <Compile Include="Transactions\Outpoint.cs" />
     <Compile Include="Blocks\RawTransaction.cs" />

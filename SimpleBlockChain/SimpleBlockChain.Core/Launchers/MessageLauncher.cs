@@ -28,6 +28,12 @@ namespace SimpleBlockChain.Core.Launchers
                 return null;
             }
 
+            if (message.GetCommandName() == Constants.MessageNames.Version)
+            {
+                var msg = message as VersionMessage;
+                return new VerackMessage(msg.MessageHeader.Network);   
+            }
+
             throw new InterpretMessageException(ErrorCodes.MessageNotSupported);
         }
     }

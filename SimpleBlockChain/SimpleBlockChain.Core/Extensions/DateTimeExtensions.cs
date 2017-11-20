@@ -4,7 +4,7 @@ namespace SimpleBlockChain.Core.Extensions
 {
     public static class DateTimeExtensions
     {
-        public static UInt32 ToUnixTime(this DateTime dateTime)
+        public static Int64 ToUnixTime(this DateTime dateTime)
         {
             if (dateTime == null)
             {
@@ -12,12 +12,12 @@ namespace SimpleBlockChain.Core.Extensions
             }
 
             var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return Convert.ToUInt32((dateTime - epoch).TotalSeconds);
+            return Convert.ToInt64((dateTime - epoch).TotalSeconds);
         }
 
-        public static DateTime ToDateTime(this UInt32 number)
+        public static DateTime ToDateTime(this Int64 number)
         {
-            var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             dateTime = dateTime.AddMilliseconds(number).ToLocalTime();
             return dateTime;
         }

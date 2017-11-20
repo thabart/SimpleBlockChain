@@ -1,5 +1,6 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
@@ -20,26 +21,26 @@ namespace SimpleBlockChain.Server
         {
             { 1, SendPing },
             { 2, SendAddr },
-            { 3, Quit }
+            { 3, SendVersion },
+            { 4, Quit }
         };
         private static RpcServerApi _server;
         private static RpcClientApi _client;
 
         static void Main(string[] args)
         {
-            CreateTransaction();
-            /*
+            // CreateTransaction();
             LaunchServer();
             LaunchClient();
             DisplayMenu();
-            */
         }
 
         private static void DisplayMenu()
         {
             Console.WriteLine("1. Send ping ?");
             Console.WriteLine("2. Send addr ?");
-            Console.WriteLine("3. Exit ?");
+            Console.WriteLine("3. Send version ?");
+            Console.WriteLine("4. Exit ?");
             var act = EnterNumber();
             act();
             DisplayMenu();
@@ -119,6 +120,16 @@ namespace SimpleBlockChain.Server
             byte[] response = _client.Execute(payload);
         }
 
+        private static void SendVersion() // Send the version.
+        {
+            var ipv6 = GetIpv4();
+            var transmittingNode = new IpAddress(DateTime.UtcNow, ServiceFlags.NODE_NONE, ipv6, ushort.Parse(Core.Constants.Ports.MainNet));
+            var receivingNode = new IpAddress(DateTime.UtcNow, ServiceFlags.NODE_NETWORK, ipv6, ushort.Parse(Core.Constants.Ports.MainNet));
+            var nonce = GetNonce();
+            var versionMessage = new VersionMessage(transmittingNode, receivingNode, nonce, string.Empty, 0, false, Networks.MainNet);
+            byte[] response = _client.Execute(versionMessage.Serialize());
+        }
+
         private static byte[] GetIpV6() // Get local IPV6 address.
         {
             var hostName = Dns.GetHostName();
@@ -158,15 +169,21 @@ namespace SimpleBlockChain.Server
             return (ulong)BitConverter.ToInt64(buffer, 0);
         }
 
+        private static void CreateAddress()
+        {
+            var key = new Key(); // BOB generates a new key.
+            var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, Networks.MainNet, key); // BOB generate a new block chain address.
+        }
+
         private static string CreateTransaction()
         {
             // https://bitcoin.org/en/developer-guide#transactions
             // Scenario : Bob spends alice's transaction.
-            var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, Networks.MainNet); // BOB generates a bitcoin address.
-            blockChainAddress.New();
-            string adr = blockChainAddress.GetAddress();
+            var key = new Key();
+            var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, Networks.MainNet, key); // BOB generates a bitcoin address.
+            string adr = blockChainAddress.GetSerializedHash();
             Console.WriteLine($"BOB's address is {adr}");
-            var receivedBlockChainAddress = BlockChainAddress.Parse(adr); // ALICE parses the bitcoin address.
+            var receivedBlockChainAddress = BlockChainAddress.Deserialize(adr); // ALICE parses the bitcoin address.
             var publicKeyHash = receivedBlockChainAddress.PublicKeyHash;
             if (receivedBlockChainAddress.Type == ScriptTypes.P2PKH)
             {
@@ -189,10 +206,10 @@ namespace SimpleBlockChain.Server
                 {
                     case ScriptTypes.P2PKH:
                         var stack = firstTransactionOutput.Script.ScriptRecords.First(sr => sr.Type == ScriptRecordType.Stack);
-                        var publicKey = blockChainAddress.GetPublicKey();
+                        var publicKey = key.GetPublicKey();
                         var tmpSecondTransaction = transactionBuilder.Build();
                         var tmpSecondTransactionPayload = tmpSecondTransaction.Serialize();
-                        var signature = blockChainAddress.GetKey().Sign(tmpSecondTransactionPayload);
+                        var signature = key.Sign(tmpSecondTransactionPayload);
                         transactionInputBuilder.AddSignatureScript(signature, publicKey);
                         break;
                 }

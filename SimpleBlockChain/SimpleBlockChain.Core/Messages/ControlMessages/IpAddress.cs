@@ -46,7 +46,7 @@ namespace SimpleBlockChain.Core.Messages.ControlMessages
             }
 
             var unixTimePayload = payload.Take(4).ToArray();
-            var time = BitConverter.ToUInt32(unixTimePayload, 0).ToDateTime();
+            var time = BitConverter.ToInt64(unixTimePayload, 0).ToDateTime();
             var serviceFlags = (ServiceFlags)(BitConverter.ToUInt64(payload.Skip(4).Take(8).ToArray(), 0));
             var ipv6 = payload.Skip(12).Take(16).ToArray();
             var portPayload = payload.Skip(28).Take(2);

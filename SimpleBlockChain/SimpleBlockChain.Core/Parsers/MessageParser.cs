@@ -78,6 +78,10 @@ namespace SimpleBlockChain.Core.Parsers
             {
                 message = AddrMessage.Deserialize(contentPayload, network);
             }
+            else if (commandName == Constants.MessageNames.Version)
+            {
+                message = VersionMessage.Deserialize(contentPayload, network);
+            }
 
             return message;
         }

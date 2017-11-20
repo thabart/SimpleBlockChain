@@ -4,6 +4,8 @@ namespace SimpleBlockChain.Core
 {
     public static class Constants
     {
+        public const int SupportedProtocolVersion = 70015;
+
         public class Ports
         {
             public const string MainNet = "8333";
@@ -11,13 +13,15 @@ namespace SimpleBlockChain.Core
             public const string RegTest = "18444";
         }
 
-        public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr };
+        public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr, MessageNames.Version };
 
         public class MessageNames
         {
             public const string Ping = "ping";
             public const string Pong = "pong";
             public const string Addr = "addr";
+            public const string Version = "version";
+            public const string Verack = "verack";
         }
     }
 }

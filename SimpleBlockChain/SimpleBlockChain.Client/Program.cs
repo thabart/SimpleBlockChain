@@ -1,20 +1,11 @@
-﻿using SimpleBlockChain.Interop;
-using System;
-
-namespace SimpleBlockChain.Client
+﻿namespace SimpleBlockChain.Client
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var iid = Constants.InterfaceId;
-            using (RpcClientApi client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, "localhost", Core.Constants.Ports.MainNet))
-            {
-                // client.AuthenticateAs(RpcClientApi.Self);
-                byte[] response = client.Execute(new byte[0]);
-            }
-            Console.ReadLine();
-            string s = "";
+            var p2pNetworkConnector = new P2PNetworkConnector(Core.Networks.TestNet);
+            p2pNetworkConnector.Listen();
         }
     }
 }

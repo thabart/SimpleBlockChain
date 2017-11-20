@@ -29,7 +29,6 @@ namespace SimpleBlockChain.Core.Crypto
         }
 
         public BigInteger PrivateKey { get; private set; }
-        public byte[] PublicKey { get; private set; }
 
         /// <summary>
         /// Get public key.
@@ -51,7 +50,7 @@ namespace SimpleBlockChain.Core.Crypto
         {
             var mySHA256 = SHA256Managed.Create(); // Explanations : https://bitcoin.org/en/developer-reference#address-conversion
             var myRIPEMD160 = RIPEMD160Managed.Create();
-            var hashed = mySHA256.ComputeHash(PublicKey);
+            var hashed = mySHA256.ComputeHash(GetPublicKey().ToArray());
             hashed = myRIPEMD160.ComputeHash(hashed);
             return hashed;
         }

@@ -11,12 +11,13 @@ namespace SimpleBlockChain.Core
 {
     public class BlockChainAddress
     {
-        private Key _key;
+        private readonly Key _key;
 
-        public BlockChainAddress(ScriptTypes type, Networks network)
+        public BlockChainAddress(ScriptTypes type, Networks network, Key key)
         {
             Type = type;
             Network = network;
+            _key = key;
         }
 
         public BlockChainAddress(ScriptTypes type, Networks network, IEnumerable<byte> publicKeyHash)
@@ -26,25 +27,24 @@ namespace SimpleBlockChain.Core
             PublicKeyHash = publicKeyHash;
         }
 
-        public void New()
+        public BlockChainAddress(ScriptTypes type, Networks network, IEnumerable<byte> publicKeyHash, Key key)
         {
-            _key = new Key();
+            Type = type;
+            Network = network;
+            PublicKeyHash = publicKeyHash;
+            _key = key;
         }
 
         public IEnumerable<byte> PublicKeyHash { get; private set; }
         public ScriptTypes Type { get; private set; }
         public Networks Network { get; private set; }
-        public IEnumerable<byte> GetPublicKey()
-        {
-            return _key.PublicKey;
-        }
 
-        public Key GetKey()
-        {
-            return _key;
-        }
-
-        public static BlockChainAddress Parse(string hash)
+        /// <summary>
+        /// Deserialize the block chain address.
+        /// </summary>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        public static BlockChainAddress Deserialize(string hash)
         {
             if (hash == null)
             {
@@ -89,7 +89,21 @@ namespace SimpleBlockChain.Core
             return new BlockChainAddress(type, network, content.Skip(1));
         }
 
-        public string GetAddress()
+        /// <summary>
+        /// Get sha256(serialized) block chain address.
+        /// </summary>
+        /// <returns></returns>
+        public string GetSerializedHash()
+        {
+            var payload = Serialize();
+            return Base58Encoding.Encode(payload.ToArray());
+        }
+
+        /// <summary>
+        /// Get serialized block chain address.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<byte> Serialize()
         {
             byte version = 0x00; // Address conversion : https://bitcoin.org/en/developer-reference#address-conversion
             if (Network == Networks.MainNet && Type == ScriptTypes.P2PKH)
@@ -108,6 +122,7 @@ namespace SimpleBlockChain.Core
             {
                 version = 0xc4;
             }
+
             var publicKeyHashed = _key.GetPublicKeyHashed();
             var content = new List<byte>();
             content.Add(version);
@@ -119,7 +134,7 @@ namespace SimpleBlockChain.Core
             result.Add(version);
             result.AddRange(publicKeyHashed);
             result.AddRange(checkSum);
-            return Base58Encoding.Encode(result.ToArray());
+            return result;
         }
     }
 }
