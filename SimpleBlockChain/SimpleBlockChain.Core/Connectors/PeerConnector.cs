@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Factories;
+﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
@@ -19,6 +20,7 @@ namespace SimpleBlockChain.Core.Connectors
         private RpcClientApi _client;
         private MessageParser _messageParser;
         private MessageLauncher _messageLauncher;
+        private PeerConnection _peerConnection;
 
         public PeerConnector(Networks network)
         {
@@ -52,7 +54,8 @@ namespace SimpleBlockChain.Core.Connectors
             var nonce = NonceFactory.GetNonce();
             var versionMessage = new VersionMessage(transmittingNode, receivingNode, nonce, string.Empty, 0, false, _network);
             var result = _client.Execute(versionMessage.Serialize());
-            instance.AddPeerConnection(new PeerConnection(adrBytes));
+            _peerConnection = new PeerConnection(adrBytes);
+            instance.AddPeerConnection(_peerConnection);
             Parse(result);
         }
 
@@ -68,8 +71,14 @@ namespace SimpleBlockChain.Core.Connectors
             }
             else if (message.GetCommandName() == Constants.MessageNames.Verack)
             {
-                _messageLauncher.Launch(message as VerackMessage);
-                return;
+                Console.WriteLine("Client : Connected to a peer");
+                _peerConnection.Connect();
+                var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, _network);
+                var myIpAddress = instance.GetMyIpAddress();
+                var ipAddress = new IpAddress(DateTime.UtcNow, myIpAddress.ServiceFlag, myIpAddress.Ipv6, myIpAddress.Port);
+                addrMessage.IpAddresses.Add(ipAddress);
+                _client.Execute(addrMessage.Serialize());
+                response = new GetAddressMessage(_network);
             }
             else
             {
@@ -78,7 +87,7 @@ namespace SimpleBlockChain.Core.Connectors
 
             if (response != null)
             {
-                _client.Execute(response.Serialize());
+                Parse(_client.Execute(response.Serialize()));
             }
         }
 

@@ -1,5 +1,5 @@
-﻿using SimpleBlockChain.Core.Exceptions;
-using SimpleBlockChain.Core.Helpers;
+﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.States;
@@ -11,8 +11,11 @@ namespace SimpleBlockChain.Core.Launchers
 {
     public class MessageLauncher
     {
+        private PeersStorage _peersStorage;
+
         public MessageLauncher()
         {
+            _peersStorage = new PeersStorage();
         }
 
         public Message Launch(Message message)
@@ -29,17 +32,37 @@ namespace SimpleBlockChain.Core.Launchers
                 return pong;
             }
 
+            if (message.GetCommandName() == Constants.MessageNames.GetAddr)
+            {
+                var msg = message as GetAddressMessage;
+                var ipAdrLst = _peersStorage.GetAll();
+                var response = new AddrMessage(new CompactSize { Size = (ulong)ipAdrLst.Count() }, msg.MessageHeader.Network);
+                foreach(var ipAdr in ipAdrLst)
+                {
+                    response.IpAddresses.Add(ipAdr);
+                }
+
+                return response;
+            }
+
             if (message.GetCommandName() == Constants.MessageNames.Addr)
             {
                 var msg = message as AddrMessage;
-                Console.WriteLine("register the address ");
+                if (msg.IpAddresses != null)
+                {
+                    foreach(var ipAddress in msg.IpAddresses)
+                    {
+                        _peersStorage.AddPeer(ipAddress).Wait();
+                    }
+                }
+
                 return null;
             }
 
             throw new InterpretMessageException(ErrorCodes.MessageNotSupported);
         }
 
-        public void Launch(VerackMessage verackMessage, byte[] ipAdr)
+        public Message Launch(VerackMessage verackMessage, byte[] ipAdr)
         {
             if (verackMessage == null)
             {
@@ -54,13 +77,13 @@ namespace SimpleBlockChain.Core.Launchers
             var instance = ConfigurationStorage.Instance();
             var peerConnectionLst = instance.GetPeerConnectionLst();
             var pc = peerConnectionLst.FirstOrDefault(ar => ar.IpAddress.SequenceEqual(ipAdr));
-            if (pc == null || pc.State != PeerConnectionStates.Accepted)
+            if (pc == null)
             {
-                return;
+                return null;
             }
 
-            Console.WriteLine("Connected to a peer");
             pc.Connect();
+            return new VerackMessage(verackMessage.MessageHeader.Network);
         }
 
         public Message Launch(VersionMessage messageVersion)

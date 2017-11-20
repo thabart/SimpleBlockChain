@@ -56,9 +56,11 @@
     <Compile Include="Blocks\Block.cs" />
     <Compile Include="Blocks\BlockHeader.cs" />
     <Compile Include="Common\CompactSize.cs" />
+    <Compile Include="Converters\ByteArrayConverter.cs" />
     <Compile Include="Factories\NonceFactory.cs" />
     <Compile Include="Helpers\IpAdrHelper.cs" />
     <Compile Include="Helpers\PortsHelper.cs" />
+    <Compile Include="Messages\ControlMessages\GetAddressMessage.cs" />
     <Compile Include="Messages\ControlMessages\VerackMessage.cs" />
     <Compile Include="Messages\ControlMessages\VersionMessage.cs" />
     <Compile Include="NodeLauncher.cs" />

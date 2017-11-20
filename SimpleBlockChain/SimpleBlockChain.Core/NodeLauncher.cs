@@ -58,8 +58,8 @@ namespace SimpleBlockChain.Core
                 else if (message.GetCommandName() == Constants.MessageNames.Verack)
                 {
                     var verackMessage = message as VerackMessage;
-                    _messageLauncher.Launch(verackMessage, _ipAdrHelper.ParseRpcIpAddress(client));
-                    return new byte[0];
+                    response = _messageLauncher.Launch(verackMessage, _ipAdrHelper.ParseRpcIpAddress(client));
+                    Console.WriteLine("Server : Connected to a peer");
                 }
                 else
                 {

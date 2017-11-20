@@ -4,7 +4,6 @@ using SimpleBlockChain.Core.Messages.ControlMessages;
 using System;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace SimpleBlockChain.Core.Parsers
 {
@@ -85,6 +84,10 @@ namespace SimpleBlockChain.Core.Parsers
             else if (commandName == Constants.MessageNames.Verack)
             {
                 message = new VerackMessage(network);
+            }
+            else if (commandName == Constants.MessageNames.GetAddr)
+            {
+                message = new GetAddressMessage(network);
             }
 
             return message;

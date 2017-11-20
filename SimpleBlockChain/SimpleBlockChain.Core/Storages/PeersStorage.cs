@@ -20,6 +20,12 @@ namespace SimpleBlockChain.Core.Storages
             }
 
             CheckFileExists();
+            var ipAddressLst = GetAll();
+            if (ipAddressLst.Any(ipa => ipa.Ipv6.SequenceEqual(ipAddress.Ipv6)))
+            {
+                return false;
+            }
+
             using (var file = new StreamWriter(_fileName))
             {
                 var json = JsonConvert.SerializeObject(ipAddress);
@@ -31,7 +37,7 @@ namespace SimpleBlockChain.Core.Storages
         public IEnumerable<IpAddress> GetAll()
         {
             var lines = File.ReadAllLines(_fileName);
-            return lines.Select(l => JsonConvert.DeserializeObject<IpAddress>(l));
+            return lines.Select(l => IpAddress.Deserialize(l));
         }
 
         private static void CheckFileExists()

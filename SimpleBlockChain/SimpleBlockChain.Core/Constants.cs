@@ -13,7 +13,8 @@ namespace SimpleBlockChain.Core
             public const string RegTest = "18444";
         }
 
-        public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr, MessageNames.Version, MessageNames.Verack };
+        public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr,
+            MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr };
 
         public class MessageNames
         {
@@ -22,6 +23,7 @@ namespace SimpleBlockChain.Core
             public const string Addr = "addr";
             public const string Version = "version";
             public const string Verack = "verack";
+            public const string GetAddr = "getaddr";
         }
     }
 }
