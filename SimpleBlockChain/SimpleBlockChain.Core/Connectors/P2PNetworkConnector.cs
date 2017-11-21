@@ -1,21 +1,17 @@
 ﻿using SimpleBlockChain.Core.Messages.DataMessages;
-using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SimpleBlockChain.Core.Connectors
 {
     public class P2PNetworkConnector : IDisposable
     {
         private Networks _network;
-        private PeersStorage _peersStorage;
         private IList<PeerConnector> _peerConnectorLst;
 
         public P2PNetworkConnector()
         {
-            _peersStorage = new PeersStorage();
             _peerConnectorLst = new List<PeerConnector>();
         }
         

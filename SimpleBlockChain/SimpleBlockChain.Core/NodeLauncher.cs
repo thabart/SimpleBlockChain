@@ -7,6 +7,7 @@ using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Storages;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.Interop;
 using System;
@@ -35,7 +36,7 @@ namespace SimpleBlockChain.Core
         {
             var network = ChooseNetwork();
             var serviceFlag = ChooseNodeType();
-            ConfigurationStorage.Instance().SetMyIpAddress(new IpAddress(DateTime.UtcNow, serviceFlag, _ipAdrHelper.GetIpv4Address(), ushort.Parse(PortsHelper.GetPort(network))));
+            PeersStore.Instance().SetMyIpAddress(new IpAddress(DateTime.UtcNow, serviceFlag, _ipAdrHelper.GetIpv4Address(), ushort.Parse(PortsHelper.GetPort(network))));
             StartNode(network);
             _p2pNetworkConnector.Listen(network);
             DisplayMenu(network);
@@ -84,7 +85,7 @@ namespace SimpleBlockChain.Core
         private void StartNode(Networks network)
         {
             var iid = Interop.Constants.InterfaceId;
-            var instance = ConfigurationStorage.Instance();
+            var instance = PeersStore.Instance();
             _server = new RpcServerApi(iid, 1234, -1, true);
             _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, PortsHelper.GetPort(network), 5);
             _server.StartListening();

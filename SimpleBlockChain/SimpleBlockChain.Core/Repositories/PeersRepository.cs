@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SimpleBlockChain.Core.Storages
 {
-    public class PeersStorage
+    public class PeersRepository
     {
         private const string _fileName = "peers.dat";
 

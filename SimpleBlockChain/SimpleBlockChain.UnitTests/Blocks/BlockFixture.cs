@@ -12,21 +12,25 @@ namespace SimpleBlockChain.UnitTests.Blocks
     [TestFixture]
     public class BlockFixture
     {
+        private static uint NBits = 0x1e0ffff0;
+
         [Test]
         public void WhenSerializeBlockWithOneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
             var builder = new TransactionBuilder();
-            var nonce = BitConverter.GetBytes(NonceHelper.GetNonce());
+            var nonce = BitConverter.GetBytes(NonceHelper.GetNonceUInt64());
             var transaction = builder.NewCoinbaseTransaction()
                 .SetInput(4, nonce)
                 .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
                 .Build();
 
-            var block = new Block();
+            var block = new Block(null, NBits, NonceHelper.GetNonceUInt32());
             block.Transactions.Add(transaction);
+            var serializedBlock = block.Serialize();
 
-            block.Serialize();
+            var des = Block.Deserialize(serializedBlock);
+            string s = "";
         }
 
         [Test]
@@ -34,7 +38,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
         {
             var ba = BuildBlockChainAddress();
             var builder = new TransactionBuilder();
-            var nonce = BitConverter.GetBytes(NonceHelper.GetNonce());
+            var nonce = BitConverter.GetBytes(NonceHelper.GetNonceUInt64());
             var transaction = builder.NewCoinbaseTransaction()
                 .SetInput(4, nonce)
                 .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
@@ -46,7 +50,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
                 .AddOutput(11, Script.CreateP2PKHScript(ba.PublicKeyHash))
                 .Build();
 
-            var block = new Block();
+            var block = new Block(null, NBits, NonceHelper.GetNonceUInt32());
             block.Transactions.Add(thirdTransaction);
             block.Transactions.Add(secondTransaction);
             block.Transactions.Add(transaction);

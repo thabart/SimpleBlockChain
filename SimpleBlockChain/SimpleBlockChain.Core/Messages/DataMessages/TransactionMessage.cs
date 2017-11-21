@@ -26,7 +26,7 @@ namespace SimpleBlockChain.Core.Messages.DataMessages
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            return new TransactionMessage(BaseTransaction.Deserialize(payload, transactionType), network);
+            return new TransactionMessage(BaseTransaction.Deserialize(payload, transactionType).Key, network);
         }
 
         protected override byte[] GetSerializedContent()

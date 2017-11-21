@@ -5,6 +5,7 @@ using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.States;
 using SimpleBlockChain.Core.Storages;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Linq;
@@ -13,11 +14,11 @@ namespace SimpleBlockChain.Core.Launchers
 {
     public class MessageLauncher
     {
-        private PeersStorage _peersStorage;
+        private PeersRepository _peersStorage;
 
         public MessageLauncher()
         {
-            _peersStorage = new PeersStorage();
+            _peersStorage = new PeersRepository();
         }
 
         public Message Launch(Message message)
@@ -111,7 +112,7 @@ namespace SimpleBlockChain.Core.Launchers
                 throw new ArgumentNullException(nameof(ipAdr));
             }
 
-            var instance = ConfigurationStorage.Instance();
+            var instance = PeersStore.Instance();
             var peerConnectionLst = instance.GetPeerConnectionLst();
             var pc = peerConnectionLst.FirstOrDefault(ar => ar.IpAddress.SequenceEqual(ipAdr));
             if (pc == null)
@@ -130,7 +131,7 @@ namespace SimpleBlockChain.Core.Launchers
                 throw new ArgumentNullException(nameof(messageVersion));
             }
             
-            var instance = ConfigurationStorage.Instance();
+            var instance = PeersStore.Instance();
             var peerConnectionLst = instance.GetPeerConnectionLst();
             var pc = peerConnectionLst.FirstOrDefault(ar => ar.IpAddress.SequenceEqual(messageVersion.TransmittingNode.Ipv6));
             if (pc == null)

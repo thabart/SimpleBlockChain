@@ -21,5 +21,12 @@ namespace SimpleBlockChain.Core.Extensions
             dateTime = dateTime.AddMilliseconds(number).ToLocalTime();
             return dateTime;
         }
+
+        public static DateTime ToDateTime(this uint number)
+        {
+            var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTime = dateTime.AddMilliseconds(number).ToLocalTime();
+            return dateTime;
+        }
     }
 }

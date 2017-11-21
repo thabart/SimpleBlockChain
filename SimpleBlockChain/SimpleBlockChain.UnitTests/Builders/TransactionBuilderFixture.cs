@@ -28,7 +28,7 @@ namespace SimpleBlockChain.UnitTests.Builders
         {
             var ba = BuildBlockChainAddress();
             var builder = new TransactionBuilder();
-            var nonce = BitConverter.GetBytes(NonceHelper.GetNonce());
+            var nonce = BitConverter.GetBytes(NonceHelper.GetNonceUInt64());
             var transaction = builder.NewCoinbaseTransaction()
                 .SetInput(4, nonce)
                 .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))

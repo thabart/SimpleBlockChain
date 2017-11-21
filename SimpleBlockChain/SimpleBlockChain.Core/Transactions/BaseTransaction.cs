@@ -28,7 +28,7 @@ namespace SimpleBlockChain.Core.Transactions
             TransactionOut = new List<TransactionOut>();
         }
 
-        public static BaseTransaction Deserialize(IEnumerable<byte> payload, TransactionTypes type)
+        public static KeyValuePair<BaseTransaction, int> Deserialize(IEnumerable<byte> payload, TransactionTypes type)
         {
             BaseTransaction result = null;
             switch(type)
@@ -49,7 +49,9 @@ namespace SimpleBlockChain.Core.Transactions
             currentStartIndex += transactionInCompactSize.Value;
             if (transactionInCompactSize.Key.Size > 0)
             {
-                // result.TransactionIn = result.DeserializeInputs(payload.Skip(currentStartIndex).Take(transactionInCompactSize.Key.Size), transactionInCompactSize.Key.Size);
+                var kvp = result.DeserializeInputs(payload.Skip(currentStartIndex), (int)transactionInCompactSize.Key.Size);
+                result.TransactionIn = kvp.Key;
+                currentStartIndex += kvp.Value;
             }
 
             var transactionOutputCompactSize = CompactSize.Deserialize(payload.Skip(currentStartIndex).ToArray());
@@ -64,8 +66,9 @@ namespace SimpleBlockChain.Core.Transactions
                 }
             }
 
-            result.LockTime = BitConverter.ToUInt32(payload.Skip(payload.Count() - 4).Take(4).ToArray(), 0);
-            return result;
+            result.LockTime = BitConverter.ToUInt32(payload.Skip(currentStartIndex).Take(4).ToArray(), 0);
+            currentStartIndex += 4;
+            return new KeyValuePair<BaseTransaction, int>(result, currentStartIndex);
         }
 
         public IEnumerable<byte> GetTxId()

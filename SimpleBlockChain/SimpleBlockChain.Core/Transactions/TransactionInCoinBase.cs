@@ -49,7 +49,7 @@ namespace SimpleBlockChain.Core.Transactions
             startIndex += 4;
             var coinBaseScript = payload.Skip(startIndex).Take((int)compactSize.Key.Size).ToArray();
             startIndex += (int)compactSize.Key.Size;
-            var sequence = BitConverter.ToUInt32(payload.Skip(startIndex).Take(4).ToArray(), 4);
+            var sequence = BitConverter.ToUInt32(payload.Skip(startIndex).Take(4).ToArray(), 0);
             startIndex += 4;
             return new KeyValuePair<TransactionInCoinbase, int>(new TransactionInCoinbase(height, coinBaseScript, sequence), startIndex);
         }

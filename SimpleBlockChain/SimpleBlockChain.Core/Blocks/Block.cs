@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
@@ -11,19 +12,98 @@ namespace SimpleBlockChain.Core.Blocks
     {
         private static int CURRENT_VERSION = 4;
 
-        public Block()
+        private IEnumerable<byte> _previousHashHeader;
+        private uint _nbits;
+        private uint _nonce;
+        private DateTime _blockHeaderHashingStartTime { get; set; }
+
+        public Block(IEnumerable<byte> previousHashHeader, UInt32 nBits, UInt32 nonce)
         {
+            if (previousHashHeader == null)
+            {
+                previousHashHeader = Enumerable.Repeat((byte)0x00, 32);
+            }
+
             Transactions = new List<BaseTransaction>();
+            _previousHashHeader = previousHashHeader;
+            _nbits = nBits;
+            _nonce = nonce;
         }
 
-        public Block PreviousBlock { get; set; }
+        public void SetBlockHeaderHashingStartTime(DateTime dateTime)
+        {
+            _blockHeaderHashingStartTime = dateTime;
+        }
 
-        public static Block GetGenesisBlock()
+        public BlockHeader BlockHeader { get; private set; }
+
+        // Read the target nbits : https://bitcoin.org/en/developer-reference#target-nbits
+
+        public static Block BuildGenesisBlock()
         {
             return null;
         }
 
         public IList<BaseTransaction> Transactions { get; set; }
+
+        public static Block Deserialize(IEnumerable<byte> payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            var header = DeserializeBlockHeader(payload);
+            int currentIndex = 80;
+            var transactionLst = new List<BaseTransaction>();
+            var kvp = CompactSize.Deserialize(payload.Skip(80).ToArray());
+            currentIndex += kvp.Value;
+            if (kvp.Key.Size > 0)
+            {
+                for(var i = 0; i < (int)kvp.Key.Size; i++)
+                {
+                    var type = i == 0 ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase;
+                    var skvp = BaseTransaction.Deserialize(payload.Skip(currentIndex), type);
+                    transactionLst.Add(skvp.Key);
+                    currentIndex += skvp.Value;
+                }
+            }
+
+            var result = new Block(header.PreviousBlockHeader, header.NBits, header.Nonce);
+            result.BlockHeader = header;
+            result.Transactions = transactionLst;
+            return result;
+        }
+
+        private static BlockHeader DeserializeBlockHeader(IEnumerable<byte> payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            if (payload.Count() < BlockHeader.SIZE)
+            {
+                // TODO : EXCEPTION
+                return null;
+            }
+
+            var version = BitConverter.ToUInt32(payload.Take(4).ToArray(), 0);
+            var previousBlockHashHeader = payload.Skip(4).Take(32);
+            var merkleRootHash = payload.Skip(36).Take(32);
+            var time = BitConverter.ToUInt32(payload.Skip(68).Take(4).ToArray(), 0).ToDateTime();
+            var nBits = BitConverter.ToUInt32(payload.Skip(72).Take(4).ToArray(), 0);
+            var nonce = BitConverter.ToUInt32(payload.Skip(76).Take(4).ToArray(), 0);
+            return new BlockHeader
+            {
+                MerkleRoot = merkleRootHash,
+                NBits = nBits,
+                Nonce = nonce,
+                PreviousBlockHeader = previousBlockHashHeader,
+                Time = time,
+                Version = version
+            };
+        }
 
         public byte[] Serialize()
         {
@@ -41,15 +121,21 @@ namespace SimpleBlockChain.Core.Blocks
             result.AddRange(SerializeHeader());
             result.AddRange(compactSize.Serialize());
             result.AddRange(rawTransactions);
-            var merkleTree = GetMerkleRoot();
             return result.ToArray();
         }
 
         public byte[] SerializeHeader()
         {
+            // https://bitcoin.org/en/developer-reference#block-headers
             var result = new List<byte>();
+            var merkleTree = GetMerkleRoot();
+            var time = BitConverter.GetBytes((UInt32)_blockHeaderHashingStartTime.ToUnixTime());
             result.AddRange(BitConverter.GetBytes(CURRENT_VERSION));
-
+            result.AddRange(_previousHashHeader);
+            result.AddRange(merkleTree);
+            result.AddRange(time);
+            result.AddRange(BitConverter.GetBytes(_nbits));
+            result.AddRange(BitConverter.GetBytes(_nonce));
             return result.ToArray();
         }
 

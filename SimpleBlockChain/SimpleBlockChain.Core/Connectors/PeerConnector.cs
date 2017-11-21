@@ -5,10 +5,9 @@ using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.States;
-using SimpleBlockChain.Core.Storages;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Interop;
 using System;
-using System.Linq;
 using System.Net;
 
 namespace SimpleBlockChain.Core.Connectors
@@ -40,7 +39,7 @@ namespace SimpleBlockChain.Core.Connectors
             var port = PortsHelper.GetPort(_network);
             _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, host, port);
             // Connection to peers : https://bitcoin.org/en/developer-guide#connecting-to-peers
-            var instance = ConfigurationStorage.Instance();
+            var instance = PeersStore.Instance();
             var transmittingNode = instance.GetMyIpAddress();
             IPAddress ipAdr = null;
             if (!IPAddress.TryParse(host, out ipAdr))
@@ -50,7 +49,7 @@ namespace SimpleBlockChain.Core.Connectors
 
             var adrBytes = ipAdr.MapToIPv6().GetAddressBytes();
             var receivingNode = new IpAddress(serviceFlag, adrBytes, ushort.Parse(port));
-            var nonce = NonceHelper.GetNonce();
+            var nonce = NonceHelper.GetNonceUInt64();
             var versionMessage = new VersionMessage(transmittingNode, receivingNode, nonce, string.Empty, 0, false, _network);
             var result = _client.Execute(versionMessage.Serialize());
             _peerConnection = new PeerConnection(adrBytes);
@@ -66,7 +65,7 @@ namespace SimpleBlockChain.Core.Connectors
         private void Parse(byte[] payload)
         {
             var message = _messageParser.Parse(payload);
-            var instance = ConfigurationStorage.Instance();
+            var instance = PeersStore.Instance();
             Message response = null;
             if (message.GetCommandName() == Constants.MessageNames.Version)
             {

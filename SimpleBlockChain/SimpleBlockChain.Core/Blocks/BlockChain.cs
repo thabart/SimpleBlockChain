@@ -8,7 +8,7 @@ namespace SimpleBlockChain.Core.Blocks
         {
             Blocks = new List<Block>
             {
-                Block.GetGenesisBlock()
+                Block.BuildGenesisBlock()
             };
         }
 

@@ -72,9 +72,10 @@
     <Compile Include="Messages\DataMessages\InventoryTypes.cs" />
     <Compile Include="Messages\DataMessages\TransactionMessage.cs" />
     <Compile Include="NodeLauncher.cs" />
+    <Compile Include="Repositories\ConfigurationRepository.cs" />
     <Compile Include="States\PeerConnection.cs" />
     <Compile Include="States\PeerConnectionStates.cs" />
-    <Compile Include="Storages\ConfigurationStorage.cs" />
+    <Compile Include="Stores\PeersStore.cs" />
     <Compile Include="Transactions\BaseTransaction.cs" />
     <Compile Include="Transactions\BaseTransactionIn.cs" />
     <Compile Include="Transactions\CoinbaseTransaction.cs" />
@@ -105,7 +106,7 @@
     <Compile Include="Parsers\MessageParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceFlags.cs" />
-    <Compile Include="Storages\PeersStorage.cs" />
+    <Compile Include="Repositories\PeersRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Messages\RpcMessages\" />

@@ -4,24 +4,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SimpleBlockChain.Core.Storages
+namespace SimpleBlockChain.Core.Stores
 {
-    public class ConfigurationStorage
+    public class PeersStore
     {
-        private static ConfigurationStorage _instance;
+        private static PeersStore _instance;
         private IpAddress _myIpAddress;
         private IList<PeerConnection> _peerConnectionLst;
 
-        public ConfigurationStorage()
+        public PeersStore()
         {
             _peerConnectionLst = new List<PeerConnection>();
         }
 
-        public static ConfigurationStorage Instance()
+        public static PeersStore Instance()
         {
             if (_instance == null)
             {
-                _instance = new ConfigurationStorage();
+                _instance = new PeersStore();
             }
 
             return _instance;
