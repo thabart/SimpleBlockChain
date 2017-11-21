@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace SimpleBlockChain.Core.Factories
+namespace SimpleBlockChain.Core.Helpers
 {
-    public static class NonceFactory
+    public static class NonceHelper
     {
         public static ulong GetNonce()
         {

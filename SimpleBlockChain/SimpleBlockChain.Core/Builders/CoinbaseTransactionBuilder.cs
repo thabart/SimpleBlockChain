@@ -4,9 +4,11 @@ namespace SimpleBlockChain.Core.Builders
 {
     public class CoinbaseTransactionBuilder : TransactionBuilder
     {
-        public CoinbaseTransactionBuilder SetInput(uint height, byte[] none, uint sequence = 0xffffffff)
+        public CoinbaseTransactionBuilder() : base(new CoinbaseTransaction()) { }
+
+        public CoinbaseTransactionBuilder SetInput(uint height, byte[] nonce, uint sequence = 0xffffffff)
         {
-            var transactionInCoinbase = new TransactionInCoinbase(height, none, sequence);
+            var transactionInCoinbase = new TransactionInCoinbase(height, nonce, sequence);
             Transaction.TransactionIn.Add(transactionInCoinbase);
             return this;
         }

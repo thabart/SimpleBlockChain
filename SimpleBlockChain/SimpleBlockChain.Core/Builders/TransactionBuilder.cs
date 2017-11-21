@@ -7,14 +7,23 @@ namespace SimpleBlockChain.Core.Builders
     {
         protected BaseTransaction Transaction;
 
-        public TransactionBuilder NewNoneCoinbaseTransaction()
+        public TransactionBuilder()
         {
-            return this;
         }
 
-        public TransactionBuilder NewCoinbaseTransaction()
+        public TransactionBuilder(BaseTransaction transaction)
         {
-            return this;
+            Transaction = transaction;
+        }
+
+        public NoneCoinbaseTransactionBuilder NewNoneCoinbaseTransaction()
+        {
+            return new NoneCoinbaseTransactionBuilder();
+        }
+
+        public CoinbaseTransactionBuilder NewCoinbaseTransaction()
+        {
+            return new CoinbaseTransactionBuilder();
         }
         
         public TransactionBuilder AddOutput(long value, Script script)

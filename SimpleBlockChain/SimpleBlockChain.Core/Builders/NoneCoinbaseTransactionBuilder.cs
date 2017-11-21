@@ -7,6 +7,8 @@ namespace SimpleBlockChain.Core.Builders
 {
     public class NoneCoinbaseTransactionBuilder : TransactionBuilder
     {
+        public NoneCoinbaseTransactionBuilder() : base(new NoneCoinbaseTransaction()) { }
+
         public NoneCoinbaseTransactionBuilder Spend(BaseTransaction transaction, UInt32 index, IEnumerable<byte> signatureScript, uint sequence = 0xffffffff)
         {
             if (transaction == null)

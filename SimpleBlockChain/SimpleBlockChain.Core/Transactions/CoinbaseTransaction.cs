@@ -34,5 +34,10 @@ namespace SimpleBlockChain.Core.Transactions
 
             TransactionIn = new List<BaseTransactionIn> { transactionIn };
         }
+
+        public override int CompareTo(BaseTransaction obj)
+        {
+            return -1;
+        }
     }
 }

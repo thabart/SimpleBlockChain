@@ -1,30 +1,19 @@
 ﻿using NUnit.Framework;
 using SimpleBlockChain.Core;
+using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Transactions;
 using System;
 
-namespace SimpleBlockChain.UnitTests.Builders
+namespace SimpleBlockChain.UnitTests.Blocks
 {
     [TestFixture]
-    public class TransactionBuilderFixture
+    public class BlockFixture
     {
         [Test]
-        public void WhenBuildNoneCoinbaseTransaction()
-        {
-            var ba = BuildBlockChainAddress();
-            var builder = new TransactionBuilder();
-           var transaction = builder.NewNoneCoinbaseTransaction()
-                .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
-                .Build();
-            var serializedTransaction = transaction.Serialize();
-            var deserializedTransaction = BaseTransaction.Deserialize(serializedTransaction, TransactionTypes.NoneCoinbase);
-        }
-
-        [Test]
-        public void WhenBuildCoinbaseTransaction()
+        public void WhenSerializeBlockWithOneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
             var builder = new TransactionBuilder();
@@ -33,9 +22,37 @@ namespace SimpleBlockChain.UnitTests.Builders
                 .SetInput(4, nonce)
                 .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
                 .Build();
-            var serializedTransaction = transaction.Serialize();
+
+            var block = new Block();
+            block.Transactions.Add(transaction);
+
+            block.Serialize();
         }
 
+        [Test]
+        public void WhenSerializeBlockWithOneCoinbaseTransactionAndTwoNoneCoinbaseTransaction()
+        {
+            var ba = BuildBlockChainAddress();
+            var builder = new TransactionBuilder();
+            var nonce = BitConverter.GetBytes(NonceHelper.GetNonce());
+            var transaction = builder.NewCoinbaseTransaction()
+                .SetInput(4, nonce)
+                .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
+                .Build();
+            var secondTransaction = builder.NewNoneCoinbaseTransaction()
+                .AddOutput(10, Script.CreateP2PKHScript(ba.PublicKeyHash))
+                .Build();
+            var thirdTransaction = builder.NewNoneCoinbaseTransaction()
+                .AddOutput(11, Script.CreateP2PKHScript(ba.PublicKeyHash))
+                .Build();
+
+            var block = new Block();
+            block.Transactions.Add(thirdTransaction);
+            block.Transactions.Add(secondTransaction);
+            block.Transactions.Add(transaction);
+
+            block.Serialize();
+        }
 
         private static BlockChainAddress BuildBlockChainAddress()
         {

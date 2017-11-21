@@ -13,7 +13,7 @@ namespace SimpleBlockChain.Core.Transactions
         NoneCoinbase
     }
 
-    public abstract class BaseTransaction
+    public abstract class BaseTransaction : IComparable
     {
         private const UInt32 CURRENT_VERSION = 2;
         private const int MAX_STANDARD_VERSION = 2;
@@ -24,6 +24,7 @@ namespace SimpleBlockChain.Core.Transactions
 
         public BaseTransaction()
         {
+            TransactionIn = new List<BaseTransactionIn>();
             TransactionOut = new List<TransactionOut>();
         }
 
@@ -107,5 +108,26 @@ namespace SimpleBlockChain.Core.Transactions
             // TODO : Check the transaction is correct.
             return true;
         }
+
+        public int CompareTo(object obj)
+        {
+            // < 0 : this < obj
+            // == 0 : this == obj
+            // > 0 : this > obj
+            if (obj == null)
+            {
+                return -1;
+            }
+
+            var baseTrans = obj as BaseTransaction;
+            if (baseTrans == null)
+            {
+                return -1;
+            }
+
+            return CompareTo(baseTrans);
+        }
+
+        public abstract int CompareTo(BaseTransaction obj);
     }
 }

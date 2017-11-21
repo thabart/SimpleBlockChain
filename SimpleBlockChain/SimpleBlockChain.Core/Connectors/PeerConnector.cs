@@ -1,5 +1,4 @@
 ﻿using SimpleBlockChain.Core.Common;
-using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
@@ -51,7 +50,7 @@ namespace SimpleBlockChain.Core.Connectors
 
             var adrBytes = ipAdr.MapToIPv6().GetAddressBytes();
             var receivingNode = new IpAddress(serviceFlag, adrBytes, ushort.Parse(port));
-            var nonce = NonceFactory.GetNonce();
+            var nonce = NonceHelper.GetNonce();
             var versionMessage = new VersionMessage(transmittingNode, receivingNode, nonce, string.Empty, 0, false, _network);
             var result = _client.Execute(versionMessage.Serialize());
             _peerConnection = new PeerConnection(adrBytes);
