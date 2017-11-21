@@ -2,7 +2,7 @@
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
-using SimpleBlockChain.Core.Messages.RpcMessages;
+using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.States;
 using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Transactions;
@@ -66,9 +66,9 @@ namespace SimpleBlockChain.Core.Launchers
 
             }
 
-            if (message.GetCommandName() == Constants.MessageNames.SendRawTransactionMessage)
+            if (message.GetCommandName() == Constants.MessageNames.Transaction)
             {
-                var msg = message as SendRawTransactionMessage;
+                var msg = message as TransactionMessage;
                 AddTransaction(msg.Transaction);
             }
 

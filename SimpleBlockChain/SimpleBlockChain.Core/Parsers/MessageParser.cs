@@ -2,7 +2,6 @@
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;
-using SimpleBlockChain.Core.Messages.RpcMessages;
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -95,9 +94,9 @@ namespace SimpleBlockChain.Core.Parsers
             {
                 message = InventoryMessage.Deserialize(contentPayload, network);
             }
-            else if (commandName == Constants.MessageNames.SendRawTransactionMessage)
+            else if (commandName == Constants.MessageNames.Transaction)
             {
-                message = SendRawTransactionMessage.Deserialize(contentPayload, network);
+                message = TransactionMessage.Deserialize(contentPayload, network);
             }
 
             return message;

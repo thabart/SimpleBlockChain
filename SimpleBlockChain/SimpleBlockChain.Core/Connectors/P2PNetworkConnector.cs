@@ -1,9 +1,9 @@
 ﻿using SimpleBlockChain.Core.Messages.DataMessages;
-using SimpleBlockChain.Core.Messages.RpcMessages;
 using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SimpleBlockChain.Core.Connectors
 {
@@ -32,10 +32,10 @@ namespace SimpleBlockChain.Core.Connectors
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var inventoryMessage = new SendRawTransactionMessage(transaction, _network);
-            foreach(var peerConnector in _peerConnectorLst)
+            var message = new TransactionMessage(transaction, _network);
+            foreach (var peerConnector in _peerConnectorLst)
             {
-                peerConnector.Execute(inventoryMessage.Serialize());
+                peerConnector.Execute(message.Serialize());
             }
         }
 
@@ -58,7 +58,8 @@ namespace SimpleBlockChain.Core.Connectors
         {
             return new []
             {
-                "192.168.1.6"
+                // "192.168.1.6"
+                "192.168.76.134"
             };
         }
 

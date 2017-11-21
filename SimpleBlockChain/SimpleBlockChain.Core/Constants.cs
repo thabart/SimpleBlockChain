@@ -14,7 +14,7 @@ namespace SimpleBlockChain.Core
         }
 
         public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr,
-            MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr, MessageNames.Inventory, MessageNames.SendRawTransactionMessage };
+            MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr, MessageNames.Inventory, MessageNames.Transaction };
 
         public class MessageNames
         {
@@ -26,7 +26,6 @@ namespace SimpleBlockChain.Core
             public const string GetAddr = "getaddr";
             public const string Transaction = "tx";
             public const string Inventory = "inv";
-            public const string SendRawTransactionMessage = "sendtx";
         }
     }
 }

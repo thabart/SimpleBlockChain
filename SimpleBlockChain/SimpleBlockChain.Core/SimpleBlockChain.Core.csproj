@@ -66,7 +66,7 @@
     <Compile Include="Messages\ControlMessages\VersionMessage.cs" />
     <Compile Include="Messages\DataMessages\InventoryMessage.cs" />
     <Compile Include="Messages\DataMessages\InventoryTypes.cs" />
-    <Compile Include="Messages\RpcMessages\SendRawTransactionMessage.cs" />
+    <Compile Include="Messages\DataMessages\TransactionMessage.cs" />
     <Compile Include="NodeLauncher.cs" />
     <Compile Include="States\PeerConnection.cs" />
     <Compile Include="States\PeerConnectionStates.cs" />
@@ -101,7 +101,9 @@
     <Compile Include="ServiceFlags.cs" />
     <Compile Include="Storages\PeersStorage.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Messages\RpcMessages\" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
