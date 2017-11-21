@@ -1,10 +1,10 @@
-﻿using SimpleBlockChain.Core.Connectors;
+﻿using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
-using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Transactions;
@@ -16,7 +16,7 @@ namespace SimpleBlockChain.Core
     public class NodeLauncher : IDisposable
     {
         private string _serializedHash;
-        private Transaction _transaction;
+        private BaseTransaction _transaction;
         private static RpcServerApi _server;
         private IpAdrHelper _ipAdrHelper;
         private MessageParser _messageParser;

@@ -7,11 +7,11 @@ namespace SimpleBlockChain.Core
     public class MemoryPool
     {
         private static MemoryPool _instance;
-        private IList<Transaction> _transactions;
+        private IList<BaseTransaction> _transactions;
 
         private MemoryPool()
         {
-            _transactions = new List<Transaction>();
+            _transactions = new List<BaseTransaction>();
         }
 
         public static MemoryPool Instance()
@@ -24,7 +24,7 @@ namespace SimpleBlockChain.Core
             return _instance;
         }
 
-        public void AddTransaction(Transaction transaction)
+        public void AddTransaction(BaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -34,7 +34,7 @@ namespace SimpleBlockChain.Core
             _transactions.Add(transaction);
         }
 
-        public IList<Transaction> GetTransactions()
+        public IList<BaseTransaction> GetTransactions()
         {
             return _transactions;
         }

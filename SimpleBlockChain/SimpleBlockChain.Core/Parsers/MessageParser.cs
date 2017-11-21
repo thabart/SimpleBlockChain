@@ -96,7 +96,7 @@ namespace SimpleBlockChain.Core.Parsers
             }
             else if (commandName == Constants.MessageNames.Transaction)
             {
-                message = TransactionMessage.Deserialize(contentPayload, network);
+                message = TransactionMessage.Deserialize(contentPayload, network, Transactions.TransactionTypes.NoneCoinbase);
             }
 
             return message;

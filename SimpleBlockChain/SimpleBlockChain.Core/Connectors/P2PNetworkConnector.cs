@@ -25,7 +25,7 @@ namespace SimpleBlockChain.Core.Connectors
             DiscoverNodes();
         }
 
-        public void Broadcast(Transaction transaction)
+        public void Broadcast(BaseTransaction transaction)
         {
             if (transaction == null)
             {

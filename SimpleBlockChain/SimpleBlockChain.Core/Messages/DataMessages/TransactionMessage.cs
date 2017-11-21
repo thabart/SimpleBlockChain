@@ -7,26 +7,26 @@ namespace SimpleBlockChain.Core.Messages.DataMessages
 {
     public class TransactionMessage : Message
     {
-        public TransactionMessage(Transaction transaction, Networks network) : base(network)
+        public TransactionMessage(BaseTransaction transaction, Networks network) : base(network)
         {
             Transaction = transaction;
         }
 
-        public Transaction Transaction { get; private set; }
+        public BaseTransaction Transaction { get; private set; }
 
         public override string GetCommandName()
         {
             return Constants.MessageNames.Transaction;
         }
 
-        public static TransactionMessage Deserialize(IEnumerable<byte> payload, Networks network)
+        public static TransactionMessage Deserialize(IEnumerable<byte> payload, Networks network, TransactionTypes transactionType)
         {
             if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            return new TransactionMessage(Transaction.Deserialize(payload), network);
+            return new TransactionMessage(BaseTransaction.Deserialize(payload, transactionType), network);
         }
 
         protected override byte[] GetSerializedContent()

@@ -75,7 +75,7 @@ namespace SimpleBlockChain.Core.Launchers
             throw new InterpretMessageException(ErrorCodes.MessageNotSupported);
         }
 
-        private static void AddTransaction(Transaction transaction)
+        private static void AddTransaction(BaseTransaction transaction)
         {
             if (transaction == null)
             {

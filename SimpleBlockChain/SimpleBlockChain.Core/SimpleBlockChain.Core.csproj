@@ -50,6 +50,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlockChainAddress.cs" />
+    <Compile Include="Blocks\BlockChain.cs" />
+    <Compile Include="Builders\CoinbaseTransactionBuilder.cs" />
+    <Compile Include="Builders\NoneCoinbaseTransactionBuilder.cs" />
+    <Compile Include="Builders\TransactionBuilder.cs" />
     <Compile Include="Connectors\P2PNetworkConnector.cs" />
     <Compile Include="Connectors\PeerConnector.cs" />
     <Compile Include="Constants.cs" />
@@ -71,14 +75,16 @@
     <Compile Include="States\PeerConnection.cs" />
     <Compile Include="States\PeerConnectionStates.cs" />
     <Compile Include="Storages\ConfigurationStorage.cs" />
+    <Compile Include="Transactions\BaseTransaction.cs" />
+    <Compile Include="Transactions\BaseTransactionIn.cs" />
+    <Compile Include="Transactions\CoinbaseTransaction.cs" />
+    <Compile Include="Transactions\NoneCoinbaseTransaction.cs" />
     <Compile Include="Transactions\OpCodes.cs" />
     <Compile Include="Transactions\Outpoint.cs" />
     <Compile Include="Blocks\RawTransaction.cs" />
     <Compile Include="Transactions\Script.cs" />
-    <Compile Include="Transactions\Transaction.cs" />
-    <Compile Include="Transactions\TransactionBuilder.cs" />
-    <Compile Include="Transactions\TransactionIn.cs" />
-    <Compile Include="Transactions\TransactionInputBuilder.cs" />
+    <Compile Include="Transactions\TransactionInCoinbase.cs" />
+    <Compile Include="Transactions\TransactionInNoneCoinbase.cs" />
     <Compile Include="Transactions\TransactionOut.cs" />
     <Compile Include="Crypto\Key.cs" />
     <Compile Include="Encoding\Base58Encoding.cs" />
