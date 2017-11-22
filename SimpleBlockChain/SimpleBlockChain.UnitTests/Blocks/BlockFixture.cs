@@ -61,7 +61,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
         private static BlockChainAddress BuildBlockChainAddress()
         {
             var network = Networks.MainNet;
-            var key = new Key();
+            var key = Key.Genererate();
             var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, network, key);
             var hash = blockChainAddress.GetSerializedHash();
             var deserializedBA = BlockChainAddress.Deserialize(hash);

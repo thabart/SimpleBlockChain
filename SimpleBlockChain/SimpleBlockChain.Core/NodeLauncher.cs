@@ -57,7 +57,7 @@ namespace SimpleBlockChain.Core
 
         private string GenerateNewAddress(Networks network)
         {
-            var key = new Key();
+            var key = Key.Genererate();
             var blockChainAddress = new BlockChainAddress(Transactions.ScriptTypes.P2PKH, network, key);
             var adr = blockChainAddress.GetSerializedHash();
             Console.WriteLine($"\t \t BOB is sending it's address to alice via QR code or another way : {adr}");

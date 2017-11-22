@@ -19,11 +19,12 @@
         OP_14 = 0x64,
         OP_15 = 0x65,
         OP_16 = 0x66,
+        OP_VERIFY = 0x69, // FLOW CONTROL.
         OP_EQUAL = 0x87, // BITWISE LOGIC.
         OP_ADD = 0x93, // ARITHMETIC
         OP_DUP = 0x76,
         OP_HASH160 = 0xa9,
         OP_EQUALVERIFY = 0x88,
-        OP_CHECKSIG = 0xac
+        OP_CHECKSIG = 0xac,
     }
 }

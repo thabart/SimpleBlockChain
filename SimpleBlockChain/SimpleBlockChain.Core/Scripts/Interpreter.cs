@@ -1,8 +1,10 @@
-﻿using SimpleBlockChain.Core.Transactions;
+﻿using SimpleBlockChain.Core.Crypto;
+using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Security.Cryptography;
 
 namespace SimpleBlockChain.Core.Scripts
 {
@@ -49,6 +51,7 @@ namespace SimpleBlockChain.Core.Scripts
             {
                 if (scriptRecord.Type == ScriptRecordType.Stack)
                 {
+                    stack.Add(scriptRecord.StackRecord);
                     continue;
                 }
 
@@ -58,8 +61,10 @@ namespace SimpleBlockChain.Core.Scripts
                     continue;
                 }
 
-                var a = stack.ElementAt(stack.Count() - 1).ToArray();
-                var b = stack.Last().ToArray();
+                var ra = stack.ElementAt(stack.Count() - 2);
+                var rb = stack.Last();
+                var a = ra.ToArray();
+                var b = rb.ToArray();
                 var ba = new BigInteger(a);
                 var bb = new BigInteger(b);
                 switch (scriptRecord.OpCode)
@@ -69,11 +74,42 @@ namespace SimpleBlockChain.Core.Scripts
                         stack.Add(sum.ToByteArray());
                         break;
                     case OpCodes.OP_EQUAL:
-                        return ba == bb;
+                        stack.Remove(stack.Last());
+                        stack.Remove(stack.Last());
+                        var pop = (ba == bb) ? new byte[] { 1 } : new byte[] { 0 };
+                        stack.Add(pop);
+                        break;
+                    case OpCodes.OP_VERIFY:
+                        if (bb == 0) { return false; }
+                        break;
+                    case OpCodes.OP_EQUALVERIFY:
+                        stack.Remove(stack.Last());
+                        stack.Remove(stack.Last());
+                        if (ba != bb) { return false; }
+                        break;
+                    case OpCodes.OP_DUP:
+                        stack.Add(b);
+                        break;
+                    case OpCodes.OP_HASH160:
+                        var myRIPEMD160 = RIPEMD160Managed.Create();
+                        var mySHA256 = SHA256Managed.Create();
+                        var n = myRIPEMD160.ComputeHash(mySHA256.ComputeHash(b));
+                        stack.Remove(stack.Last());
+                        stack.Add(n);
+                        break;
+                    case OpCodes.OP_CHECKSIG:
+                        var sig = ra;
+                        var publicKey = rb;
+                        var key = Key.Deserialize(publicKey);
+                        var payload = System.Text.Encoding.UTF8.GetBytes("sss");
+                        var isCorrect = key.CheckSignature(payload, sig);
+                        var p = (isCorrect) ? new byte[] { 1 } : new byte[] { 0 };
+                        stack.Add(p);
+                        break;
                 }
             }
 
-            return false;
+            return new BigInteger(stack.Last().ToArray()) == 1;
         }
     }
 }

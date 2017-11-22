@@ -15,34 +15,45 @@ namespace SimpleBlockChain.Core.Crypto
     public class Key
     {
         private ECPublicKeyParameters _publicKey;
-        private ECPrivateKeyParameters _privateKey;
-        private static SecureRandom _secureRandom;
-        private static X9ECParameters _curve;
-        private static ECDomainParameters _domain;        
+        private ECPrivateKeyParameters _privateKey;  
 
-        public Key(bool isCompressed = false)
+        private Key(ECPrivateKeyParameters privateKey, ECPublicKeyParameters publicKey)
         {
-            _secureRandom = new SecureRandom();
-            _curve = SecNamedCurves.GetByName("secp256k1");
-            _domain = new ECDomainParameters(_curve.Curve, _curve.G, _curve.N, _curve.H);
-            Generate();
+            _privateKey = privateKey;
+            _publicKey = publicKey;
+        }
+
+        public static Key Genererate()
+        {
+            var secureRandom = new SecureRandom();
+            var curve = SecNamedCurves.GetByName("secp256k1");
+            var domain = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H);
+            var gen = new ECKeyPairGenerator();
+            var keygenParams = new ECKeyGenerationParameters(domain, secureRandom);
+            gen.Init(keygenParams);
+            var keyPair = gen.GenerateKeyPair();
+            return new Key((ECPrivateKeyParameters)keyPair.Private, (ECPublicKeyParameters)keyPair.Public);
+        }
+
+        public static Key Deserialize(IEnumerable<byte> payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            var c = SecNamedCurves.GetByName("secp256k1");
+            var domain = new ECDomainParameters(c.Curve, c.G, c.N, c.H);
+            ECCurve curve = domain.Curve;
+            ECPoint q = curve.DecodePoint(payload.ToArray());
+            var publicKey = new ECPublicKeyParameters(q, domain);
+            return new Key(null, publicKey);
         }
 
         public BigInteger PrivateKey { get; private set; }
 
-        /// <summary>
-        /// Get public key.
-        /// </summary>
-        /// <param name="isCompressed"></param>
-        /// <returns></returns>
-        public IEnumerable<byte> GetPublicKey(bool isCompressed = false)
+        public IEnumerable<byte> GetPublicKey()
         {
-            if (isCompressed)
-            {
-                var q = _publicKey.Q;
-                return (new FpPoint(_domain.Curve, q.X, q.Y, true)).GetEncoded();
-            }
-
             return _publicKey.Q.GetEncoded();
         }
 
@@ -54,12 +65,7 @@ namespace SimpleBlockChain.Core.Crypto
             hashed = myRIPEMD160.ComputeHash(hashed);
             return hashed;
         }
-
-        /// <summary>
-        ///  Sign the payload.
-        /// </summary>
-        /// <param name="payload"></param>
-        /// <returns></returns>
+        
         public IEnumerable<byte> Sign(IEnumerable<byte> payload)
         {
             if (payload == null)
@@ -72,12 +78,7 @@ namespace SimpleBlockChain.Core.Crypto
             signer.BlockUpdate(payload.ToArray(), 0, payload.Count());
             return signer.GenerateSignature();
         }
-
-        /// <summary>
-        /// Check the signature.
-        /// </summary>
-        /// <param name="payload"></param>
-        /// <returns></returns>
+        
         public bool CheckSignature(IEnumerable<byte> payload, IEnumerable<byte> signature)
         {
             if (payload == null)
@@ -94,19 +95,6 @@ namespace SimpleBlockChain.Core.Crypto
             signer.Init(false, _publicKey);
             signer.BlockUpdate(payload.ToArray(), 0, payload.Count());
             return signer.VerifySignature(signature.ToArray());
-        }
-
-        /// <summary>
-        /// Generate a new key (Private & Public).
-        /// </summary>
-        private void Generate()
-        {
-            var gen = new ECKeyPairGenerator();
-            var keygenParams = new ECKeyGenerationParameters(_domain, _secureRandom);
-            gen.Init(keygenParams);
-            var keyPair = gen.GenerateKeyPair();
-            _privateKey = (ECPrivateKeyParameters)keyPair.Private;
-            _publicKey = (ECPublicKeyParameters)keyPair.Public;
         }
     }
 }
