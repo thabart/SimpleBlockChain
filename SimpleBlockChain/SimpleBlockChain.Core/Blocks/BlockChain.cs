@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Exceptions;
+using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,48 @@ namespace SimpleBlockChain.Core.Blocks
             block.Check();
             Blocks.Add(block);
             return this;
+        }
+
+        public bool ContainsUnspentTransaction(IEnumerable<byte> txId, uint index)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentNullException(nameof(txId));
+            }
+            // TODO : IMPLEMENT.
+
+            return true;
+        }
+
+        public BaseTransaction GetUnspentTransaction(IEnumerable<byte> txId, uint index)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentNullException(nameof(txId));
+            }
+
+            // TODO : IMPLEMENT.
+
+            return null;
+        }
+
+        public bool ContainsTransaction(IEnumerable<byte> txId)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentNullException(nameof(txId));
+            }
+
+            return false;
+        }
+        public BaseTransaction GetTransaction(IEnumerable<byte> txId)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentNullException(nameof(txId));
+            }
+
+            return null;
         }
     }
 }
