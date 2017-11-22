@@ -6,6 +6,10 @@ namespace SimpleBlockChain.Core.Transactions
 {
     public class CoinbaseTransaction : BaseTransaction
     {
+        public CoinbaseTransaction() { }
+
+        public CoinbaseTransaction(uint version, uint lockTime) : base(version, lockTime) { }
+
         public override KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size)
         {
             if (payload == null)

@@ -21,11 +21,21 @@ namespace SimpleBlockChain.Core.Builders
             return new NoneCoinbaseTransactionBuilder();
         }
 
+        public NoneCoinbaseTransactionBuilder NewNoneCoinbaseTransaction(uint version, uint lockTime)
+        {
+            return new NoneCoinbaseTransactionBuilder(version, lockTime);
+        }
+
         public CoinbaseTransactionBuilder NewCoinbaseTransaction()
         {
             return new CoinbaseTransactionBuilder();
         }
-        
+
+        public CoinbaseTransactionBuilder NewCoinbaseTransaction(uint version, uint lockTime)
+        {
+            return new CoinbaseTransactionBuilder(version, lockTime);
+        }
+
         public TransactionBuilder AddOutput(long value, Script script)
         {
             var transactionOutput = new TransactionOut(value, script);

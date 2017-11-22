@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 using SimpleBlockChain.Core.Crypto;
+using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace SimpleBlockChain.UnitTests.Crypto
@@ -11,6 +13,7 @@ namespace SimpleBlockChain.UnitTests.Crypto
         public void WhenCheckSignatureThenTrueIsReturned()
         {
             var key = Key.Genererate();
+            var pk = new BigInteger(key.GetPublicKey().ToArray());
             var payload = Encoding.UTF8.GetBytes("sss");
             var signature = key.Sign(payload);
             Assert.True(key.CheckSignature(payload, signature));

@@ -22,8 +22,14 @@ namespace SimpleBlockChain.Core.Transactions
         public List<BaseTransactionIn> TransactionIn { get; protected set; } // tx_in
         public List<TransactionOut> TransactionOut { get; protected set; } // tx_out
 
-        public BaseTransaction()
+        public BaseTransaction() : this(CURRENT_VERSION, DateTime.UtcNow.ToUnixTimeUInt32())
         {
+        }
+
+        public BaseTransaction(uint version, uint lockTime)
+        {
+            Version = version;
+            LockTime = lockTime;
             TransactionIn = new List<BaseTransactionIn>();
             TransactionOut = new List<TransactionOut>();
         }
@@ -82,7 +88,7 @@ namespace SimpleBlockChain.Core.Transactions
         {
             // https://bitcoin.org/en/developer-reference#raw-transaction-format
             var result = new List<byte>();
-            result.AddRange(BitConverter.GetBytes(CURRENT_VERSION));
+            result.AddRange(BitConverter.GetBytes(Version));
             var inputCompactSize = new CompactSize();
             inputCompactSize.Size = (ulong)TransactionIn.Count();
             result.AddRange(inputCompactSize.Serialize());
@@ -98,9 +104,8 @@ namespace SimpleBlockChain.Core.Transactions
             {
                 result.AddRange(output.Serialize());
             }
-
-            var dateTime = DateTime.UtcNow;
-            result.AddRange(BitConverter.GetBytes(dateTime.ToUnixTime()));
+            
+            result.AddRange(BitConverter.GetBytes(LockTime));
             return result;
         }
 

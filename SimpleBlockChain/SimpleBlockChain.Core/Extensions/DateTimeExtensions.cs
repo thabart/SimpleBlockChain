@@ -15,6 +15,17 @@ namespace SimpleBlockChain.Core.Extensions
             return Convert.ToInt64((dateTime - epoch).TotalSeconds);
         }
 
+        public static uint ToUnixTimeUInt32(this DateTime dateTime)
+        {
+            if (dateTime == null)
+            {
+                throw new ArgumentNullException(nameof(dateTime));
+            }
+
+            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return Convert.ToUInt32((dateTime - epoch).TotalSeconds);
+        }
+
         public static DateTime ToDateTime(this Int64 number)
         {
             var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);

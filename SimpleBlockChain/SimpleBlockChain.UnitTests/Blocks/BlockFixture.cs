@@ -58,6 +58,15 @@ namespace SimpleBlockChain.UnitTests.Blocks
             block.Serialize();
         }
 
+        [Test]
+        public void WhenBuildGenesisBlock()
+        {
+            var block = Block.BuildGenesisBlock();
+            var payload = block.Serialize();
+            var deserialized = Block.Deserialize(payload);
+            Assert.True(true);
+        }
+
         private static BlockChainAddress BuildBlockChainAddress()
         {
             var network = Networks.MainNet;

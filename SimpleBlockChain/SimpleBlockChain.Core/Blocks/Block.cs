@@ -46,18 +46,21 @@ namespace SimpleBlockChain.Core.Blocks
         public static Block BuildGenesisBlock()
         {
             var scriptBuilder = new ScriptBuilder();
-            scriptBuilder.AddOperation(OpCodes.OP_CHECKSIG);
-            // scriptBuilder.AddToStack()
+            var script = scriptBuilder
+                .New()
+                .AddToStack(Constants.DEFAULT_GENESIS_PUBLIC_KEY.ToByteArray())
+                .AddOperation(OpCodes.OP_CHECKSIG)
+                .Build();
             var result = new Block(null, Constants.DEFAULT_NBITS, Constants.DEFAULT_GENESIS_NONCE, 1);
             var transactionBuilder = new TransactionBuilder();
             const string txt = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
             var coinBase = System.Text.ASCIIEncoding.ASCII.GetBytes(txt).ToArray();
-            var inputTransaction = transactionBuilder.NewCoinbaseTransaction()
+            var transaction = transactionBuilder
+                .NewCoinbaseTransaction(Constants.DEFAULT_GENESIS_TRANSACTION_VERSION, Constants.DEFAULT_GENESIS_TRANSACTION_LOCKTIME)
                 .SetInput(0x4D, coinBase, Constants.DEFAULT_GENESIS_SEQUENCE)
+                .AddOutput(50, script)
                 .Build();
-            var outputTransaction = transactionBuilder.NewCoinbaseTransaction()
-                .AddOutput(50, scriptBuilder.Build());
-            result.Transactions.Add(inputTransaction);
+            result.Transactions.Add(transaction);
             return result;
         }
 

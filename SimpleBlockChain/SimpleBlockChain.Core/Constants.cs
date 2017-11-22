@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 
 namespace SimpleBlockChain.Core
 {
@@ -8,6 +9,9 @@ namespace SimpleBlockChain.Core
         public const uint DEFAULT_NBITS = 0x1d00ffff;
         public const uint DEFAULT_GENESIS_NONCE = 2083236893;
         public const uint DEFAULT_GENESIS_SEQUENCE = 0xFFFFFFFF;
+        public const uint DEFAULT_GENESIS_TRANSACTION_VERSION = 1;
+        public const uint DEFAULT_GENESIS_TRANSACTION_LOCKTIME = 0;
+        public static BigInteger DEFAULT_GENESIS_PUBLIC_KEY = BigInteger.Parse("394967629585574565033197421141790760532403184774644309636301812971966519318908212827982714629845977903851038137645187315552112071961727682036894442511779588");
 
         public class Ports
         {

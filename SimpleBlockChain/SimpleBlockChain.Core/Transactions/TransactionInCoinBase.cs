@@ -7,7 +7,7 @@ namespace SimpleBlockChain.Core.Transactions
 {
     public class TransactionInCoinbase : BaseTransactionIn
     {
-        private static UInt32 DEFAULT_INDEX = 0xffffffff;
+        private static uint DEFAULT_INDEX = 0xffffffff;
 
         public TransactionInCoinbase(uint height, byte[] coinBaseScript, uint sequence)
         {
@@ -31,6 +31,7 @@ namespace SimpleBlockChain.Core.Transactions
             result.AddRange(BitConverter.GetBytes(DEFAULT_INDEX));
             result.AddRange(compactSize.Serialize());
             result.AddRange(BitConverter.GetBytes(Height));
+            result.AddRange(CoinBaseScript);
             result.AddRange(BitConverter.GetBytes(Sequence));
             return result.ToArray();
         }
