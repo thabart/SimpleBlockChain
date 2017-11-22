@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SimpleBlockChain.Core.Repositories
+﻿namespace SimpleBlockChain.Core.Repositories
 {
     public class ConfigurationRepository
     {
@@ -9,9 +7,9 @@ namespace SimpleBlockChain.Core.Repositories
 
         }
 
-        public UInt32 GetDefaultNBits()
+        public uint GetDefaultNBits()
         {
-            return 0x1e0ffff0;
+            return Constants.DEFAULT_NBITS;
         }
     }
 }

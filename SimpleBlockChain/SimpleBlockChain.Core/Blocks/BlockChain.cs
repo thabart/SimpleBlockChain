@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SimpleBlockChain.Core.Blocks
 {
@@ -13,5 +14,15 @@ namespace SimpleBlockChain.Core.Blocks
         }
 
         public IEnumerable<Block> Blocks { get; private set; }
+
+        public BlockChain AddBlock(Block block)
+        {
+            if (block == null)
+            {
+                throw new ArgumentNullException(nameof(block));
+            }
+
+            return this;
+        }
     }
 }

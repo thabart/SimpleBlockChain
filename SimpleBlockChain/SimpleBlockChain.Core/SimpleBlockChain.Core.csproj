@@ -53,6 +53,7 @@
     <Compile Include="Blocks\BlockChain.cs" />
     <Compile Include="Builders\CoinbaseTransactionBuilder.cs" />
     <Compile Include="Builders\NoneCoinbaseTransactionBuilder.cs" />
+    <Compile Include="Builders\ScriptBuilder.cs" />
     <Compile Include="Builders\TransactionBuilder.cs" />
     <Compile Include="Connectors\P2PNetworkConnector.cs" />
     <Compile Include="Connectors\PeerConnector.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Messages\DataMessages\TransactionMessage.cs" />
     <Compile Include="NodeLauncher.cs" />
     <Compile Include="Repositories\ConfigurationRepository.cs" />
+    <Compile Include="Scripts\Interpreter.cs" />
     <Compile Include="States\PeerConnection.cs" />
     <Compile Include="States\PeerConnectionStates.cs" />
     <Compile Include="Stores\PeersStore.cs" />

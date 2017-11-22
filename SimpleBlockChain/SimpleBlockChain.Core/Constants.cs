@@ -5,6 +5,9 @@ namespace SimpleBlockChain.Core
     public static class Constants
     {
         public const int SupportedProtocolVersion = 70015;
+        public const uint DEFAULT_NBITS = 0x1d00ffff;
+        public const uint DEFAULT_GENESIS_NONCE = 2083236893;
+        public const uint DEFAULT_GENESIS_SEQUENCE = 0xFFFFFFFF;
 
         public class Ports
         {

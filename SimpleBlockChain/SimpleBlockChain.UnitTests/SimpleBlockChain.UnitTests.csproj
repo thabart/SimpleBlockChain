@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blocks\BlockFixture.cs" />
+    <Compile Include="Builders\ScriptBuilderFixture.cs" />
     <Compile Include="Builders\TransactionBuilderFixture.cs" />
     <Compile Include="Crypto\KeyFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

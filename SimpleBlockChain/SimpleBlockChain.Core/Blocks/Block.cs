@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Common;
+﻿using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -10,14 +11,16 @@ namespace SimpleBlockChain.Core.Blocks
 {
     public class Block
     {
-        private static int CURRENT_VERSION = 4;
+        private const int CURRENT_VERSION = 4;
 
         private IEnumerable<byte> _previousHashHeader;
         private uint _nbits;
         private uint _nonce;
-        private DateTime _blockHeaderHashingStartTime { get; set; }
+        private int _version;
 
-        public Block(IEnumerable<byte> previousHashHeader, UInt32 nBits, UInt32 nonce)
+        private DateTime _blockHeaderHashingStartTime { get; set; }
+        
+        public Block(IEnumerable<byte> previousHashHeader, uint nBits, uint nonce, int version = CURRENT_VERSION)
         {
             if (previousHashHeader == null)
             {
@@ -28,6 +31,7 @@ namespace SimpleBlockChain.Core.Blocks
             _previousHashHeader = previousHashHeader;
             _nbits = nBits;
             _nonce = nonce;
+            _version = version;
         }
 
         public void SetBlockHeaderHashingStartTime(DateTime dateTime)
@@ -41,7 +45,20 @@ namespace SimpleBlockChain.Core.Blocks
 
         public static Block BuildGenesisBlock()
         {
-            return null;
+            var scriptBuilder = new ScriptBuilder();
+            scriptBuilder.AddOperation(OpCodes.OP_CHECKSIG);
+            // scriptBuilder.AddToStack()
+            var result = new Block(null, Constants.DEFAULT_NBITS, Constants.DEFAULT_GENESIS_NONCE, 1);
+            var transactionBuilder = new TransactionBuilder();
+            const string txt = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
+            var coinBase = System.Text.ASCIIEncoding.ASCII.GetBytes(txt).ToArray();
+            var inputTransaction = transactionBuilder.NewCoinbaseTransaction()
+                .SetInput(0x4D, coinBase, Constants.DEFAULT_GENESIS_SEQUENCE)
+                .Build();
+            var outputTransaction = transactionBuilder.NewCoinbaseTransaction()
+                .AddOutput(50, scriptBuilder.Build());
+            result.Transactions.Add(inputTransaction);
+            return result;
         }
 
         public IList<BaseTransaction> Transactions { get; set; }
@@ -130,7 +147,7 @@ namespace SimpleBlockChain.Core.Blocks
             var result = new List<byte>();
             var merkleTree = GetMerkleRoot();
             var time = BitConverter.GetBytes((UInt32)_blockHeaderHashingStartTime.ToUnixTime());
-            result.AddRange(BitConverter.GetBytes(CURRENT_VERSION));
+            result.AddRange(BitConverter.GetBytes(_version));
             result.AddRange(_previousHashHeader);
             result.AddRange(merkleTree);
             result.AddRange(time);
