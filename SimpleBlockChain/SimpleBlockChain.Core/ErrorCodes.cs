@@ -8,5 +8,7 @@
         public const string InvalidCommandName = "invalid_command_name";
         public const string MessageNotSupported = "message_not_supported";
         public const string PayloadSizeInvalid = "payload_size_invalid";
+        public const string PreviousHashBlockDoesntMatch = "previous_hash_block_doesnt_match";
+        public const string InvalidMerkleRoot = "invalid_merkle_root";
     }
 }

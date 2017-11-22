@@ -1,5 +1,6 @@
 ﻿using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -40,6 +41,21 @@ namespace SimpleBlockChain.Core.Blocks
         }
 
         public BlockHeader BlockHeader { get; private set; }
+
+        public void Check()
+        {
+            var merkleRoot = BlockHeader.MerkleRoot;
+            var calculatedMerkleRoot = GetMerkleRoot();
+            if (merkleRoot.SequenceEqual(calculatedMerkleRoot))
+            {
+                throw new ValidationException(ErrorCodes.InvalidMerkleRoot);
+            }
+
+            foreach(var transaction in Transactions)
+            {
+                transaction.Check();
+            }
+        }
 
         // Read the target nbits : https://bitcoin.org/en/developer-reference#target-nbits
 

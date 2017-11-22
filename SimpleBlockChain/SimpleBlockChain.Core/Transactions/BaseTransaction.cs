@@ -22,9 +22,7 @@ namespace SimpleBlockChain.Core.Transactions
         public List<BaseTransactionIn> TransactionIn { get; protected set; } // tx_in
         public List<TransactionOut> TransactionOut { get; protected set; } // tx_out
 
-        public BaseTransaction() : this(CURRENT_VERSION, DateTime.UtcNow.ToUnixTimeUInt32())
-        {
-        }
+        public BaseTransaction() : this(CURRENT_VERSION, DateTime.UtcNow.ToUnixTimeUInt32()) { }
 
         public BaseTransaction(uint version, uint lockTime)
         {
@@ -111,10 +109,12 @@ namespace SimpleBlockChain.Core.Transactions
 
         public abstract KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size);
 
-        public bool Check()
+        public void Check()
         {
+            // https://bitcoin.org/en/developer-guide#block-chain-overview
             // TODO : Check the transaction is correct.
-            return true;
+            // UNSPENT TRANSACTION
+            // SPENT TRANSACTION.
         }
 
         public int CompareTo(object obj)

@@ -92,11 +92,6 @@ namespace SimpleBlockChain.Core.Launchers
 
             // TODO : Check the BLOCK CHAIN CONTAINS THE TRANSACTION.
 
-            if (!transaction.Check())
-            {
-                return;
-            }
-
             instance.AddTransaction(transaction);
         }
 

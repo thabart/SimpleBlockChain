@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -62,6 +63,17 @@
     <Compile Include="Blocks\BlockHeader.cs" />
     <Compile Include="Common\CompactSize.cs" />
     <Compile Include="Converters\ByteArrayConverter.cs" />
+    <Compile Include="LevelDb\Cache.cs" />
+    <Compile Include="LevelDb\DB.cs" />
+    <Compile Include="LevelDb\Iterator.cs" />
+    <Compile Include="LevelDb\Native.cs" />
+    <Compile Include="LevelDb\Options.cs" />
+    <Compile Include="LevelDb\ReadOptions.cs" />
+    <Compile Include="LevelDb\Slice.cs" />
+    <Compile Include="LevelDb\Snapshot.cs" />
+    <Compile Include="LevelDb\WriteBatch.cs" />
+    <Compile Include="LevelDb\WriteOptions.cs" />
+    <Compile Include="Exceptions\ValidationException.cs" />
     <Compile Include="Helpers\IpAdrHelper.cs" />
     <Compile Include="Helpers\NonceHelper.cs" />
     <Compile Include="Helpers\PortsHelper.cs" />
@@ -121,6 +133,11 @@
       <Project>{caaa77bc-12f3-49d6-a13b-332c4d735822}</Project>
       <Name>SimpleBlockChain.Interop</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="libleveldb.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
