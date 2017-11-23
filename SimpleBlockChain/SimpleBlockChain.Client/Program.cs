@@ -7,7 +7,7 @@ namespace SimpleBlockChain.Client
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("==== Welcome to SimpleBlockChain ====");
+            Console.WriteLine("==== Welcome to SimpleBlockChain (FULL-NODE / MINER) ====");
             var launcher = new NodeLauncher();
             launcher.Launch();
             Console.ReadLine();

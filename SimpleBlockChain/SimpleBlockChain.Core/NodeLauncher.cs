@@ -35,11 +35,9 @@ namespace SimpleBlockChain.Core
         public void Launch()
         {
             var network = ChooseNetwork();
-            var serviceFlag = ChooseNodeType();
-            PeersStore.Instance().SetMyIpAddress(new IpAddress(DateTime.UtcNow, serviceFlag, _ipAdrHelper.GetIpv4Address(), ushort.Parse(PortsHelper.GetPort(network))));
+            PeersStore.Instance().SetMyIpAddress(new IpAddress(DateTime.UtcNow, ServiceFlags.NODE_NETWORK, _ipAdrHelper.GetIpv4Address(), ushort.Parse(PortsHelper.GetPort(network))));
             StartNode(network);
             _p2pNetworkConnector.Listen(network);
-            DisplayMenu(network);
         }
 
         private void DisplayMenu(Networks network)

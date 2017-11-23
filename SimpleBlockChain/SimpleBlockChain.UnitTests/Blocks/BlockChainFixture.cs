@@ -8,7 +8,6 @@ using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 
 namespace SimpleBlockChain.UnitTests.Blocks
@@ -30,9 +29,6 @@ namespace SimpleBlockChain.UnitTests.Blocks
         [Test]
         public void WhenAddBlock()
         {
-            // Genesis block <=> block1
-            // var blockChain = new BlockChain();
-            // var block = blockChain.GetCurrentBlock();
             var blockChain = BlockChainStore.Instance().GetBlockChain(); // Get the genesis block.
             var genesisBlock = blockChain.GetCurrentBlock();
             var firstTransaction = genesisBlock.Transactions.First();
