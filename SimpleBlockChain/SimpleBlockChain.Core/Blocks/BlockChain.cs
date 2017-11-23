@@ -1,5 +1,4 @@
-﻿using SimpleBlockChain.Core.Exceptions;
-using SimpleBlockChain.Core.LevelDb;
+﻿using SimpleBlockChain.Core.LevelDb;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;

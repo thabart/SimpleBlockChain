@@ -35,6 +35,27 @@ namespace SimpleBlockChain.Core.Crypto
             return new Key((ECPrivateKeyParameters)keyPair.Private, (ECPublicKeyParameters)keyPair.Public);
         }
 
+        public static Key Deserialize(BigInteger publicKey, BigInteger privateKey)
+        {
+            if (publicKey == null)
+            {
+                throw new ArgumentNullException(nameof(publicKey));
+            }
+
+            if (privateKey == null)
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
+
+            var c = SecNamedCurves.GetByName("secp256k1");
+            var domain = new ECDomainParameters(c.Curve, c.G, c.N, c.H);
+            ECCurve curve = domain.Curve;
+            ECPoint q = curve.DecodePoint(publicKey.ToByteArray());
+            var pubK = new ECPublicKeyParameters(q, domain);
+            var prK = new ECPrivateKeyParameters(privateKey, domain);
+            return new Key(prK, pubK);
+        }
+
         public static Key Deserialize(IEnumerable<byte> payload)
         {
             if (payload == null)
@@ -50,7 +71,10 @@ namespace SimpleBlockChain.Core.Crypto
             return new Key(null, publicKey);
         }
 
-        public BigInteger PrivateKey { get; private set; }
+        public BigInteger GetPrivateKey()
+        {
+            return _privateKey.D;
+        }
 
         public IEnumerable<byte> GetPublicKey()
         {
