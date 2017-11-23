@@ -10,5 +10,10 @@
         public const string PayloadSizeInvalid = "payload_size_invalid";
         public const string PreviousHashBlockDoesntMatch = "previous_hash_block_doesnt_match";
         public const string InvalidMerkleRoot = "invalid_merkle_root";
+        public const string InvalidPreviousHashHeader = "invalid_previous_hash_header";
+        public const string ReferencedTransactionNotValid = "referenced_transaction_not_valid";
+        public const string TransactionSignatureNotCorrect = "transaction_signature_not_correct";
+        public const string NoTransactionIn = "no_in_transaction";
+        public const string TransactionOutputExceedInput = "transaction_output_exceed_input";
     }
 }

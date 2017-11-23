@@ -2,6 +2,7 @@
 using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,6 @@ namespace SimpleBlockChain.Core.Blocks
     public class Block
     {
         private const int CURRENT_VERSION = 4;
-
-        private IEnumerable<byte> _previousHashHeader;
-        private uint _nbits;
-        private uint _nonce;
         private int _version;
 
         private DateTime _blockHeaderHashingStartTime { get; set; }
@@ -29,14 +26,28 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             Transactions = new List<BaseTransaction>();
-            _previousHashHeader = previousHashHeader;
-            _nbits = nBits;
-            _nonce = nonce;
+            BlockHeader = new BlockHeader
+            {
+                NBits = nBits,
+                Nonce = nonce,
+                PreviousBlockHeader = previousHashHeader
+            };
             _version = version;
         }
 
         public Block(BlockHeader blockHeader, IList<BaseTransaction> transactions)
         {
+            if (blockHeader == null)
+            {
+                throw new ArgumentNullException(nameof(blockHeader));
+            }
+            var previousHashHeader = blockHeader.PreviousBlockHeader;
+            if (previousHashHeader == null)
+            {
+                previousHashHeader = Enumerable.Repeat((byte)0x00, 32);
+            }
+
+            _version = blockHeader.Version;
             BlockHeader = blockHeader;
             Transactions = transactions;
         }
@@ -48,16 +59,28 @@ namespace SimpleBlockChain.Core.Blocks
 
         public BlockHeader BlockHeader { get; private set; }
 
+        public void UpdateMerkleRoot()
+        {
+            BlockHeader.MerkleRoot = GetMerkleRoot();
+        }
+
         public void Check()
         {
-            var merkleRoot = BlockHeader.MerkleRoot;
+            var merkleRoot = BlockHeader.MerkleRoot; // Check MERKLE-ROOT.
             var calculatedMerkleRoot = GetMerkleRoot();
-            if (merkleRoot.SequenceEqual(calculatedMerkleRoot))
+            if (!merkleRoot.SequenceEqual(calculatedMerkleRoot))
             {
                 throw new ValidationException(ErrorCodes.InvalidMerkleRoot);
             }
 
-            foreach(var transaction in Transactions)
+            var blockChain = BlockChainStore.Instance().GetBlockChain(); // Check PREVIOUS BLOCK.
+            var currentBlock = blockChain.GetCurrentBlock();
+            if (!currentBlock.GetHashHeader().SequenceEqual(BlockHeader.PreviousBlockHeader))
+            {
+                throw new ValidationException(ErrorCodes.InvalidPreviousHashHeader);
+            }
+
+            foreach (var transaction in Transactions) // Check ALL TRANSACTIONS.
             {
                 transaction.Check();
             }
@@ -70,7 +93,10 @@ namespace SimpleBlockChain.Core.Blocks
             var scriptBuilder = new ScriptBuilder();
             var script = scriptBuilder
                 .New()
-                .AddToStack(Constants.DEFAULT_GENESIS_PUBLIC_KEY.ToByteArray())
+                .AddOperation(OpCodes.OP_DUP)
+                .AddOperation(OpCodes.OP_HASH160)
+                .AddToStack(Constants.DEFAULT_GENESIS_PUBLIC_KEY_HASH.ToByteArray())
+                .AddOperation(OpCodes.OP_EQUALVERIFY)
                 .AddOperation(OpCodes.OP_CHECKSIG)
                 .Build();
             var result = new Block(null, Constants.DEFAULT_NBITS, Constants.DEFAULT_GENESIS_NONCE, 1);
@@ -130,7 +156,7 @@ namespace SimpleBlockChain.Core.Blocks
                 return null;
             }
 
-            var version = BitConverter.ToUInt32(payload.Take(4).ToArray(), 0);
+            var version = BitConverter.ToInt32(payload.Take(4).ToArray(), 0);
             var previousBlockHashHeader = payload.Skip(4).Take(32);
             var merkleRootHash = payload.Skip(36).Take(32);
             var time = BitConverter.ToUInt32(payload.Skip(68).Take(4).ToArray(), 0).ToDateTime();
@@ -180,11 +206,11 @@ namespace SimpleBlockChain.Core.Blocks
             var merkleTree = GetMerkleRoot();
             var time = BitConverter.GetBytes((UInt32)_blockHeaderHashingStartTime.ToUnixTime());
             result.AddRange(BitConverter.GetBytes(_version));
-            result.AddRange(_previousHashHeader);
+            result.AddRange(BlockHeader.PreviousBlockHeader);
             result.AddRange(merkleTree);
             result.AddRange(time);
-            result.AddRange(BitConverter.GetBytes(_nbits));
-            result.AddRange(BitConverter.GetBytes(_nonce));
+            result.AddRange(BitConverter.GetBytes(BlockHeader.NBits));
+            result.AddRange(BitConverter.GetBytes(BlockHeader.Nonce));
             return result.ToArray();
         }
 

@@ -67,7 +67,7 @@ namespace SimpleBlockChain.Core.Common
             }
             else
             {
-                result = Convert.ToUInt16((sbyte)firstB);
+                result = firstB;
                 nbBytes = 1;
             }
 

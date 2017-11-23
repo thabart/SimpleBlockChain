@@ -2,13 +2,14 @@
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SimpleBlockChain.Core.Blocks
 {
     public class BlockChain : IDisposable
     {
-        private const string _databaseFile = @"c:\Projects\SimpleBlockChain\db.dat";
+        private const string _databaseFile = "db.dat";
         private DB _db;
         private int _currentBlockHeight = 0;
         private IEnumerable<byte> _currentBlockHash = null;
@@ -24,7 +25,7 @@ namespace SimpleBlockChain.Core.Blocks
 
         public BlockChain()
         {
-            _db = new DB(new Options { CreateIfMissing = true }, _databaseFile);
+            _db = new DB(new Options { CreateIfMissing = true }, GetDbFile());
             string result = null;
             if (!_db.TryGet(null, CURRENT_BLOCK, out result))
             {
@@ -105,15 +106,6 @@ namespace SimpleBlockChain.Core.Blocks
                 throw new ArgumentNullException(nameof(block));
             }
 
-            /*
-            var lastBlock = Blocks.Last();
-            var newPreviousBlockHashHeader = lastBlock.GetHashHeader();
-            if (!block.BlockHeader.PreviousBlockHeader.SequenceEqual(newPreviousBlockHashHeader))
-            {
-                throw new ValidationException(ErrorCodes.PreviousHashBlockDoesntMatch);
-            }
-            */
-
             block.Check();
             Persist(block);
             return this;
@@ -138,25 +130,37 @@ namespace SimpleBlockChain.Core.Blocks
                 throw new ArgumentNullException(nameof(txId));
             }
 
-            var result = _db.Get(null, string.Format(UNSPENT_TRANSACTION, System.Text.Encoding.UTF8.GetString(txId.ToArray())));
-            if (string.IsNullOrWhiteSpace(result))
+            var callback = new Func<bool, BaseTransaction>((isCoinBased) =>
             {
-                return null;
+                var k = isCoinBased ? UNSPENT_TRANSACTION_CB : UNSPENT_TRANSACTION;
+                var result = _db.Get(null, string.Format(k, Convert.ToBase64String(txId.ToArray())));
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    return null;
+                }
+
+                var payload = Convert.FromBase64String(result);
+                var kvp = BaseTransaction.Deserialize(payload, isCoinBased ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase);
+                if (kvp.Equals(default(KeyValuePair<BaseTransaction, int>)) && kvp.Key != null)
+                {
+                    return null;
+                }
+
+                if (kvp.Key.TransactionOut.Count() <= index)
+                {
+                    return null;
+                }
+
+                return kvp.Key;
+            });
+
+            var res = callback(false);
+            if (res == null)
+            {
+                res = callback(true);
             }
 
-            var payload = System.Text.Encoding.UTF8.GetBytes(result);
-            var kvp = BaseTransaction.Deserialize(payload, TransactionTypes.NoneCoinbase);
-            if (kvp.Equals(default(KeyValuePair<BaseTransaction, int>)) && kvp.Key != null)
-            {
-                return null;
-            }
-            
-            if (kvp.Key.TransactionOut.Count() >= index)
-            {
-                return null;
-            }
-
-            return kvp.Key;
+            return res;
         }
 
         public bool ContainsTransaction(IEnumerable<byte> txId)
@@ -187,27 +191,28 @@ namespace SimpleBlockChain.Core.Blocks
         private void Persist(Block block)
         {
             _currentBlockHeight++;
-            _currentBlockHash = block.SerializeHeader();
+            _currentBlockHash = block.GetHashHeader();
             if (block == null)
             {
                 throw new ArgumentNullException(nameof(block));
             }
 
             var batch = new WriteBatch();
-            var hashHeader = Convert.ToBase64String(block.SerializeHeader());
+            var hashHeader = Convert.ToBase64String(block.GetHashHeader());
             batch.Put(string.Format(BLOCK_KEY, hashHeader), Convert.ToBase64String(block.SerializeHeader()));
             var allTxIds = new List<IEnumerable<byte>>();
             foreach (var transaction in block.Transactions)
             {
                 var currentTxId = transaction.GetTxId();
                 var cb = transaction as CoinbaseTransaction;
+                var arr = transaction.Serialize().ToArray();
                 if (cb != null)
                 {
-                    batch.Put(string.Format(UNSPENT_TRANSACTION_CB, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(transaction.Serialize().ToArray()));
+                    batch.Put(string.Format(UNSPENT_TRANSACTION_CB, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(arr));
                 }
                 else
                 {
-                    batch.Put(string.Format(UNSPENT_TRANSACTION, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(transaction.Serialize().ToArray()));
+                    batch.Put(string.Format(UNSPENT_TRANSACTION, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(arr));
                 }
 
                 if (transaction.TransactionIn != null)
@@ -254,9 +259,15 @@ namespace SimpleBlockChain.Core.Blocks
 
         private void IntitializeCurrentBlock()
         {
-            _currentBlockHash = System.Text.Encoding.UTF8.GetBytes(_db.Get(null, CURRENT_BLOCK));
+            _currentBlockHash = Convert.FromBase64String(_db.Get(null, CURRENT_BLOCK));
             var h = _db.Get(null, CURRENT_BLOCK_HEIGHT);
             _currentBlockHeight = int.Parse(_db.Get(null, CURRENT_BLOCK_HEIGHT));
+        }
+
+        private static string GetDbFile()
+        {
+            string path = AppDomain.CurrentDomain.BaseDirectory;
+            return Path.Combine(path, _databaseFile);
         }
     }
 }

@@ -1,5 +1,8 @@
 ﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Scripts;
+using SimpleBlockChain.Core.Stores;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -112,9 +115,47 @@ namespace SimpleBlockChain.Core.Transactions
         public void Check()
         {
             // https://bitcoin.org/en/developer-guide#block-chain-overview
-            // TODO : Check the transaction is correct.
-            // UNSPENT TRANSACTION
-            // SPENT TRANSACTION.
+            var isCoinBaseTransaction = this is CoinbaseTransaction;
+            if (!isCoinBaseTransaction && (TransactionIn == null || !TransactionIn.Any()))
+            {
+                throw new ValidationException(ErrorCodes.NoTransactionIn);
+            }
+
+            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            if (!isCoinBaseTransaction)
+            {
+                TransactionOut consumedTransaction = null;
+                long totalOutput = 0;
+                foreach (var txIn in TransactionIn)
+                {
+                    var noneCoinBaseTxIn = txIn as TransactionInNoneCoinbase; // Check TRANSACTION EXISTS.
+                    var previousTxId = noneCoinBaseTxIn.Outpoint.Hash;
+                    var previousIndex = noneCoinBaseTxIn.Outpoint.Index;
+                    var previousTransaction = blockChain.GetUnspentTransaction(previousTxId, previousIndex);
+                    if (previousTransaction == null)
+                    {
+                        throw new ValidationException(ErrorCodes.ReferencedTransactionNotValid);
+                    }
+
+                    var previousTxOut = previousTransaction.TransactionOut.ElementAt((int)previousIndex); // Check SCRIPT.
+                    var sigScript = Script.Deserialize(noneCoinBaseTxIn.SignatureScript);
+                    var pkScript = previousTxOut.Script;
+                    var interpreter = new Interpreter();
+                    if (!interpreter.Check(sigScript, pkScript))
+                    {
+                        throw new ValidationException(ErrorCodes.TransactionSignatureNotCorrect);
+                    }
+
+                    totalOutput += previousTxOut.Value;
+                    // SUM TXOUT <= SUM TXIN.
+                }
+
+                var sumOutput = TransactionOut.Sum(t => t.Value);
+                if (sumOutput > totalOutput)
+                {
+                    throw new ValidationException(ErrorCodes.TransactionOutputExceedInput);
+                }
+            }
         }
 
         public int CompareTo(object obj)

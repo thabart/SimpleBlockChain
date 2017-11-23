@@ -18,6 +18,7 @@ namespace SimpleBlockChain.Core
             Type = type;
             Network = network;
             _key = key;
+            PublicKeyHash = key.GetPublicKeyHashed();
         }
 
         public BlockChainAddress(ScriptTypes type, Networks network, IEnumerable<byte> publicKeyHash)

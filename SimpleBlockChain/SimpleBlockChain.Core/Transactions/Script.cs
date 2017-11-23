@@ -73,6 +73,7 @@ namespace SimpleBlockChain.Core.Transactions
 
         public IEnumerable<ScriptRecord> ScriptRecords { get; private set; }
         public ScriptTypes? Type { get; private set; }
+
         public IEnumerable<byte> Serialize()
         {
             var result = new List<byte>();

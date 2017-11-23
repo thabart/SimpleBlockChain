@@ -101,7 +101,7 @@ namespace SimpleBlockChain.Core.Scripts
                         var sig = ra;
                         var publicKey = rb;
                         var key = Key.Deserialize(publicKey);
-                        var payload = System.Text.Encoding.UTF8.GetBytes("sss");
+                        var payload = System.Text.Encoding.UTF8.GetBytes(Constants.DEFAULT_SIGNATURE_CONTENT);
                         var isCorrect = key.CheckSignature(payload, sig);
                         var p = (isCorrect) ? new byte[] { 1 } : new byte[] { 0 };
                         stack.Add(p);

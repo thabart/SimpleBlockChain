@@ -91,6 +91,7 @@
     <Compile Include="Scripts\Interpreter.cs" />
     <Compile Include="States\PeerConnection.cs" />
     <Compile Include="States\PeerConnectionStates.cs" />
+    <Compile Include="Stores\BlockChainStore.cs" />
     <Compile Include="Stores\PeersStore.cs" />
     <Compile Include="Transactions\BaseTransaction.cs" />
     <Compile Include="Transactions\BaseTransactionIn.cs" />
