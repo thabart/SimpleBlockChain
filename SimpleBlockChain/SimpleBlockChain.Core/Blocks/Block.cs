@@ -35,6 +35,12 @@ namespace SimpleBlockChain.Core.Blocks
             _version = version;
         }
 
+        public Block(BlockHeader blockHeader, IList<BaseTransaction> transactions)
+        {
+            BlockHeader = blockHeader;
+            Transactions = transactions;
+        }
+
         public void SetBlockHeaderHashingStartTime(DateTime dateTime)
         {
             _blockHeaderHashingStartTime = dateTime;
@@ -111,7 +117,7 @@ namespace SimpleBlockChain.Core.Blocks
             return result;
         }
 
-        private static BlockHeader DeserializeBlockHeader(IEnumerable<byte> payload)
+        public static BlockHeader DeserializeBlockHeader(IEnumerable<byte> payload)
         {
             if (payload == null)
             {
@@ -158,6 +164,13 @@ namespace SimpleBlockChain.Core.Blocks
             result.AddRange(compactSize.Serialize());
             result.AddRange(rawTransactions);
             return result.ToArray();
+        }
+
+        public byte[] GetHashHeader()
+        {
+            var payload = SerializeHeader();
+            var mySHA256 = SHA256Managed.Create();
+            return mySHA256.ComputeHash(mySHA256.ComputeHash(payload));
         }
 
         public byte[] SerializeHeader()

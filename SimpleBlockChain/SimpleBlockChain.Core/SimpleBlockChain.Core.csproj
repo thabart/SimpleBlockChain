@@ -70,6 +70,7 @@
     <Compile Include="LevelDb\Options.cs" />
     <Compile Include="LevelDb\ReadOptions.cs" />
     <Compile Include="LevelDb\Slice.cs" />
+    <Compile Include="LevelDb\SliceBuilder.cs" />
     <Compile Include="LevelDb\Snapshot.cs" />
     <Compile Include="LevelDb\WriteBatch.cs" />
     <Compile Include="LevelDb\WriteOptions.cs" />

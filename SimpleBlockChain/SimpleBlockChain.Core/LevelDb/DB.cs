@@ -155,7 +155,21 @@ namespace SimpleBlockChain.Core.LevelDb
             {
                 options = new ReadOptions();
             }
+
             return Native.leveldb_get(Handle, options.handle, key);
+        }
+
+        public bool TryGet(ReadOptions options, string key, out string result)
+        {
+            var value = Get(options, key);
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                result = null;
+                return false;
+            }
+
+            result = value;
+            return true;
         }
 
         public string Get(string key)
