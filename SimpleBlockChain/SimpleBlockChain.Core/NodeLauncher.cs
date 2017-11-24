@@ -1,97 +1,89 @@
-﻿using SimpleBlockChain.Core.Builders;
-using SimpleBlockChain.Core.Connectors;
-using SimpleBlockChain.Core.Crypto;
+﻿using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
-using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Stores;
-using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.Interop;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SimpleBlockChain.Core
 {
+    public class StringEventArgs : EventArgs
+    {
+        public string Data { get; set; }
+        public StringEventArgs(string data)
+        {
+            Data = data;
+        }
+    }
+
     public class NodeLauncher : IDisposable
     {
-        private string _serializedHash;
-        private BaseTransaction _transaction;
+        private readonly Networks _network;
+        private readonly ServiceFlags _serviceFlag;
+        private readonly IpAddress _ipAddress;
         private static RpcServerApi _server;
         private IpAdrHelper _ipAdrHelper;
         private MessageParser _messageParser;
         private MessageLauncher _messageLauncher;
         private P2PNetworkConnector _p2pNetworkConnector;
 
-        public NodeLauncher()
+        public NodeLauncher(Networks network, ServiceFlags serviceFlag, IEnumerable<byte> ipAddress = null)
         {
-            _ipAdrHelper = new IpAdrHelper();
+            _network = network;
+            _serviceFlag = serviceFlag;
+            if (ipAddress == null)
+            {
+                ipAddress = _ipAdrHelper.GetIpv4Address();
+            }
+
+            _ipAddress = new IpAddress(DateTime.UtcNow, _serviceFlag, ipAddress.ToArray(), ushort.Parse(PortsHelper.GetPort(_network))); ;
+             _ipAdrHelper = new IpAdrHelper();
             _messageParser = new MessageParser();
             _messageLauncher = new MessageLauncher();
             _p2pNetworkConnector = new P2PNetworkConnector();
         }
 
+        public event EventHandler StartNodeEvent;
+        public event EventHandler ConnectPeerEvent;
+        public event EventHandler<StringEventArgs> NewMessageEvent;
+
         public void Launch()
         {
-            var network = ChooseNetwork();
-            PeersStore.Instance().SetMyIpAddress(new IpAddress(DateTime.UtcNow, ServiceFlags.NODE_NETWORK, _ipAdrHelper.GetIpv4Address(), ushort.Parse(PortsHelper.GetPort(network))));
-            StartNode(network);
-            _p2pNetworkConnector.Listen(network);
-        }
-
-        private void DisplayMenu(Networks network)
-        {
-            Console.WriteLine("\t Generate a new address");
-            Console.ReadLine();
-            _serializedHash = GenerateNewAddress(network);
-            Console.WriteLine("\t Create the first transaction");
-            Console.ReadLine();
-            CreateTransaction(network);
-            Console.WriteLine("\t Broadcast the transaction");
-            Console.ReadLine();
-            BroadCastTransaction();
-        }
-
-        private string GenerateNewAddress(Networks network)
-        {
-            var key = Key.Genererate();
-            var blockChainAddress = new BlockChainAddress(Transactions.ScriptTypes.P2PKH, network, key);
-            var adr = blockChainAddress.GetSerializedHash();
-            Console.WriteLine($"\t \t BOB is sending it's address to alice via QR code or another way : {adr}");
-            return adr;
+            PeersStore.Instance().SetMyIpAddress(_ipAddress);
+            StartNode();
         }
         
-        private void CreateTransaction(Networks network)
+        public void ConnectP2PNetwork()
         {
-
-            var receivedBlockChain = BlockChainAddress.Deserialize(_serializedHash);
-            var publicKeyHash = receivedBlockChain.PublicKeyHash;
-            var transactionBuilder = new TransactionBuilder();
-            Console.WriteLine("\t \t Please enter the number of BC to spend");
-            var value = EnterNumber();
-            var script = Script.CreateP2PKHScript(publicKeyHash);
-            transactionBuilder.AddOutput(49, script);
-            _transaction = transactionBuilder.Build();
+            _p2pNetworkConnector.Listen(_network);
         }
 
-        private void BroadCastTransaction()
-        {
-            _p2pNetworkConnector.Broadcast(_transaction);
-        }
-
-        private void StartNode(Networks network)
+        private void StartNode()
         {
             var iid = Interop.Constants.InterfaceId;
             var instance = PeersStore.Instance();
             _server = new RpcServerApi(iid, 1234, -1, true);
-            _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, PortsHelper.GetPort(network), 5);
+            _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, PortsHelper.GetPort(_network), 5);
             _server.StartListening();
-            Console.WriteLine("\t The NODE is listening");
+            if (StartNodeEvent != null)
+            {
+                StartNodeEvent(this, EventArgs.Empty);
+            }
+
             _server.OnExecute += delegate (IRpcClientInfo client, byte[] arg)
             {
                 var message = _messageParser.Parse(arg);
-                Console.WriteLine(string.Format("\t A message has been received {0}", message.GetCommandName()));
+                if (NewMessageEvent != null)
+                {
+                    new EventArgs();
+                    NewMessageEvent(this, new StringEventArgs(message.GetCommandName()));
+                }
+
                 var peerConnectionLst = instance.GetPeerConnectionLst();
                 Message response = null;
                 if (message.GetCommandName() == Constants.MessageNames.Version)
@@ -103,11 +95,14 @@ namespace SimpleBlockChain.Core
                 {
                     var verackMessage = message as VerackMessage;
                     response = _messageLauncher.Launch(verackMessage, _ipAdrHelper.ParseRpcIpAddress(client));
-                    Console.WriteLine("\t Server : Connected to a peer");
+                    if (ConnectPeerEvent != null)
+                    {
+                        ConnectPeerEvent(this, EventArgs.Empty);
+                    }
                 }
                 else
                 {
-                   response = _messageLauncher.Launch(message);
+                    response = _messageLauncher.Launch(message);
                 }
 
                 if (response == null)
@@ -117,51 +112,6 @@ namespace SimpleBlockChain.Core
 
                 return response.Serialize();
             };
-        }
-
-        private static Networks ChooseNetwork()
-        {
-            Console.WriteLine("\t Choose on which network you want to connect");
-            Console.WriteLine("\t \t 1. MainNet");
-            Console.WriteLine("\t \t 2. TestNet");
-            Console.WriteLine("\t \t 3. RegTest");
-            var number = EnterNumber();
-            switch (number)
-            {
-                case 1:
-                    return Networks.MainNet;
-                case 2:
-                    return Networks.TestNet;
-                default:
-                    return Networks.RegTest;
-            }
-        }
-
-        private static ServiceFlags ChooseNodeType()
-        {
-            Console.WriteLine("\t Choose the type of node");
-            Console.WriteLine("\t \t 1. Lightweight node");
-            Console.WriteLine("\t \t 2. Full node"); // https://en.bitcoin.it/wiki/Full_node
-            var number = EnterNumber();
-            switch (number)
-            {
-                case 1:
-                    return ServiceFlags.NODE_NONE;
-                default:
-                    return ServiceFlags.NODE_NETWORK;
-            }
-        }
-
-        private static int EnterNumber()
-        {
-            int option;
-            if (!int.TryParse(Console.ReadLine(), out option))
-            {
-                Console.WriteLine("Please enter a correct number");
-                return EnterNumber();
-            }
-
-            return option;
         }
 
         public void Dispose()

@@ -8,12 +8,15 @@ using SimpleBlockChain.Core.States;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Interop;
 using System;
+using System.ComponentModel;
 using System.Net;
+using System.Timers;
 
 namespace SimpleBlockChain.Core.Connectors
 {
     public class PeerConnector : IDisposable
     {
+        private readonly BackgroundWorker _cheeckPeerAvailabilityWorker;
         private readonly Networks _network;
         private RpcClientApi _client;
         private MessageParser _messageParser;
@@ -26,7 +29,13 @@ namespace SimpleBlockChain.Core.Connectors
             _network = network;
             _messageParser = new MessageParser();
             _messageLauncher = new MessageLauncher();
+            _cheeckPeerAvailabilityWorker = new BackgroundWorker();
+            _cheeckPeerAvailabilityWorker.DoWork += CheckPeerAvailability;
+            Timer timer = new Timer(60000); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
+            timer.Elapsed += TimerElapsed;
         }
+
+        public event EventHandler TimeOutEvent;
 
         public void Connect(string host, ServiceFlags serviceFlag)
         {
@@ -55,11 +64,29 @@ namespace SimpleBlockChain.Core.Connectors
             _peerConnection = new PeerConnection(adrBytes);
             instance.AddPeerConnection(_peerConnection);
             Parse(result);
+
         }
 
         public void Execute(byte[] input)
         {
             _client.Execute(input);
+        }
+
+        private void TimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            if (!_cheeckPeerAvailabilityWorker.IsBusy)
+            {
+                _cheeckPeerAvailabilityWorker.RunWorkerAsync();
+            }
+        }
+        
+        private void CheckPeerAvailability(object sender, DoWorkEventArgs e)
+        {
+            // TODO : If not available (TIMEOUT AFTER 11 SECS) then remove from the REPOSITORY.
+            if (TimeOutEvent != null)
+            {
+                TimeOutEvent(this, EventArgs.Empty);
+            }
         }
 
         private void Parse(byte[] payload)

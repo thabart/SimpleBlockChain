@@ -63,6 +63,7 @@
     <Compile Include="Blocks\BlockHeader.cs" />
     <Compile Include="Common\CompactSize.cs" />
     <Compile Include="Converters\ByteArrayConverter.cs" />
+    <Compile Include="Helpers\MenuHelper.cs" />
     <Compile Include="LevelDb\Cache.cs" />
     <Compile Include="LevelDb\DB.cs" />
     <Compile Include="LevelDb\Iterator.cs" />

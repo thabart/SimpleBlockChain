@@ -1,18 +1,24 @@
 ﻿using SimpleBlockChain.Core.Messages.DataMessages;
+using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Timers;
 
 namespace SimpleBlockChain.Core.Connectors
 {
     public class P2PNetworkConnector : IDisposable
     {
+        private readonly BackgroundWorker _cheeckPeerAvailabilityWorker;
+        private readonly PeersRepository _peersRepository;
         private Networks _network;
         private IList<PeerConnector> _peerConnectorLst;
 
         public P2PNetworkConnector()
         {
             _peerConnectorLst = new List<PeerConnector>();
+            _peersRepository = new PeersRepository();
         }
         
         public void Listen(Networks network)
@@ -54,8 +60,7 @@ namespace SimpleBlockChain.Core.Connectors
         {
             return new []
             {
-                // "192.168.1.6"
-                "192.168.76.134"
+                Constants.DNS_IP_ADDRESS
             };
         }
 
