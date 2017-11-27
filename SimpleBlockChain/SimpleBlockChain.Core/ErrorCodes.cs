@@ -15,5 +15,7 @@
         public const string TransactionSignatureNotCorrect = "transaction_signature_not_correct";
         public const string NoTransactionIn = "no_in_transaction";
         public const string TransactionOutputExceedInput = "transaction_output_exceed_input";
+        public const string PeerRpcError = "peer_rpc_error";
+        public const string SeedPeersNotReachable = "seed_peers_not_reachable";
     }
 }

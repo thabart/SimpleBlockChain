@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
@@ -55,7 +56,7 @@ namespace SimpleBlockChain.Core.Launchers
                 {
                     foreach(var ipAddress in msg.IpAddresses)
                     {
-                        _peersStorage.AddPeer(ipAddress).Wait();
+                        PeerEventStore.Instance().NewPeer(ipAddress);
                     }
                 }
 

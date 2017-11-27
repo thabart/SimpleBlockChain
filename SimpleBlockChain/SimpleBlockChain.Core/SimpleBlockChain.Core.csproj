@@ -63,6 +63,11 @@
     <Compile Include="Blocks\BlockHeader.cs" />
     <Compile Include="Common\CompactSize.cs" />
     <Compile Include="Converters\ByteArrayConverter.cs" />
+    <Compile Include="Evts\IpAddressEventArgs.cs" />
+    <Compile Include="Evts\PeerEventStore.cs" />
+    <Compile Include="Evts\StringEventArgs.cs" />
+    <Compile Include="Exceptions\P2PConnectorException.cs" />
+    <Compile Include="Exceptions\PeerConnectorException.cs" />
     <Compile Include="Helpers\MenuHelper.cs" />
     <Compile Include="LevelDb\Cache.cs" />
     <Compile Include="LevelDb\DB.cs" />

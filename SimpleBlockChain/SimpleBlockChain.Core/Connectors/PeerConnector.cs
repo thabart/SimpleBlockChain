@@ -1,4 +1,6 @@
 ﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Evts;
+using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
@@ -16,12 +18,16 @@ namespace SimpleBlockChain.Core.Connectors
 {
     public class PeerConnector : IDisposable
     {
+        private const int CHECK_INTERVAL = 60000;
+        private const int PEER_TIMEOUT = 11000;
         private readonly BackgroundWorker _cheeckPeerAvailabilityWorker;
         private readonly Networks _network;
         private RpcClientApi _client;
         private MessageParser _messageParser;
         private MessageLauncher _messageLauncher;
         private PeerConnection _peerConnection;
+        private PongMessage _pongMessage;
+        private IpAddress _currentIpAddress;
 
         public PeerConnector(Networks network)
         {
@@ -31,11 +37,12 @@ namespace SimpleBlockChain.Core.Connectors
             _messageLauncher = new MessageLauncher();
             _cheeckPeerAvailabilityWorker = new BackgroundWorker();
             _cheeckPeerAvailabilityWorker.DoWork += CheckPeerAvailability;
-            Timer timer = new Timer(60000); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
+            Timer timer = new Timer(CHECK_INTERVAL); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
             timer.Elapsed += TimerElapsed;
         }
 
-        public event EventHandler TimeOutEvent;
+        public event EventHandler<IpAddressEventArgs> TimeOutEvent;
+        public event EventHandler<IpAddressEventArgs> ConnectEvent;
 
         public void Connect(string host, ServiceFlags serviceFlag)
         {
@@ -60,11 +67,17 @@ namespace SimpleBlockChain.Core.Connectors
             var receivingNode = new IpAddress(serviceFlag, adrBytes, ushort.Parse(port));
             var nonce = NonceHelper.GetNonceUInt64();
             var versionMessage = new VersionMessage(transmittingNode, receivingNode, nonce, string.Empty, 0, false, _network);
-            var result = _client.Execute(versionMessage.Serialize());
-            _peerConnection = new PeerConnection(adrBytes);
-            instance.AddPeerConnection(_peerConnection);
-            Parse(result);
-
+            try
+            {
+                var result = _client.Execute(versionMessage.Serialize());
+                _peerConnection = new PeerConnection(adrBytes);
+                instance.AddPeerConnection(_peerConnection);
+                Parse(result);
+            }
+            catch(RpcException)
+            {
+                throw new PeerConnectorException(ErrorCodes.PeerRpcError);
+            }
         }
 
         public void Execute(byte[] input)
@@ -82,10 +95,26 @@ namespace SimpleBlockChain.Core.Connectors
         
         private void CheckPeerAvailability(object sender, DoWorkEventArgs e)
         {
-            // TODO : If not available (TIMEOUT AFTER 11 SECS) then remove from the REPOSITORY.
+            var nonce = NonceHelper.GetNonceUInt64();
+            _messageLauncher.Launch(new PingMessage(nonce, _network));
+            int time = 0;
+            int intervalMs = 200;
+            while (time < PEER_TIMEOUT)
+            {
+                if (_pongMessage != null && _pongMessage.Nonce == nonce)
+                {
+                    _pongMessage = null;
+                    return;
+                }
+
+                System.Threading.Thread.Sleep(intervalMs);
+                time += intervalMs;
+            }
+
+
             if (TimeOutEvent != null)
             {
-                TimeOutEvent(this, EventArgs.Empty);
+                TimeOutEvent(this, new IpAddressEventArgs(_currentIpAddress));
             }
         }
 
@@ -101,14 +130,22 @@ namespace SimpleBlockChain.Core.Connectors
             }
             else if (message.GetCommandName() == Constants.MessageNames.Verack)
             {
-                Console.WriteLine("Client : Connected to a peer");
                 _peerConnection.Connect();
-                var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, _network);
                 var myIpAddress = instance.GetMyIpAddress();
-                var ipAddress = new IpAddress(DateTime.UtcNow, myIpAddress.ServiceFlag, myIpAddress.Ipv6, myIpAddress.Port);
-                addrMessage.IpAddresses.Add(ipAddress);
+                _currentIpAddress = new IpAddress(DateTime.UtcNow, myIpAddress.ServiceFlag, myIpAddress.Ipv6, myIpAddress.Port);
+                if (ConnectEvent != null)
+                {
+                    ConnectEvent(this, new IpAddressEventArgs(_currentIpAddress));
+                }
+
+                var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, _network);
+                addrMessage.IpAddresses.Add(_currentIpAddress);
                 _client.Execute(addrMessage.Serialize());
                 response = new GetAddressMessage(_network);
+            }
+            else if (message.GetCommandName() == Constants.MessageNames.Pong)
+            {
+                _pongMessage = message as PongMessage;
             }
             else
             {

@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Connectors;
+using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
@@ -12,15 +13,6 @@ using System.Linq;
 
 namespace SimpleBlockChain.Core
 {
-    public class StringEventArgs : EventArgs
-    {
-        public string Data { get; set; }
-        public StringEventArgs(string data)
-        {
-            Data = data;
-        }
-    }
-
     public class NodeLauncher : IDisposable
     {
         private readonly Networks _network;
@@ -36,20 +28,24 @@ namespace SimpleBlockChain.Core
         {
             _network = network;
             _serviceFlag = serviceFlag;
+             _ipAdrHelper = new IpAdrHelper();
+            _messageParser = new MessageParser();
+            _messageLauncher = new MessageLauncher();
+            _p2pNetworkConnector = new P2PNetworkConnector();
+            _p2pNetworkConnector.ConnectEvent += P2PConnectEvent;
+            _p2pNetworkConnector.DisconnectEvent += P2PDisconnectEvent;
             if (ipAddress == null)
             {
                 ipAddress = _ipAdrHelper.GetIpv4Address();
             }
 
-            _ipAddress = new IpAddress(DateTime.UtcNow, _serviceFlag, ipAddress.ToArray(), ushort.Parse(PortsHelper.GetPort(_network))); ;
-             _ipAdrHelper = new IpAdrHelper();
-            _messageParser = new MessageParser();
-            _messageLauncher = new MessageLauncher();
-            _p2pNetworkConnector = new P2PNetworkConnector();
+            _ipAddress = new IpAddress(DateTime.UtcNow, _serviceFlag, ipAddress.ToArray(), ushort.Parse(PortsHelper.GetPort(_network)));
         }
 
         public event EventHandler StartNodeEvent;
         public event EventHandler ConnectPeerEvent;
+        public event EventHandler ConnectP2PEvent;
+        public event EventHandler DisconnectP2PEvent;
         public event EventHandler<StringEventArgs> NewMessageEvent;
 
         public void Launch()
@@ -80,7 +76,6 @@ namespace SimpleBlockChain.Core
                 var message = _messageParser.Parse(arg);
                 if (NewMessageEvent != null)
                 {
-                    new EventArgs();
                     NewMessageEvent(this, new StringEventArgs(message.GetCommandName()));
                 }
 
@@ -112,6 +107,22 @@ namespace SimpleBlockChain.Core
 
                 return response.Serialize();
             };
+        }
+
+        private void P2PConnectEvent(object sender, EventArgs e)
+        {
+            if (ConnectP2PEvent != null)
+            {
+                ConnectP2PEvent(this, EventArgs.Empty);
+            }
+        }
+
+        private void P2PDisconnectEvent(object sender, EventArgs e)
+        {
+            if (DisconnectP2PEvent != null)
+            {
+                DisconnectP2PEvent(this, EventArgs.Empty);
+            }
         }
 
         public void Dispose()
