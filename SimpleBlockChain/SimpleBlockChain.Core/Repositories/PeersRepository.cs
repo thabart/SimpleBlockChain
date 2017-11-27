@@ -67,6 +67,17 @@ namespace SimpleBlockChain.Core.Storages
             return lines.Select(l => IpAddress.Deserialize(l));
         }
 
+        public bool Empty()
+        {
+            if (!File.Exists(GetPath()))
+            {
+                return false;
+            }
+
+            File.WriteAllText(GetPath(), string.Empty);
+            return true;
+        }
+
         private static void CheckFileExists()
         {
             if (!File.Exists(GetPath()))

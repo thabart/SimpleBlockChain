@@ -25,7 +25,7 @@ namespace SimpleBlockChain.Core
         }
 
         public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr,
-            MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr, MessageNames.Inventory, MessageNames.Transaction };
+            MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr, MessageNames.Inventory, MessageNames.Transaction, MessageNames.Pong };
 
         public class MessageNames
         {

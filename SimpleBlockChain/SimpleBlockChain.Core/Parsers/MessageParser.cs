@@ -98,6 +98,11 @@ namespace SimpleBlockChain.Core.Parsers
             {
                 message = TransactionMessage.Deserialize(contentPayload, network, Transactions.TransactionTypes.NoneCoinbase);
             }
+            else if (commandName == Constants.MessageNames.Pong)
+            {
+                var nonce = BitConverter.ToUInt64(contentPayload, 0);
+                message = new PongMessage(nonce, network);
+            }
 
             return message;
         }

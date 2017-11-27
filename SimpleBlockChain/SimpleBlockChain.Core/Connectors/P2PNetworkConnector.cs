@@ -18,6 +18,7 @@ namespace SimpleBlockChain.Core.Connectors
     public class P2PNetworkConnector : IDisposable
     {
         private const int RETRY_P2P_CONNECTION_INTERVAL = 10000;
+        private const int MIN_NB_PEERS = 3;
         private readonly PeersRepository _peersRepository;
         private Networks _network;
         private ConcurrentBag<PeerConnector> _peers;
@@ -63,48 +64,26 @@ namespace SimpleBlockChain.Core.Connectors
 
         private async Task DiscoverNodes()
         {
-            var seedNodes = GetSeedNodes();
-            var tasks = new List<Task>();
-            foreach(var seedNode in seedNodes)
+            var peers = _peersRepository.GetAll();
+            if (peers.Any())
             {
-                var ip = IPAddress.Parse(seedNode);
-                var myIp = PeersStore.Instance().GetMyIpAddress();
-                if (myIp.Ipv6.SequenceEqual(ip.MapToIPv6().GetAddressBytes()))
-                {
-                    continue;
-                }
-
-                tasks.Add(ConnectToPeer(seedNode));
+                await DiscoverNodesViaStore(peers);
+                return;
             }
 
-            var result = Task.WhenAll(tasks.ToArray());
-            try
-            {
-                await result;
-            }
-            catch (Exception) { }
-            
-            if (result.Exception != null)
-            {
-                var ex = result.Exception as AggregateException;
-                if (ex.InnerExceptions.Count == seedNodes.Count())
-                {
-                    if (DisconnectEvent != null)
-                    {
-                        DisconnectEvent(this, EventArgs.Empty);
-                    }
-
-                    System.Threading.Thread.Sleep(RETRY_P2P_CONNECTION_INTERVAL);
-                    await DiscoverNodes();
-                    return;
-                }
-            }
-
-            if (ConnectEvent != null)
-            {
-                ConnectEvent(this, EventArgs.Empty);
-            }
+            await DiscoverNodesViaSeeds();
         }
+
+        private Task DiscoverNodesViaStore(IEnumerable<IpAddress> nodes)
+        {
+            var result = nodes.Select(n => (new IPAddress(n.Ipv6)).MapToIPv6().ToString());
+            return ConnectToPeers(result);
+        }
+
+        private Task DiscoverNodesViaSeeds()
+        {
+            return ConnectToPeers(GetSeedNodes());
+        }        
 
         public bool ContainsPeer(IpAddress adr)
         {
@@ -157,6 +136,55 @@ namespace SimpleBlockChain.Core.Connectors
             var ipAdr = new IPAddress(ipAddr.Data.Ipv6);
             ConnectToPeer(ipAdr.ToString());
         }
+        
+        private async Task ConnectToPeers(IEnumerable<string> hosts)
+        {
+            if (hosts == null)
+            {
+                throw new ArgumentNullException(nameof(hosts));
+            }
+
+            var tasks = new List<Task>();
+            foreach (var seedNode in hosts)
+            {
+                var ip = IPAddress.Parse(seedNode);
+                var myIp = PeersStore.Instance().GetMyIpAddress();
+                if (myIp.Ipv6.SequenceEqual(ip.MapToIPv6().GetAddressBytes()))
+                {
+                    continue;
+                }
+
+                tasks.Add(ConnectToPeer(seedNode));
+            }
+
+            var result = Task.WhenAll(tasks.ToArray());
+            try
+            {
+                await result;
+            }
+            catch (Exception) { }
+
+            if (result.Exception != null)
+            {
+                var ex = result.Exception as AggregateException;
+                if (ex.InnerExceptions.Count == hosts.Count())
+                {
+                    if (DisconnectEvent != null)
+                    {
+                        DisconnectEvent(this, EventArgs.Empty);
+                    }
+
+                    System.Threading.Thread.Sleep(RETRY_P2P_CONNECTION_INTERVAL);
+                    await DiscoverNodes();
+                    return;
+                }
+            }
+
+            if (ConnectEvent != null)
+            {
+                ConnectEvent(this, EventArgs.Empty);
+            }
+        }
 
         private Task ConnectToPeer(string host)
         {
@@ -171,7 +199,6 @@ namespace SimpleBlockChain.Core.Connectors
                 try
                 {
                     var manualResetEvent = new ManualResetEvent(false);
-                    peerConnector.Connect(host, ServiceFlags.NODE_NETWORK);
                     peerConnector.ConnectEvent += (s, i) =>
                     {
                         _peers.Add(peerConnector);
@@ -179,6 +206,7 @@ namespace SimpleBlockChain.Core.Connectors
                         manualResetEvent.Set();
                     };
                     peerConnector.TimeOutEvent += RemovePeer;
+                    peerConnector.Connect(host, ServiceFlags.NODE_NETWORK);
                     manualResetEvent.WaitOne();
                 }
                 catch (PeerConnectorException)
@@ -200,7 +228,13 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 throw new ArgumentNullException(nameof(ipAdr));
             }
-            
+
+            var seedNodes = GetSeedNodes().Select(s => IPAddress.Parse(s).MapToIPv6().GetAddressBytes());
+            if (seedNodes.Any(s => s.SequenceEqual(ipAdr.Data.Ipv6)))
+            {
+                return;
+            }
+
             _peersRepository.AddPeer(ipAdr.Data).Wait();
         }
 
@@ -219,6 +253,17 @@ namespace SimpleBlockChain.Core.Connectors
             var peerConnector = sender as PeerConnector;
             _peers = new ConcurrentBag<PeerConnector>(_peers.Except(new[] { peerConnector }));
             _peersRepository.RemovePeer(ipAdr.Data).Wait();
+            peerConnector.Dispose();
+            if (!_peers.Any())
+            {
+                _peersRepository.Empty();
+                if (DisconnectEvent != null)
+                {
+                    DisconnectEvent(this, EventArgs.Empty);
+                }
+
+                DiscoverNodes();
+            }
         }
         
         private static IEnumerable<string> GetSeedNodes()

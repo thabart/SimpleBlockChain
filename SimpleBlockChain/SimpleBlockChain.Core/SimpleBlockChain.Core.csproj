@@ -68,6 +68,7 @@
     <Compile Include="Evts\StringEventArgs.cs" />
     <Compile Include="Exceptions\P2PConnectorException.cs" />
     <Compile Include="Exceptions\PeerConnectorException.cs" />
+    <Compile Include="Factories\ServerFactory.cs" />
     <Compile Include="Helpers\MenuHelper.cs" />
     <Compile Include="LevelDb\Cache.cs" />
     <Compile Include="LevelDb\DB.cs" />
