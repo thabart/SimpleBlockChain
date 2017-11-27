@@ -53,7 +53,7 @@ namespace SimpleBlockChain.Core.Connectors
 
             var iid = Interop.Constants.InterfaceId;
             var port = PortsHelper.GetPort(_network);
-            _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, host, port);
+            _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, "localhost", port);
             // Connection to peers : https://bitcoin.org/en/developer-guide#connecting-to-peers
             var instance = PeersStore.Instance();
             var transmittingNode = instance.GetMyIpAddress();

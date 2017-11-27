@@ -64,7 +64,8 @@ namespace SimpleBlockChain.Core
             var iid = Interop.Constants.InterfaceId;
             var instance = PeersStore.Instance();
             _server = new RpcServerApi(iid, 1234, -1, true);
-            _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, PortsHelper.GetPort(_network), 5);
+            var port = PortsHelper.GetPort(_network);
+            _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, port, 5);
             _server.StartListening();
             if (StartNodeEvent != null)
             {

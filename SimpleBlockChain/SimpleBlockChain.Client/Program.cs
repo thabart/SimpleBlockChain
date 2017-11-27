@@ -1,6 +1,5 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Evts;
-using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Helpers;
 using System;
 

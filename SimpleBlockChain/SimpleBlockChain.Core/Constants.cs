@@ -5,7 +5,8 @@ namespace SimpleBlockChain.Core
 {
     public static class Constants
     {
-        public const string DNS_IP_ADDRESS = "192.168.76.134";
+        public const string DNS_IP_ADDRESS = "127.0.0.1";
+        // public const string DNS_IP_ADDRESS = "192.168.76.135";
         // public const string DNS_IP_ADDRESS = "192.168.1.6";
         public const int SupportedProtocolVersion = 70015;
         public const uint DEFAULT_NBITS = 0x1d00ffff;
