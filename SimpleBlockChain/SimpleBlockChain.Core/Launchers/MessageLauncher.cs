@@ -96,31 +96,7 @@ namespace SimpleBlockChain.Core.Launchers
             instance.AddTransaction(transaction);
         }
 
-        public Message Launch(VerackMessage verackMessage, byte[] ipAdr)
-        {
-            if (verackMessage == null)
-            {
-                throw new ArgumentNullException(nameof(verackMessage));
-            }
-
-            if (ipAdr == null)
-            {
-                throw new ArgumentNullException(nameof(ipAdr));
-            }
-
-            var instance = PeersStore.Instance();
-            var peerConnectionLst = instance.GetPeerConnectionLst();
-            var pc = peerConnectionLst.FirstOrDefault(ar => ar.IpAddress.SequenceEqual(ipAdr));
-            if (pc == null)
-            {
-                return null;
-            }
-
-            pc.Connect();
-            return new VerackMessage(verackMessage.MessageHeader.Network);
-        }
-
-        public Message Launch(VersionMessage messageVersion)
+        public Message ServerRespond(VersionMessage messageVersion)
         {
             if (messageVersion == null)
             {
@@ -128,28 +104,29 @@ namespace SimpleBlockChain.Core.Launchers
             }
             
             var instance = PeersStore.Instance();
-            var peerConnectionLst = instance.GetPeerConnectionLst();
-            var pc = peerConnectionLst.FirstOrDefault(ar => ar.IpAddress.SequenceEqual(messageVersion.TransmittingNode.Ipv6));
-            if (pc == null)
+            var transmittingNode = instance.GetMyIpAddress();
+            var receivingNode = messageVersion.TransmittingNode;
+            return new VersionMessage(transmittingNode, receivingNode, messageVersion.Nonce, messageVersion.UserAgent, messageVersion.StartHeight, messageVersion.Relay, messageVersion.MessageHeader.Network);
+        }
+
+        public Message ServerRespond(VerackMessage verackMessage, Networks network)
+        {
+            if (verackMessage == null)
             {
-                pc = new PeerConnection(messageVersion.TransmittingNode.Ipv6);
-                instance.AddPeerConnection(pc);
+                throw new ArgumentNullException(nameof(verackMessage));
             }
 
-            if (pc.State == PeerConnectionStates.NotConnected)
+            return new VerackMessage(network);
+        }
+        
+        public Message ClientRespond(VersionMessage messageVersion, Networks network)
+        {
+            if (messageVersion == null)
             {
-                var transmittingNode = instance.GetMyIpAddress();
-                var receivingNode = messageVersion.TransmittingNode;
-                pc.Accept();
-                return new VersionMessage(transmittingNode, receivingNode, messageVersion.Nonce, messageVersion.UserAgent, messageVersion.StartHeight, messageVersion.Relay, messageVersion.MessageHeader.Network);
+                throw new ArgumentNullException(nameof(messageVersion));
             }
 
-            if (pc.State == PeerConnectionStates.Accepted)
-            {
-                return new VerackMessage(messageVersion.MessageHeader.Network);
-            }
-
-            return null;            
+            return new VerackMessage(network);
         }
     }
 }

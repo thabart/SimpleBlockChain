@@ -53,7 +53,8 @@ namespace SimpleBlockChain.Core.Connectors
 
             var iid = Interop.Constants.InterfaceId;
             var port = PortsHelper.GetPort(_network);
-            _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, "localhost", port);
+            // _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, host, port);
+            _client = new RpcClientApi(iid, RpcProtseq.ncalrpc, null, host);
             // Connection to peers : https://bitcoin.org/en/developer-guide#connecting-to-peers
             var instance = PeersStore.Instance();
             var transmittingNode = instance.GetMyIpAddress();
@@ -71,7 +72,6 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 var result = _client.Execute(versionMessage.Serialize());
                 _peerConnection = new PeerConnection(adrBytes);
-                instance.AddPeerConnection(_peerConnection);
                 Parse(result);
             }
             catch(RpcException)
@@ -80,9 +80,19 @@ namespace SimpleBlockChain.Core.Connectors
             }
         }
 
+        public IpAddress GetCurrentIpAddress()
+        {
+            return _currentIpAddress;
+        }
+
         public void Execute(byte[] input)
         {
             _client.Execute(input);
+        }
+
+        public PeerConnectionStates GetState()
+        {
+            return _peerConnection.State;
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)
@@ -126,7 +136,7 @@ namespace SimpleBlockChain.Core.Connectors
             if (message.GetCommandName() == Constants.MessageNames.Version)
             {
                 var versionMessage = message as VersionMessage;
-                response = _messageLauncher.Launch(versionMessage);
+                response = _messageLauncher.ClientRespond(versionMessage, _network);
             }
             else if (message.GetCommandName() == Constants.MessageNames.Verack)
             {
@@ -137,11 +147,12 @@ namespace SimpleBlockChain.Core.Connectors
                 {
                     ConnectEvent(this, new IpAddressEventArgs(_currentIpAddress));
                 }
-
+                /*
                 var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, _network);
                 addrMessage.IpAddresses.Add(_currentIpAddress);
                 _client.Execute(addrMessage.Serialize());
                 response = new GetAddressMessage(_network);
+                */
             }
             else if (message.GetCommandName() == Constants.MessageNames.Pong)
             {

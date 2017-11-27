@@ -2,8 +2,9 @@
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using System;
+using System.Net;
 
-namespace SimpleBlockChain.Client
+namespace SimpleBlockChain.FullNode
 {
     class Program
     {
@@ -11,12 +12,12 @@ namespace SimpleBlockChain.Client
 
         static void Main(string[] args)
         {
-            Console.WriteLine("==== Welcome to SimpleBlockChain (FULL-NODE / MINER) ====");
+            Console.WriteLine("==== Welcome to SimpleBlockChain (FULL NODE / MINER) ====");
+            var ipBytes = IPAddress.Parse("127.0.0.1").MapToIPv6().GetAddressBytes();
             var network = MenuHelper.ChooseNetwork();
-            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);
+            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK, ipBytes);
             _nodeLauncher.StartNodeEvent += StartNodeEvent;
             _nodeLauncher.NewMessageEvent += NewMessageEvent;
-            _nodeLauncher.ConnectPeerEvent += ConnectPeerEvent;
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.Launch();
@@ -42,11 +43,6 @@ namespace SimpleBlockChain.Client
         private static void NewMessageEvent(object sender, StringEventArgs e)
         {
             MenuHelper.DisplayInformation($"Message {e.Data} arrived");
-        }
-
-        private static void ConnectPeerEvent(object sender, EventArgs e)
-        {
-            MenuHelper.DisplayInformation($"Connected to a P2P FULL NODE");
         }
     }
 }

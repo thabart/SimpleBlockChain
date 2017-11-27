@@ -90,5 +90,21 @@ namespace SimpleBlockChain.Core.Messages.ControlMessages
             var port = jToken.Value<UInt16>("Port");
             return new IpAddress(time, serviceFlag, ipV6.ToArray(), port);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            var ipAddr = obj as IpAddress;
+            if (ipAddr == null)
+            {
+                return false;
+            }
+
+            return Ipv6.SequenceEqual(ipAddr.Ipv6);
+        }
     }
 }

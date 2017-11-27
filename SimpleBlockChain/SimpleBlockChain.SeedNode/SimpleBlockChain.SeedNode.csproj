@@ -7,8 +7,8 @@
     <ProjectGuid>{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SimpleBlockChain.Client</RootNamespace>
-    <AssemblyName>SimpleBlockChain.Client</AssemblyName>
+    <RootNamespace>SimpleBlockChain.SeedNode</RootNamespace>
+    <AssemblyName>SimpleBlockChain.SeedNode</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

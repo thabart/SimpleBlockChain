@@ -10,6 +10,8 @@ using SimpleBlockChain.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace SimpleBlockChain.Core
 {
@@ -43,7 +45,6 @@ namespace SimpleBlockChain.Core
         }
 
         public event EventHandler StartNodeEvent;
-        public event EventHandler ConnectPeerEvent;
         public event EventHandler ConnectP2PEvent;
         public event EventHandler DisconnectP2PEvent;
         public event EventHandler<StringEventArgs> NewMessageEvent;
@@ -54,24 +55,22 @@ namespace SimpleBlockChain.Core
             StartNode();
         }
         
-        public void ConnectP2PNetwork()
+        public Task ConnectP2PNetwork()
         {
-            _p2pNetworkConnector.Listen(_network);
+            return _p2pNetworkConnector.Listen(_network);
         }
 
         private void StartNode()
         {
             var iid = Interop.Constants.InterfaceId;
             var instance = PeersStore.Instance();
-            _server = new RpcServerApi(iid, 1234, -1, true);
             var port = PortsHelper.GetPort(_network);
-            _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, port, 5);
+            // _server = new RpcServerApi(iid, 1234, -1, true);
+            // _server.AddProtocol(RpcProtseq.ncacn_ip_tcp, port, 5);
+            var name = (new IPAddress(_ipAddress.Ipv6)).MapToIPv4().ToString(); // USE QUEUE.
+            _server = new RpcServerApi(iid, 1234, -1, true);
+            _server.AddProtocol(RpcProtseq.ncalrpc, name, 5);
             _server.StartListening();
-            if (StartNodeEvent != null)
-            {
-                StartNodeEvent(this, EventArgs.Empty);
-            }
-
             _server.OnExecute += delegate (IRpcClientInfo client, byte[] arg)
             {
                 var message = _messageParser.Parse(arg);
@@ -80,21 +79,16 @@ namespace SimpleBlockChain.Core
                     NewMessageEvent(this, new StringEventArgs(message.GetCommandName()));
                 }
 
-                var peerConnectionLst = instance.GetPeerConnectionLst();
                 Message response = null;
                 if (message.GetCommandName() == Constants.MessageNames.Version)
                 {
                     var msg = message as VersionMessage;
-                    response = _messageLauncher.Launch(msg);
+                    response = _messageLauncher.ServerRespond(msg);
                 }
                 else if (message.GetCommandName() == Constants.MessageNames.Verack)
                 {
                     var verackMessage = message as VerackMessage;
-                    response = _messageLauncher.Launch(verackMessage, _ipAdrHelper.ParseRpcIpAddress(client));
-                    if (ConnectPeerEvent != null)
-                    {
-                        ConnectPeerEvent(this, EventArgs.Empty);
-                    }
+                    response = _messageLauncher.ServerRespond(verackMessage, _network);
                 }
                 else
                 {
@@ -108,6 +102,11 @@ namespace SimpleBlockChain.Core
 
                 return response.Serialize();
             };
+
+            if (StartNodeEvent != null)
+            {
+                StartNodeEvent(this, EventArgs.Empty);
+            }
         }
 
         private void P2PConnectEvent(object sender, EventArgs e)

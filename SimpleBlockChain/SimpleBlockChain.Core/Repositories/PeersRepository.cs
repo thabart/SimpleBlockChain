@@ -58,6 +58,11 @@ namespace SimpleBlockChain.Core.Storages
 
         public IEnumerable<IpAddress> GetAll()
         {
+            if (!File.Exists(GetPath()))
+            {
+                return new List<IpAddress>();
+            }
+
             var lines = File.ReadAllLines(GetPath());
             return lines.Select(l => IpAddress.Deserialize(l));
         }

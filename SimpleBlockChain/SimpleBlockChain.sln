@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Server", "SimpleBlockChain.Client\SimpleBlockChain.Server.csproj", "{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Interop", "SimpleBlockChain.Interop\SimpleBlockChain.Interop.csproj", "{CAAA77BC-12F3-49D6-A13B-332C4D735822}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Core", "SimpleBlockChain.Core\SimpleBlockChain.Core.csproj", "{40A7A6F1-B60D-48B3-AAC1-2D6541AC0B8F}"
@@ -13,16 +11,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.UnitTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Wallet", "SimpleBlockChain.Wallet\SimpleBlockChain.Wallet.csproj", "{77C4E439-DCBF-4B65-8634-21F73811C008}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.SeedNode", "SimpleBlockChain.SeedNode\SimpleBlockChain.SeedNode.csproj", "{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.FullNode", "SimpleBlockChain.FullNode\SimpleBlockChain.FullNode.csproj", "{BF959563-B864-41E3-9748-F1BD7F22384F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CAAA77BC-12F3-49D6-A13B-332C4D735822}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CAAA77BC-12F3-49D6-A13B-332C4D735822}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAAA77BC-12F3-49D6-A13B-332C4D735822}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +37,14 @@ Global
 		{77C4E439-DCBF-4B65-8634-21F73811C008}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77C4E439-DCBF-4B65-8634-21F73811C008}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77C4E439-DCBF-4B65-8634-21F73811C008}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F6B2A1C-37CD-48E8-9AC7-BB0C7B0DEE6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF959563-B864-41E3-9748-F1BD7F22384F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF959563-B864-41E3-9748-F1BD7F22384F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF959563-B864-41E3-9748-F1BD7F22384F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF959563-B864-41E3-9748-F1BD7F22384F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
