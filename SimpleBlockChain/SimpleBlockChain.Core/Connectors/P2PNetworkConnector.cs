@@ -1,5 +1,7 @@
-﻿using SimpleBlockChain.Core.Evts;
+﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Exceptions;
+using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.Storages;
@@ -48,6 +50,19 @@ namespace SimpleBlockChain.Core.Connectors
             }
 
             var message = new TransactionMessage(transaction, _network);
+            foreach (var activePeer in _peers.Where(p => p.GetServiceFlag() == ServiceFlags.NODE_NETWORK))
+            {
+                activePeer.Execute(message.Serialize());
+            }
+        }
+
+        public void Broadcast(Message message)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             foreach (var activePeer in _peers)
             {
                 activePeer.Execute(message.Serialize());
@@ -76,13 +91,20 @@ namespace SimpleBlockChain.Core.Connectors
 
         private Task DiscoverNodesViaStore(IEnumerable<IpAddress> nodes)
         {
-            var result = nodes.Select(n => (new IPAddress(n.Ipv6)).MapToIPv6().ToString());
+            var result = nodes.Select(n => (new IPAddress(n.Ipv6)).MapToIPv4().ToString());
             return ConnectToPeers(result);
         }
 
-        private Task DiscoverNodesViaSeeds()
+        private async Task DiscoverNodesViaSeeds()
         {
-            return ConnectToPeers(GetSeedNodes());
+            await ConnectToPeers(GetSeedNodes());
+            var instance = PeersStore.Instance();
+            var currentIpAddress = instance.GetMyIpAddress();
+            var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, _network);
+            addrMessage.IpAddresses.Add(currentIpAddress);
+            Broadcast(addrMessage);
+            var getAddrMessage = new GetAddressMessage(_network);
+            Broadcast(getAddrMessage);
         }        
 
         public bool ContainsPeer(IpAddress adr)
@@ -134,10 +156,10 @@ namespace SimpleBlockChain.Core.Connectors
             }
 
             var ipAdr = new IPAddress(ipAddr.Data.Ipv6);
-            ConnectToPeer(ipAdr.ToString());
+            ConnectToPeer(ipAdr.MapToIPv4().ToString());
         }
         
-        private async Task ConnectToPeers(IEnumerable<string> hosts)
+        private async Task ConnectToPeers(IEnumerable<string> hosts) // PASS THE SERVICE_FLAGS.
         {
             if (hosts == null)
             {
@@ -201,7 +223,6 @@ namespace SimpleBlockChain.Core.Connectors
                     var manualResetEvent = new ManualResetEvent(false);
                     peerConnector.ConnectEvent += (s, i) =>
                     {
-                        _peers.Add(peerConnector);
                         AddPeer(s, i);
                         manualResetEvent.Set();
                     };
@@ -229,8 +250,14 @@ namespace SimpleBlockChain.Core.Connectors
                 throw new ArgumentNullException(nameof(ipAdr));
             }
 
+            _peers.Add(sender as PeerConnector);
             var seedNodes = GetSeedNodes().Select(s => IPAddress.Parse(s).MapToIPv6().GetAddressBytes());
             if (seedNodes.Any(s => s.SequenceEqual(ipAdr.Data.Ipv6)))
+            {
+                return;
+            }
+
+            if (ipAdr.Data.ServiceFlag != ServiceFlags.NODE_NETWORK)
             {
                 return;
             }
@@ -254,7 +281,7 @@ namespace SimpleBlockChain.Core.Connectors
             _peers = new ConcurrentBag<PeerConnector>(_peers.Except(new[] { peerConnector }));
             _peersRepository.RemovePeer(ipAdr.Data).Wait();
             peerConnector.Dispose();
-            if (!_peers.Any())
+            if (!_peers.Where(p => p.GetServiceFlag() ==  ServiceFlags.NODE_NETWORK).Any())
             {
                 _peersRepository.Empty();
                 if (DisconnectEvent != null)

@@ -29,6 +29,7 @@ namespace SimpleBlockChain.Core.Connectors
         private PeerConnection _peerConnection;
         private PongMessage _pongMessage;
         private IpAddress _currentIpAddress;
+        private ServiceFlags _serviceFlag;
 
         public PeerConnector(Networks network)
         {
@@ -66,6 +67,7 @@ namespace SimpleBlockChain.Core.Connectors
             }
 
             var adrBytes = ipAdr.MapToIPv6().GetAddressBytes();
+            _serviceFlag = serviceFlag;
             _currentIpAddress = new IpAddress(serviceFlag, adrBytes, ushort.Parse(port));
             var nonce = NonceHelper.GetNonceUInt64();
             var versionMessage = new VersionMessage(transmittingNode, _currentIpAddress, nonce, string.Empty, 0, false, _network);
@@ -94,6 +96,11 @@ namespace SimpleBlockChain.Core.Connectors
         public PeerConnectionStates GetState()
         {
             return _peerConnection.State;
+        }
+
+        public ServiceFlags GetServiceFlag()
+        {
+            return _serviceFlag;
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)
@@ -160,12 +167,6 @@ namespace SimpleBlockChain.Core.Connectors
                 }
 
                 _timer.Start();
-                /*
-                var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, _network);
-                addrMessage.IpAddresses.Add(_currentIpAddress);
-                _client.Execute(addrMessage.Serialize());
-                response = new GetAddressMessage(_network);
-                */
             }
             else if (message.GetCommandName() == Constants.MessageNames.Pong)
             {

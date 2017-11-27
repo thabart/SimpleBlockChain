@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core;
+using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Interop;
 using System;
@@ -8,17 +9,20 @@ namespace SimpleBlockChain.Wallet
 {
     class Program
     {
+        private static NodeLauncher _nodeLauncher;
+
         static void Main(string[] args)
         {
             Console.WriteLine("==== Welcome to SimpleBlockChain (WALLET) ====");
-            TestRpc();
-            /*
             var network = MenuHelper.ChooseNetwork();
             var ipBytes = IPAddress.Parse("192.254.72.190").MapToIPv6().GetAddressBytes(); // VIRTUAL NETWORK.
-            var launcher = new NodeLauncher(network, ServiceFlags.NODE_NONE, ipBytes);
-            launcher.Launch(); // LAUNCH NODE.
-            launcher.ConnectP2PNetwork(); // CONNECT TO P2PNETWORK.
-            */
+            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE, ipBytes);
+            _nodeLauncher.StartNodeEvent += StartNodeEvent;
+            _nodeLauncher.NewMessageEvent += NewMessageEvent;
+            _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
+            _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
+            _nodeLauncher.Launch();
+            Console.ReadLine();
             // DisplayMenu();
             // FOR EACH TRANSACTION AN ADDRESS IS GENERATED.
 
@@ -28,19 +32,6 @@ namespace SimpleBlockChain.Wallet
             // TODO : Get my address.
             // TODO : Enters an ADDRESS & BROADCAST a TRANSACTION.
             // TODO : Display HOW MUCH LEFT IN MY WALLET.
-        }
-
-        private static void TestRpc()
-        {
-            var iid = Interop.Constants.InterfaceId;
-            var server = new RpcServerApi(iid, 100, ushort.MaxValue, allowAnonTcp: true);
-            server.AddProtocol(RpcProtseq.ncacn_ip_tcp, @"8080", 25);
-            // Start Listening 
-            server.StartListening();
-
-            var client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, null, "8080");
-            client.AuthenticateAs(RpcClientApi.Anonymous);
-            client.Execute(new byte[0]);
         }
 
         private static void DisplayMenu()
@@ -67,6 +58,27 @@ namespace SimpleBlockChain.Wallet
 
             MenuHelper.DisplayError("Please enter a correct option number");
             DisplayMenu();
+        }
+
+        private static void ConnectP2PEvent(object sender, EventArgs e)
+        {
+            MenuHelper.DisplayInformation("Connected to P2P network");
+        }
+
+        private static void DisconnectP2PEvent(object sender, EventArgs e)
+        {
+            MenuHelper.DisplayError("Cannot connect to P2P network... Retry in 10 seconds");
+        }
+
+        private static void StartNodeEvent(object sender, EventArgs e)
+        {
+            MenuHelper.DisplayInformation("Node is listening");
+            _nodeLauncher.ConnectP2PNetwork();
+        }
+
+        private static void NewMessageEvent(object sender, StringEventArgs e)
+        {
+            MenuHelper.DisplayInformation($"Message {e.Data} arrived");
         }
 
         private static void DisplayWalletInformation()
