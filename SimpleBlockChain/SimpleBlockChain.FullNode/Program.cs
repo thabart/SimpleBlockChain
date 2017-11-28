@@ -12,6 +12,7 @@ namespace SimpleBlockChain.FullNode
 
         static void Main(string[] args)
         {
+            Console.Title = "FULL NODE / MINER";
             Console.WriteLine("==== Welcome to SimpleBlockChain (FULL NODE / MINER) ====");
             var ipBytes = IPAddress.Parse("127.0.0.1").MapToIPv6().GetAddressBytes();
             var network = MenuHelper.ChooseNetwork();

@@ -11,6 +11,7 @@ namespace SimpleBlockChain.Client
 
         static void Main(string[] args)
         {
+            Console.Title = "SEED NODE";
             Console.WriteLine("==== Welcome to SimpleBlockChain (SEED NODE) ====");
             var network = MenuHelper.ChooseNetwork();
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);

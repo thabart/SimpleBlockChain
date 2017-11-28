@@ -11,8 +11,24 @@ namespace SimpleBlockChain.Core.Storages
     public class PeersRepository
     {
         private const string _fileName = "peers.dat";
+        private object obj = new object();
 
-        public async Task<bool> AddPeer(IpAddress ipAddress)
+        public bool AddPeers(IEnumerable<IpAddress> ipAddresses)
+        {
+            if (ipAddresses == null)
+            {
+                throw new ArgumentNullException(nameof(ipAddresses));
+            }
+
+            foreach(var ipAddress in ipAddresses)
+            {
+                AddPeer(ipAddress);
+            }
+
+            return true;
+        }
+
+        public bool AddPeer(IpAddress ipAddress)
         {
             if (ipAddress == null)
             {
@@ -25,16 +41,19 @@ namespace SimpleBlockChain.Core.Storages
             {
                 return false;
             }
-
-            using (var file = new StreamWriter(GetPath()))
+            lock (obj)
             {
-                var json = JsonConvert.SerializeObject(ipAddress);
-                await file.WriteLineAsync(json).ConfigureAwait(false);
-                return true;
+                using (var file = new StreamWriter(GetPath()))
+                {
+                    var json = JsonConvert.SerializeObject(ipAddress);
+                    file.WriteLine(json);
+                }
             }
+
+            return true;
         }
 
-        public async Task<bool> RemovePeer(IpAddress ipAddress)
+        public bool RemovePeer(IpAddress ipAddress)
         {
             if (ipAddress == null)
             {
@@ -43,17 +62,20 @@ namespace SimpleBlockChain.Core.Storages
 
             CheckFileExists();
             var ipAddressLst = GetAll().Where(ip => !ip.Ipv6.SequenceEqual(ipAddress.Ipv6));
-            File.WriteAllText(GetPath(), string.Empty);
-            using (var file = new StreamWriter(GetPath()))
+            lock (obj)
             {
-                foreach(var adr in ipAddressLst)
+                File.WriteAllText(GetPath(), string.Empty);
+                using (var file = new StreamWriter(GetPath()))
                 {
-                    var json = JsonConvert.SerializeObject(adr);
-                    await file.WriteLineAsync(json).ConfigureAwait(false);
+                    foreach (var adr in ipAddressLst)
+                    {
+                        var json = JsonConvert.SerializeObject(adr);
+                        file.WriteLine(json);
+                    }
                 }
-            }
 
-            return true;
+                return true;
+            }
         }
 
         public IEnumerable<IpAddress> GetAll()
@@ -63,8 +85,11 @@ namespace SimpleBlockChain.Core.Storages
                 return new List<IpAddress>();
             }
 
-            var lines = File.ReadAllLines(GetPath());
-            return lines.Select(l => IpAddress.Deserialize(l));
+            lock (obj)
+            {
+                var lines = File.ReadAllLines(GetPath());
+                return lines.Select(l => IpAddress.Deserialize(l));
+            }
         }
 
         public bool Empty()
@@ -74,7 +99,11 @@ namespace SimpleBlockChain.Core.Storages
                 return false;
             }
 
-            File.WriteAllText(GetPath(), string.Empty);
+            lock(obj)
+            {
+                File.WriteAllText(GetPath(), string.Empty);
+            }
+
             return true;
         }
 

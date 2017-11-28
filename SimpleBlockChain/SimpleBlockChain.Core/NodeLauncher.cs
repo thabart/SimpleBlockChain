@@ -26,7 +26,7 @@ namespace SimpleBlockChain.Core
         private MessageLauncher _messageLauncher;
         private P2PNetworkConnector _p2pNetworkConnector;
 
-        public NodeLauncher(Networks network, ServiceFlags serviceFlag, IEnumerable<byte> ipAddress = null)
+        public NodeLauncher(Networks network, ServiceFlags serviceFlag, IEnumerable < byte> ipAddress = null)
         {
             _network = network;
             _serviceFlag = serviceFlag;

@@ -13,6 +13,7 @@ namespace SimpleBlockChain.Wallet
 
         static void Main(string[] args)
         {
+            Console.Title = "WALLET NODE";
             Console.WriteLine("==== Welcome to SimpleBlockChain (WALLET) ====");
             var network = MenuHelper.ChooseNetwork();
             var ipBytes = IPAddress.Parse("192.254.72.190").MapToIPv6().GetAddressBytes(); // VIRTUAL NETWORK.

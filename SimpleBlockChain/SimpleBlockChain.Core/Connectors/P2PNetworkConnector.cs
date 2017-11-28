@@ -4,6 +4,7 @@ using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;
+using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
@@ -24,10 +25,13 @@ namespace SimpleBlockChain.Core.Connectors
         private readonly PeersRepository _peersRepository;
         private Networks _network;
         private ConcurrentBag<PeerConnector> _peers;
+        private MessageParser _messageParser;
+        private bool _isSeedNode = false;
 
         public P2PNetworkConnector()
         {
             _peers = new ConcurrentBag<PeerConnector>();
+            _messageParser = new MessageParser();
             _peersRepository = new PeersRepository();
             var instance = PeerEventStore.Instance();
             instance.NewPeerEvt += ListenPeer;
@@ -39,6 +43,9 @@ namespace SimpleBlockChain.Core.Connectors
         public async Task Listen(Networks network, bool keepConnectionsAlive = true)
         {
             _network = network;
+            var instance = PeersStore.Instance();
+            var currentIpAddress = instance.GetMyIpAddress();
+            _isSeedNode = IsSeedNode(currentIpAddress, _network);
             await DiscoverNodes();
         }
 
@@ -56,17 +63,20 @@ namespace SimpleBlockChain.Core.Connectors
             }
         }
 
-        public void Broadcast(Message message)
+        public IEnumerable<IEnumerable<byte>> Broadcast(Message message)
         {
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
+            var result = new List<IEnumerable<byte>>();
             foreach (var activePeer in _peers)
             {
-                activePeer.Execute(message.Serialize());
+                result.Add(activePeer.Execute(message.Serialize()));
             }
+            
+            return result;
         }
 
         public void Dispose()
@@ -79,32 +89,69 @@ namespace SimpleBlockChain.Core.Connectors
 
         private async Task DiscoverNodes()
         {
-            var peers = _peersRepository.GetAll();
-            if (peers.Any())
+            try
             {
-                await DiscoverNodesViaStore(peers);
-                return;
-            }
+                var peers = _peersRepository.GetAll();
+                if (peers.Any()) // DISCOVER THE PEERS FROM THE REPOSITORY.
+                {
+                    await DiscoverNodesViaStore(peers);
+                    return;
+                }
 
-            await DiscoverNodesViaSeeds();
+                if (!_isSeedNode) // DISCOVER THE PEERS FROM THE SEEDS.
+                {
+                    await DiscoverNodesViaSeeds();
+                }
+            }
+            catch (Exception) { return; }
+
+
+            if (ConnectEvent != null)
+            {
+                ConnectEvent(this, EventArgs.Empty);
+            }
         }
 
         private Task DiscoverNodesViaStore(IEnumerable<IpAddress> nodes)
         {
-            var result = nodes.Select(n => (new IPAddress(n.Ipv6)).MapToIPv4().ToString());
+            var result = nodes.Select(n => new KeyValuePair<string, ServiceFlags>((new IPAddress(n.Ipv6)).MapToIPv4().ToString(), n.ServiceFlag)).ToList();
+            if (!_isSeedNode)
+            {
+                var dic = GetSeedNodes(_network).Select(s => new KeyValuePair<string, ServiceFlags>(s, ServiceFlags.NODE_NETWORK));
+                result.AddRange(dic);
+            }
+
             return ConnectToPeers(result);
         }
 
         private async Task DiscoverNodesViaSeeds()
         {
-            await ConnectToPeers(GetSeedNodes());
+            var dic = GetSeedNodes(_network).Select(s => new KeyValuePair<string, ServiceFlags>(s, ServiceFlags.NODE_NETWORK));
+            await ConnectToPeers(dic);
             var instance = PeersStore.Instance();
             var currentIpAddress = instance.GetMyIpAddress();
             var addrMessage = new AddrMessage(new CompactSize { Size = 1 }, _network);
             addrMessage.IpAddresses.Add(currentIpAddress);
             Broadcast(addrMessage);
             var getAddrMessage = new GetAddressMessage(_network);
-            Broadcast(getAddrMessage);
+            var getAddrLst = Broadcast(getAddrMessage);
+            foreach(var getAddr in getAddrLst)
+            {
+                var message = _messageParser.Parse(getAddr.ToArray());
+                var getAdrMsg = message as AddrMessage;
+                if (getAdrMsg == null)
+                {
+                    continue;
+                }
+
+                _peersRepository.AddPeers(getAdrMsg.IpAddresses);
+            }
+
+            var peers = _peersRepository.GetAll();
+            if (peers.Any())
+            {
+                await DiscoverNodesViaStore(peers);
+            }
         }        
 
         public bool ContainsPeer(IpAddress adr)
@@ -150,16 +197,28 @@ namespace SimpleBlockChain.Core.Connectors
                 throw new ArgumentNullException(nameof(ipAddr));
             }
 
+            if (ipAddr.Data == null)
+            {
+                throw new ArgumentNullException(nameof(ipAddr.Data));
+            }
+
             if (ContainsPeer(ipAddr.Data))
             {
                 return;
             }
 
+            if (ipAddr.Data.ServiceFlag != ServiceFlags.NODE_NETWORK)
+            {
+                return;
+            }
+
             var ipAdr = new IPAddress(ipAddr.Data.Ipv6);
-            ConnectToPeer(ipAdr.MapToIPv4().ToString());
+            var ip = ipAdr.MapToIPv4().ToString();
+            var serviceFlag = ipAddr.Data.ServiceFlag;
+            ConnectToPeer(ip, serviceFlag);
         }
         
-        private async Task ConnectToPeers(IEnumerable<string> hosts) // PASS THE SERVICE_FLAGS.
+        private async Task ConnectToPeers(IEnumerable<KeyValuePair<string, ServiceFlags>> hosts) // PASS THE SERVICE_FLAGS.
         {
             if (hosts == null)
             {
@@ -167,31 +226,32 @@ namespace SimpleBlockChain.Core.Connectors
             }
 
             var tasks = new List<Task>();
-            foreach (var seedNode in hosts)
+            foreach (var kvp in hosts)
             {
-                var ip = IPAddress.Parse(seedNode);
+                var ip = IPAddress.Parse(kvp.Key);
                 var myIp = PeersStore.Instance().GetMyIpAddress();
-                if (myIp.Ipv6.SequenceEqual(ip.MapToIPv6().GetAddressBytes()))
+                if (myIp.Ipv6.SequenceEqual(ip.MapToIPv6().GetAddressBytes())) // NOT SAME ADDRESS.
                 {
                     continue;
                 }
 
-                tasks.Add(ConnectToPeer(seedNode));
+                if (ContainsPeer(ip.MapToIPv6().GetAddressBytes())) // CONNECTION DOESNT EXIST.
+                {
+                    continue;
+                }
+
+                tasks.Add(ConnectToPeer(kvp.Key, kvp.Value));
             }
 
             var result = Task.WhenAll(tasks.ToArray());
-            try
-            {
-                await result;
-            }
-            catch (Exception) { }
-
+            await result;
+            /*
             if (result.Exception != null)
             {
                 var ex = result.Exception as AggregateException;
                 if (ex.InnerExceptions.Count == hosts.Count())
                 {
-                    if (DisconnectEvent != null)
+                    if (!_isSeedNode && DisconnectEvent != null)
                     {
                         DisconnectEvent(this, EventArgs.Empty);
                     }
@@ -201,14 +261,10 @@ namespace SimpleBlockChain.Core.Connectors
                     return;
                 }
             }
-
-            if (ConnectEvent != null)
-            {
-                ConnectEvent(this, EventArgs.Empty);
-            }
+            */
         }
 
-        private Task ConnectToPeer(string host)
+        private Task ConnectToPeer(string host, ServiceFlags serviceFlag)
         {
             if (string.IsNullOrWhiteSpace(host))
             {
@@ -226,13 +282,22 @@ namespace SimpleBlockChain.Core.Connectors
                         AddPeer(s, i);
                         manualResetEvent.Set();
                     };
-                    peerConnector.TimeOutEvent += RemovePeer;
-                    peerConnector.Connect(host, ServiceFlags.NODE_NETWORK);
+                    if (_isSeedNode) { peerConnector.TimeOutEvent += RemovePeer; }
+                    else { peerConnector.TimeOutEvent += Disconnect; }                    
+                    peerConnector.Connect(host, serviceFlag);
                     manualResetEvent.WaitOne();
                 }
                 catch (PeerConnectorException)
                 {
-                    _peers = new ConcurrentBag<PeerConnector>(_peers.Except(new[] { peerConnector }));
+                    if (_isSeedNode)
+                    {
+                        RemovePeer(peerConnector, peerConnector.GetCurrentIpAddress());
+                    }
+                    else
+                    {
+                        Disconnect();
+                    }
+
                     throw;
                 }
             });
@@ -250,19 +315,41 @@ namespace SimpleBlockChain.Core.Connectors
                 throw new ArgumentNullException(nameof(ipAdr));
             }
 
+            if (ipAdr.Data == null)
+            {
+                throw new ArgumentNullException(nameof(ipAdr.Data));
+            }
+
             _peers.Add(sender as PeerConnector);
-            var seedNodes = GetSeedNodes().Select(s => IPAddress.Parse(s).MapToIPv6().GetAddressBytes());
-            if (seedNodes.Any(s => s.SequenceEqual(ipAdr.Data.Ipv6)))
+            if (IsSeedNode(ipAdr.Data, _network))
             {
                 return;
             }
 
-            if (ipAdr.Data.ServiceFlag != ServiceFlags.NODE_NETWORK)
+            _peersRepository.AddPeer(ipAdr.Data);
+        }
+
+        private void Disconnect(object sender, IpAddressEventArgs ipAdr)
+        {
+            Disconnect();
+        }
+
+        private void Disconnect()
+        {
+            _peersRepository.Empty();
+            foreach (var peer in _peers)
             {
-                return;
+                peer.Dispose();
             }
 
-            _peersRepository.AddPeer(ipAdr.Data).Wait();
+            _peers = new ConcurrentBag<PeerConnector>();
+            if (DisconnectEvent != null)
+            {
+                DisconnectEvent(this, EventArgs.Empty);
+            }
+
+            System.Threading.Thread.Sleep(RETRY_P2P_CONNECTION_INTERVAL);
+            DiscoverNodes();
         }
 
         private void RemovePeer(object sender, IpAddressEventArgs ipAdr)
@@ -277,27 +364,52 @@ namespace SimpleBlockChain.Core.Connectors
                 throw new ArgumentNullException(nameof(ipAdr));
             }
 
-            var peerConnector = sender as PeerConnector;
-            _peers = new ConcurrentBag<PeerConnector>(_peers.Except(new[] { peerConnector }));
-            _peersRepository.RemovePeer(ipAdr.Data).Wait();
-            peerConnector.Dispose();
-            if (!_peers.Where(p => p.GetServiceFlag() ==  ServiceFlags.NODE_NETWORK).Any())
-            {
-                _peersRepository.Empty();
-                if (DisconnectEvent != null)
-                {
-                    DisconnectEvent(this, EventArgs.Empty);
-                }
-
-                DiscoverNodes();
-            }
+            RemovePeer(sender as PeerConnector, ipAdr.Data);
         }
         
-        private static IEnumerable<string> GetSeedNodes()
+        private void RemovePeer(PeerConnector peerConnector, IpAddress ipAdr)
         {
-            return new []
+            if (peerConnector == null)
             {
-                Constants.DNS_IP_ADDRESS
+                throw new ArgumentNullException(nameof(peerConnector));
+            }
+
+            if (ipAdr == null)
+            {
+                throw new ArgumentNullException(nameof(ipAdr));
+            }
+            
+            _peers = new ConcurrentBag<PeerConnector>(_peers.Except(new[] { peerConnector }));
+            _peersRepository.RemovePeer(ipAdr);
+            peerConnector.Dispose();
+        }
+
+        private static bool IsSeedNode(IpAddress ipAddress, Networks network)
+        {
+            if (ipAddress == null)
+            {
+                throw new ArgumentNullException(nameof(ipAddress));
+            }
+
+            if (ipAddress.Ipv6 == null)
+            {
+                throw new ArgumentNullException(nameof(ipAddress.Ipv6));
+            }
+
+            var seedNodes = GetSeedNodes(network).Select(s => IPAddress.Parse(s).MapToIPv6().GetAddressBytes());
+            return seedNodes.Any(sn => sn.SequenceEqual(ipAddress.Ipv6));
+        }
+
+        private static IEnumerable<string> GetSeedNodes(Networks network)
+        {
+            return GetSeedNodes()[network];
+        }
+
+        private static Dictionary<Networks, IEnumerable<string>> GetSeedNodes()
+        {
+            return new Dictionary<Networks, IEnumerable<string>>
+            {
+                { Networks.MainNet, new [] { Constants.DNS_IP_ADDRESS } }
             };
         }
     }

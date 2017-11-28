@@ -10,6 +10,7 @@ using SimpleBlockChain.Core.States;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Interop;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Timers;
@@ -18,8 +19,7 @@ namespace SimpleBlockChain.Core.Connectors
 {
     public class PeerConnector : IDisposable
     {
-        private const int CHECK_INTERVAL = 5000;
-        private const int PEER_TIMEOUT = 11000;
+        private const int CHECK_INTERVAL = 11000;
         private readonly BackgroundWorker _cheeckPeerAvailabilityWorker;
         private readonly Networks _network;
         private readonly Timer _timer;
@@ -55,11 +55,6 @@ namespace SimpleBlockChain.Core.Connectors
 
             var iid = Interop.Constants.InterfaceId;
             var port = PortsHelper.GetPort(_network);
-            // _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, host, port);
-            _client = new RpcClientApi(iid, RpcProtseq.ncalrpc, null, host);
-            // Connection to peers : https://bitcoin.org/en/developer-guide#connecting-to-peers
-            var instance = PeersStore.Instance();
-            var transmittingNode = instance.GetMyIpAddress();
             IPAddress ipAdr = null;
             if (!IPAddress.TryParse(host, out ipAdr))
             {
@@ -69,6 +64,12 @@ namespace SimpleBlockChain.Core.Connectors
             var adrBytes = ipAdr.MapToIPv6().GetAddressBytes();
             _serviceFlag = serviceFlag;
             _currentIpAddress = new IpAddress(serviceFlag, adrBytes, ushort.Parse(port));
+            // _client = new RpcClientApi(iid, RpcProtseq.ncacn_ip_tcp, host, port);
+            _client = new RpcClientApi(iid, RpcProtseq.ncalrpc, null, host);
+            // Connection to peers : https://bitcoin.org/en/developer-guide#connecting-to-peers
+            var instance = PeersStore.Instance();
+            var transmittingNode = instance.GetMyIpAddress();
+
             var nonce = NonceHelper.GetNonceUInt64();
             var versionMessage = new VersionMessage(transmittingNode, _currentIpAddress, nonce, string.Empty, 0, false, _network);
             try
@@ -88,9 +89,9 @@ namespace SimpleBlockChain.Core.Connectors
             return _currentIpAddress;
         }
 
-        public void Execute(byte[] input)
+        public IEnumerable<byte> Execute(byte[] input)
         {
-            _client.Execute(input);
+            return _client.Execute(input);
         }
 
         public PeerConnectionStates GetState()
