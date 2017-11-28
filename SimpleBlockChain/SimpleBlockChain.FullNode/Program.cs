@@ -2,7 +2,9 @@
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using System;
+using System.Linq;
 using System.Net;
+using System.Threading;
 
 namespace SimpleBlockChain.FullNode
 {
@@ -18,16 +20,90 @@ namespace SimpleBlockChain.FullNode
             var network = MenuHelper.ChooseNetwork();
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK, ipBytes);
             _nodeLauncher.StartNodeEvent += StartNodeEvent;
+            _nodeLauncher.StopNodeEvent += StopNodeEvent;
             _nodeLauncher.NewMessageEvent += NewMessageEvent;
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.Launch();
-            Console.ReadLine();
+            while(true)
+            {
+                Thread.Sleep(200);
+            }
+        }
+
+        public static void DisplayFullNodeMenu()
+        {
+            MenuHelper.DisplayMenuItem("What-do you want to do ?");
+            var isP2PNetworkRunning = _nodeLauncher.IsP2PNetworkRunning();
+            if (isP2PNetworkRunning)
+            {
+                DisplayP2PNetworkRunningMenu();
+            }
+            else
+            {
+                DisplayP2PNetworkNotRunningMenu();
+            }
+        }
+
+        private static void DisplayP2PNetworkNotRunningMenu()
+        {
+            MenuHelper.DisplayMenuItem("1. Start the node");
+            var number = MenuHelper.EnterNumber();
+            if (number < 0 || number > 1)
+            {
+                MenuHelper.DisplayError("Enter a number between [1-1]");
+                DisplayFullNodeMenu();
+                return;
+            }
+
+            switch(number)
+            {
+                case 1:
+                    _nodeLauncher.Launch();
+                    break;
+            }
+
+            DisplayFullNodeMenu();
+        }
+
+        private static void DisplayP2PNetworkRunningMenu()
+        {
+            MenuHelper.DisplayMenuItem("1. Display number of FULL NODES", 1);
+            MenuHelper.DisplayMenuItem("2. Display active peers", 1);
+            MenuHelper.DisplayMenuItem("3. Stop the node", 1);
+            var number = MenuHelper.EnterNumber();
+            if (number < 0 || number > 3)
+            {
+                MenuHelper.DisplayError("Enter a number between [1-3]");
+                DisplayFullNodeMenu();
+                return;
+            }
+
+            switch (number)
+            {
+                case 1:
+                    Console.WriteLine($"Number of active nodes {_nodeLauncher.GetActivePeers().Count}");
+                    break;
+                case 2:
+                    var peers = _nodeLauncher.GetActivePeers();
+                    var ips = peers.Select(p => (new IPAddress(p.GetCurrentIpAddress().Ipv6)).MapToIPv4().ToString());
+                    foreach(var ip in ips)
+                    {
+                        Console.WriteLine(ip);
+                    }
+                    break;
+                case 3:
+                    _nodeLauncher.Stop();
+                    break;
+            }
+
+            DisplayFullNodeMenu();
         }
 
         private static void ConnectP2PEvent(object sender, EventArgs e)
         {
             MenuHelper.DisplayInformation("Connected to P2P network");
+            DisplayFullNodeMenu();
         }
 
         private static void DisconnectP2PEvent(object sender, EventArgs e)
@@ -37,13 +113,19 @@ namespace SimpleBlockChain.FullNode
 
         private static void StartNodeEvent(object sender, EventArgs e)
         {
-            MenuHelper.DisplayInformation("Node is listening");
+            // MenuHelper.DisplayInformation("Node is listening");
             _nodeLauncher.ConnectP2PNetwork();
+        }
+
+        private static void StopNodeEvent(object sender, EventArgs e)
+        {
+            // MenuHelper.DisplayInformation("Node is not listening");
+            DisplayFullNodeMenu();
         }
 
         private static void NewMessageEvent(object sender, StringEventArgs e)
         {
-            MenuHelper.DisplayInformation($"Message {e.Data} arrived");
+            // MenuHelper.DisplayInformation($"Message {e.Data} arrived");
         }
     }
 }

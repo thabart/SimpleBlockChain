@@ -21,7 +21,6 @@ namespace SimpleBlockChain.Core.Connectors
     public class P2PNetworkConnector : IDisposable
     {
         private const int RETRY_P2P_CONNECTION_INTERVAL = 10000;
-        private const int MIN_NB_PEERS = 3;
         private readonly PeersRepository _peersRepository;
         private Networks _network;
         private ConcurrentBag<PeerConnector> _peers;
@@ -37,8 +36,15 @@ namespace SimpleBlockChain.Core.Connectors
             instance.NewPeerEvt += ListenPeer;
         }
 
+        public bool IsRunning { get; private set; }
+
         public event EventHandler ConnectEvent;
         public event EventHandler DisconnectEvent;
+
+        public ConcurrentBag<PeerConnector> GetActivePeers()
+        {
+            return _peers;
+        }
 
         public async Task Listen(Networks network, bool keepConnectionsAlive = true)
         {
@@ -87,8 +93,32 @@ namespace SimpleBlockChain.Core.Connectors
             }
         }
 
+        public void Stop()
+        {
+            IsRunning = false;
+            foreach (var activePeer in _peers)
+            {
+                activePeer.Dispose();
+            }
+
+            _peers = new ConcurrentBag<PeerConnector>();
+            if (DisconnectEvent != null)
+            {
+                DisconnectEvent(this, EventArgs.Empty);
+            }
+        }
+
         private async Task DiscoverNodes()
         {
+            IsRunning = false;
+            var callback = new Action(() =>
+            {
+                if (ConnectEvent != null)
+                {
+                    IsRunning = true;
+                    ConnectEvent(this, EventArgs.Empty);
+                }
+            });
             try
             {
                 var peers = _peersRepository.GetAll();
@@ -103,13 +133,9 @@ namespace SimpleBlockChain.Core.Connectors
                     await DiscoverNodesViaSeeds();
                 }
             }
-            catch (Exception) { return; }
+            catch (Exception) { if (_isSeedNode) { callback(); } return; }
 
-
-            if (ConnectEvent != null)
-            {
-                ConnectEvent(this, EventArgs.Empty);
-            }
+            callback();
         }
 
         private Task DiscoverNodesViaStore(IEnumerable<IpAddress> nodes)
@@ -245,23 +271,6 @@ namespace SimpleBlockChain.Core.Connectors
 
             var result = Task.WhenAll(tasks.ToArray());
             await result;
-            /*
-            if (result.Exception != null)
-            {
-                var ex = result.Exception as AggregateException;
-                if (ex.InnerExceptions.Count == hosts.Count())
-                {
-                    if (!_isSeedNode && DisconnectEvent != null)
-                    {
-                        DisconnectEvent(this, EventArgs.Empty);
-                    }
-
-                    System.Threading.Thread.Sleep(RETRY_P2P_CONNECTION_INTERVAL);
-                    await DiscoverNodes();
-                    return;
-                }
-            }
-            */
         }
 
         private Task ConnectToPeer(string host, ServiceFlags serviceFlag)
@@ -337,17 +346,7 @@ namespace SimpleBlockChain.Core.Connectors
         private void Disconnect()
         {
             _peersRepository.Empty();
-            foreach (var peer in _peers)
-            {
-                peer.Dispose();
-            }
-
-            _peers = new ConcurrentBag<PeerConnector>();
-            if (DisconnectEvent != null)
-            {
-                DisconnectEvent(this, EventArgs.Empty);
-            }
-
+            Stop();
             System.Threading.Thread.Sleep(RETRY_P2P_CONNECTION_INTERVAL);
             DiscoverNodes();
         }

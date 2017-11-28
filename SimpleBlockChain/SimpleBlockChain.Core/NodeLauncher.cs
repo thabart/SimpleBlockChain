@@ -8,6 +8,7 @@ using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Interop;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -45,6 +46,7 @@ namespace SimpleBlockChain.Core
         }
 
         public event EventHandler StartNodeEvent;
+        public event EventHandler StopNodeEvent;
         public event EventHandler ConnectP2PEvent;
         public event EventHandler DisconnectP2PEvent;
         public event EventHandler<StringEventArgs> NewMessageEvent;
@@ -54,10 +56,30 @@ namespace SimpleBlockChain.Core
             PeersStore.Instance().SetMyIpAddress(_ipAddress);
             StartNode();
         }
-        
+
+        public void Stop()
+        {
+            if (_server != null) _server.Dispose();
+            _p2pNetworkConnector.Stop();
+            if (StopNodeEvent != null)
+            {
+                StopNodeEvent(this, EventArgs.Empty);
+            }
+        }
+
         public Task ConnectP2PNetwork()
         {
             return _p2pNetworkConnector.Listen(_network);
+        }
+
+        public bool IsP2PNetworkRunning()
+        {
+            return _p2pNetworkConnector.IsRunning;
+        }
+
+        public ConcurrentBag<PeerConnector> GetActivePeers()
+        {
+            return _p2pNetworkConnector.GetActivePeers();
         }
 
         private void StartNode()
@@ -129,6 +151,10 @@ namespace SimpleBlockChain.Core
         {
             if (_server != null) _server.Dispose();
             _p2pNetworkConnector.Dispose();
+            if (StopNodeEvent != null)
+            {
+                StopNodeEvent(this, EventArgs.Empty);
+            }
         }
     }
 }
