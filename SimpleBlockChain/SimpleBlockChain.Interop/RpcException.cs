@@ -14,11 +14,6 @@ namespace SimpleBlockChain.Interop
             }
         }
 
-        protected RpcException(SerializationInfo info, StreamingContext context)
-          : base(info, context)
-        {
-        }
-
         public RpcException()
           : base()
         {

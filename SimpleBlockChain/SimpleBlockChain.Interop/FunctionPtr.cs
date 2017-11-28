@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace SimpleBlockChain.Interop
 {
-    internal class FunctionPtr<T> : IDisposable where T : class, ICloneable, ISerializable
+    internal class FunctionPtr<T> : IDisposable where T : class
     {
         private T _delegate;
         public IntPtr Handle;

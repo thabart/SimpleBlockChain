@@ -1,118 +1,50 @@
-﻿using SimpleBlockChain.Core.Connectors;
-using SimpleBlockChain.Core.Evts;
+﻿using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Stores;
-using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.Interop;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
-namespace SimpleBlockChain.Core
+namespace SimpleBlockChain.Core.Nodes
 {
-    public class NodeLauncher : IDisposable
+    public class P2PNode : IDisposable
     {
         private readonly Networks _network;
         private readonly ServiceFlags _serviceFlag;
-        private readonly IpAddress _ipAddress;
         private static RpcServerApi _server;
-        private IpAdrHelper _ipAdrHelper;
         private MessageParser _messageParser;
         private MessageLauncher _messageLauncher;
-        private P2PNetworkConnector _p2pNetworkConnector;
+        private IpAdrHelper _ipAdrHelper;
+        private IpAddress _ipAddress;
 
-        public NodeLauncher(Networks network, ServiceFlags serviceFlag, IEnumerable < byte> ipAddress = null)
+        public P2PNode(Networks network, ServiceFlags serviceFlag)
         {
             _network = network;
             _serviceFlag = serviceFlag;
-             _ipAdrHelper = new IpAdrHelper();
             _messageParser = new MessageParser();
             _messageLauncher = new MessageLauncher();
-            _p2pNetworkConnector = new P2PNetworkConnector();
-            _p2pNetworkConnector.ConnectEvent += P2PConnectEvent;
-            _p2pNetworkConnector.DisconnectEvent += P2PDisconnectEvent;
+            _ipAdrHelper = new IpAdrHelper();
+        }
+
+        public event EventHandler StartNodeEvent;
+        public event EventHandler StopNodeEvent;
+        public event EventHandler<StringEventArgs> NewMessageEvent;
+
+        public void Start(IEnumerable<byte> ipAddress = null)
+        {
             if (ipAddress == null)
             {
                 ipAddress = _ipAdrHelper.GetIpv4Address();
             }
 
             _ipAddress = new IpAddress(DateTime.UtcNow, _serviceFlag, ipAddress.ToArray(), ushort.Parse(PortsHelper.GetPort(_network)));
-        }
-
-        public event EventHandler StartNodeEvent;
-        public event EventHandler StopNodeEvent;
-        public event EventHandler ConnectP2PEvent;
-        public event EventHandler DisconnectP2PEvent;
-        public event EventHandler<StringEventArgs> NewMessageEvent;
-
-        public void Launch()
-        {
-            if (_server != null) { return; }
             PeersStore.Instance().SetMyIpAddress(_ipAddress);
-            StartNode();
-        }
-
-        public void Stop()
-        {
-            if (_server != null) _server.Dispose();
-            _p2pNetworkConnector.Stop();
-            if (StopNodeEvent != null)
-            {
-                StopNodeEvent(this, EventArgs.Empty);
-            }
-
-            _server = null;
-        }
-
-        public Networks GetNetwork()
-        {
-            return _network;
-        }
-
-        public Task ConnectP2PNetwork()
-        {
-            return _p2pNetworkConnector.Listen(_network);
-        }
-
-        public bool IsP2PNetworkRunning()
-        {
-            return _p2pNetworkConnector.IsRunning;
-        }
-
-        public ConcurrentBag<PeerConnector> GetActivePeers()
-        {
-            return _p2pNetworkConnector.GetActivePeers();
-        }
-
-        public void Broadcast(Message message)
-        {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            _p2pNetworkConnector.Broadcast(message);
-        }
-
-        public void Broadcast(BaseTransaction transaction)
-        {
-            if (transaction == null)
-            {
-                throw new ArgumentNullException(nameof(transaction));
-            }
-
-            _p2pNetworkConnector.Broadcast(transaction);
-        }
-
-        private void StartNode()
-        {
             var iid = Interop.Constants.InterfaceId;
             var instance = PeersStore.Instance();
             var port = PortsHelper.GetPort(_network);
@@ -160,26 +92,21 @@ namespace SimpleBlockChain.Core
             }
         }
 
-        private void P2PConnectEvent(object sender, EventArgs e)
+        public void Stop()
         {
-            if (ConnectP2PEvent != null)
+            if (_server == null) { return; }
+            _server.Dispose();
+            _server = null;
+            if (StopNodeEvent != null)
             {
-                ConnectP2PEvent(this, EventArgs.Empty);
-            }
-        }
-
-        private void P2PDisconnectEvent(object sender, EventArgs e)
-        {
-            if (DisconnectP2PEvent != null)
-            {
-                DisconnectP2PEvent(this, EventArgs.Empty);
+                StopNodeEvent(this, EventArgs.Empty);
             }
         }
 
         public void Dispose()
         {
-            if (_server != null) _server.Dispose();
-            _p2pNetworkConnector.Dispose();
+            if (_server == null) { return; }
+            _server.Dispose();
             if (StopNodeEvent != null)
             {
                 StopNodeEvent(this, EventArgs.Empty);

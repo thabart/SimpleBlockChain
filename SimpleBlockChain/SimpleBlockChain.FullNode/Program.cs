@@ -1,6 +1,7 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Nodes;
 using System;
 using System.Linq;
 using System.Net;
@@ -11,20 +12,22 @@ namespace SimpleBlockChain.FullNode
     class Program
     {
         private static NodeLauncher _nodeLauncher;
+        private static byte[] _ipBytes;
 
         static void Main(string[] args)
         {
             Console.Title = "FULL NODE / MINER";
             Console.WriteLine("==== Welcome to SimpleBlockChain (FULL NODE / MINER) ====");
-            var ipBytes = IPAddress.Parse("127.0.0.1").MapToIPv6().GetAddressBytes();
+            _ipBytes = IPAddress.Parse("127.0.0.1").MapToIPv6().GetAddressBytes();
             var network = MenuHelper.ChooseNetwork();
-            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK, ipBytes);
-            _nodeLauncher.StartNodeEvent += StartNodeEvent;
-            _nodeLauncher.StopNodeEvent += StopNodeEvent;
-            _nodeLauncher.NewMessageEvent += NewMessageEvent;
+            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);
+            var p2pNode = _nodeLauncher.GetP2PNode();
+            p2pNode.StartNodeEvent += StartP2PNodeEvent;
+            p2pNode.StopNodeEvent += StopP2PNodeEvent;
+            p2pNode.NewMessageEvent += NewMessageP2PEvent;
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
-            _nodeLauncher.Launch();
+            _nodeLauncher.LaunchP2PNode(_ipBytes);
             ExecuteFullNodeMenu();
         }
 
@@ -69,7 +72,7 @@ namespace SimpleBlockChain.FullNode
             switch(number)
             {
                 case 1:
-                    _nodeLauncher.Launch();
+                    _nodeLauncher.LaunchP2PNode(_ipBytes);
                     break;
             }
 
@@ -104,7 +107,7 @@ namespace SimpleBlockChain.FullNode
                     }
                     break;
                 case 3:
-                    _nodeLauncher.Stop();
+                    _nodeLauncher.GetP2PNode().Stop();
                     break;
             }
 
@@ -129,19 +132,19 @@ namespace SimpleBlockChain.FullNode
             MenuHelper.DisplayError("Cannot connect to P2P network... Retry in 10 seconds");
         }
 
-        private static void StartNodeEvent(object sender, EventArgs e)
+        private static void StartP2PNodeEvent(object sender, EventArgs e)
         {
             // MenuHelper.DisplayInformation("Node is listening");
             _nodeLauncher.ConnectP2PNetwork();
         }
 
-        private static void StopNodeEvent(object sender, EventArgs e)
+        private static void StopP2PNodeEvent(object sender, EventArgs e)
         {
             // MenuHelper.DisplayInformation("Node is not listening");
             DisplayFullNodeMenu();
         }
 
-        private static void NewMessageEvent(object sender, StringEventArgs e)
+        private static void NewMessageP2PEvent(object sender, StringEventArgs e)
         {
             // MenuHelper.DisplayInformation($"Message {e.Data} arrived");
         }

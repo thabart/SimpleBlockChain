@@ -19,13 +19,13 @@ namespace SimpleBlockChain.Interop
 
         public void Increment<T>(Action<T> beginUsage, T arg)
         {
-            if (!this._lock.WaitOne(120000, false))
+            if (!this._lock.WaitOne(120000))
                 throw new TimeoutException();
             try
             {
-                if (!this._count.WaitOne(120000, false))
+                if (!this._count.WaitOne(120000))
                     throw new TimeoutException();
-                if (!this._count.WaitOne(120000, false))
+                if (!this._count.WaitOne(120000))
                 {
                     this._count.Release();
                     throw new TimeoutException();
@@ -43,8 +43,7 @@ namespace SimpleBlockChain.Interop
 
         public void Decrement(ThreadStart endUsage)
         {
-            if (!this._lock.WaitOne(120000, false))
-                throw new TimeoutException();
+            if (!this._lock.WaitOne(120000)) throw new TimeoutException();
             try
             {
                 int num = 1 + this._count.Release();

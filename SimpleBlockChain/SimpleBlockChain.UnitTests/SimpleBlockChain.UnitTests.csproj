@@ -58,12 +58,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SimpleBlockChain.Core\SimpleBlockChain.Core.csproj">
-      <Project>{40a7a6f1-b60d-48b3-aac1-2d6541ac0b8f}</Project>
-      <Name>SimpleBlockChain.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

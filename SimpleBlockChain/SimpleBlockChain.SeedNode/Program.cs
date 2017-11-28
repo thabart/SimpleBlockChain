@@ -1,6 +1,7 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Nodes;
 using System;
 
 namespace SimpleBlockChain.Client
@@ -15,11 +16,12 @@ namespace SimpleBlockChain.Client
             Console.WriteLine("==== Welcome to SimpleBlockChain (SEED NODE) ====");
             var network = MenuHelper.ChooseNetwork();
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);
-            _nodeLauncher.StartNodeEvent += StartNodeEvent;
-            _nodeLauncher.NewMessageEvent += NewMessageEvent;
+            var p2pNode = _nodeLauncher.GetP2PNode();
+            p2pNode.StartNodeEvent += StartP2PNodeEvent;
+            p2pNode.NewMessageEvent += NewP2PMessageEvent;
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
-            _nodeLauncher.Launch();
+            _nodeLauncher.LaunchP2PNode();
             Console.ReadLine();
         }
 
@@ -33,13 +35,13 @@ namespace SimpleBlockChain.Client
             MenuHelper.DisplayError("Cannot connect to P2P network... Retry in 10 seconds");
         }
 
-        private static void StartNodeEvent(object sender, EventArgs e)
+        private static void StartP2PNodeEvent(object sender, EventArgs e)
         {
             MenuHelper.DisplayInformation("Node is listening");
             _nodeLauncher.ConnectP2PNetwork();
         }
 
-        private static void NewMessageEvent(object sender, StringEventArgs e)
+        private static void NewP2PMessageEvent(object sender, StringEventArgs e)
         {
             MenuHelper.DisplayInformation($"Message {e.Data} arrived");
         }

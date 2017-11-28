@@ -49,16 +49,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SimpleBlockChain.Core\SimpleBlockChain.Core.csproj">
-      <Project>{40a7a6f1-b60d-48b3-aac1-2d6541ac0b8f}</Project>
-      <Name>SimpleBlockChain.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SimpleBlockChain.Interop\SimpleBlockChain.Interop.csproj">
-      <Project>{caaa77bc-12f3-49d6-a13b-332c4d735822}</Project>
-      <Name>SimpleBlockChain.Interop</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

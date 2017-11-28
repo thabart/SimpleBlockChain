@@ -1,5 +1,4 @@
 ﻿using Org.BouncyCastle.Asn1.Sec;
-using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
@@ -49,8 +48,8 @@ namespace SimpleBlockChain.Core.Crypto
 
             var c = SecNamedCurves.GetByName("secp256k1");
             var domain = new ECDomainParameters(c.Curve, c.G, c.N, c.H);
-            ECCurve curve = domain.Curve;
-            ECPoint q = curve.DecodePoint(publicKey.ToByteArray());
+            Org.BouncyCastle.Math.EC.ECCurve curve = domain.Curve;
+            Org.BouncyCastle.Math.EC.ECPoint q = curve.DecodePoint(publicKey.ToByteArray());
             var pubK = new ECPublicKeyParameters(q, domain);
             var prK = new ECPrivateKeyParameters(privateKey, domain);
             return new Key(prK, pubK);
@@ -65,8 +64,8 @@ namespace SimpleBlockChain.Core.Crypto
 
             var c = SecNamedCurves.GetByName("secp256k1");
             var domain = new ECDomainParameters(c.Curve, c.G, c.N, c.H);
-            ECCurve curve = domain.Curve;
-            ECPoint q = curve.DecodePoint(payload.ToArray());
+            Org.BouncyCastle.Math.EC.ECCurve curve = domain.Curve;
+            Org.BouncyCastle.Math.EC.ECPoint q = curve.DecodePoint(payload.ToArray());
             var publicKey = new ECPublicKeyParameters(q, domain);
             return new Key(null, publicKey);
         }

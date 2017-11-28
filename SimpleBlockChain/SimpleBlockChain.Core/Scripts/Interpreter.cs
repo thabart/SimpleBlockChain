@@ -91,8 +91,8 @@ namespace SimpleBlockChain.Core.Scripts
                         stack.Add(b);
                         break;
                     case OpCodes.OP_HASH160:
-                        var myRIPEMD160 = RIPEMD160Managed.Create();
-                        var mySHA256 = SHA256Managed.Create();
+                        var myRIPEMD160 = RIPEMD160.Create();
+                        var mySHA256 = SHA256.Create();
                         var n = myRIPEMD160.ComputeHash(mySHA256.ComputeHash(b));
                         stack.Remove(stack.Last());
                         stack.Add(n);

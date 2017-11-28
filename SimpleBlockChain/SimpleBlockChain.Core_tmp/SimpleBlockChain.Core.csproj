@@ -91,10 +91,13 @@
     <Compile Include="Messages\ControlMessages\VersionMessage.cs" />
     <Compile Include="Messages\DataMessages\InventoryMessage.cs" />
     <Compile Include="Messages\DataMessages\InventoryTypes.cs" />
+    <Compile Include="Messages\DataMessages\MemPoolMessage.cs" />
     <Compile Include="Messages\DataMessages\TransactionMessage.cs" />
-    <Compile Include="NodeLauncher.cs" />
+    <Compile Include="Nodes\NodeLauncher.cs" />
+    <Compile Include="Nodes\P2PNode.cs" />
     <Compile Include="Repositories\ConfigurationRepository.cs" />
     <Compile Include="Repositories\KeyRepository.cs" />
+    <Compile Include="Nodes\RPCNode.cs" />
     <Compile Include="Scripts\Interpreter.cs" />
     <Compile Include="States\PeerConnection.cs" />
     <Compile Include="States\PeerConnectionStates.cs" />

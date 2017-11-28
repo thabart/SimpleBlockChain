@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
-using System.Timers;
+using System.Threading;
 
 namespace SimpleBlockChain.Core.Connectors
 {
@@ -22,7 +22,7 @@ namespace SimpleBlockChain.Core.Connectors
         private const int CHECK_INTERVAL = 11000;
         private readonly BackgroundWorker _cheeckPeerAvailabilityWorker;
         private readonly Networks _network;
-        private readonly Timer _timer;
+        private Timer _timer;
         private RpcClientApi _client;
         private MessageParser _messageParser;
         private MessageLauncher _messageLauncher;
@@ -30,17 +30,17 @@ namespace SimpleBlockChain.Core.Connectors
         private PongMessage _pongMessage;
         private IpAddress _currentIpAddress;
         private ServiceFlags _serviceFlag;
+        private AutoResetEvent _autoEvent = null;
 
         public PeerConnector(Networks network)
         {
+            _autoEvent = new AutoResetEvent(false);
             _client = null;
             _network = network;
             _messageParser = new MessageParser();
             _messageLauncher = new MessageLauncher();
             _cheeckPeerAvailabilityWorker = new BackgroundWorker();
             _cheeckPeerAvailabilityWorker.DoWork += CheckPeerAvailability;
-            _timer = new Timer(CHECK_INTERVAL); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
-            _timer.Elapsed += TimerElapsed;
         }
 
         public event EventHandler<IpAddressEventArgs> TimeOutEvent;
@@ -104,7 +104,7 @@ namespace SimpleBlockChain.Core.Connectors
             return _serviceFlag;
         }
 
-        private void TimerElapsed(object sender, ElapsedEventArgs e)
+        private void TimerElapsed(object sender)
         {
             if (!_cheeckPeerAvailabilityWorker.IsBusy)
             {
@@ -167,7 +167,7 @@ namespace SimpleBlockChain.Core.Connectors
                     ConnectEvent(this, new IpAddressEventArgs(_currentIpAddress));
                 }
 
-                _timer.Start();
+                _timer = new Timer(TimerElapsed, _autoEvent, CHECK_INTERVAL, CHECK_INTERVAL); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
             }
             else if (message.GetCommandName() == Constants.MessageNames.Pong)
             {
@@ -192,7 +192,7 @@ namespace SimpleBlockChain.Core.Connectors
         public void Dispose()
         {
             _client.Dispose();
-            _timer.Stop();
+            _timer.Dispose();
         }
     }
 }

@@ -176,7 +176,6 @@ namespace SimpleBlockChain.Interop
                     }
                     catch (SEHException ex)
                     {
-                        RpcException.Assert(ex.ErrorCode);
                         throw;
                     }
                 }
@@ -198,7 +197,6 @@ namespace SimpleBlockChain.Interop
                         }
                         catch (SEHException ex)
                         {
-                            RpcException.Assert(ex.ErrorCode);
                             throw;
                         }
                         ResponseSize = ptr3.Data[6];

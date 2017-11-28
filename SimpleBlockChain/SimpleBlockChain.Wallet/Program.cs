@@ -3,6 +3,7 @@ using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -21,12 +22,13 @@ namespace SimpleBlockChain.Wallet
             Console.WriteLine("==== Welcome to SimpleBlockChain (WALLET) ====");
             var network = MenuHelper.ChooseNetwork();
             var ipBytes = IPAddress.Parse("192.254.72.190").MapToIPv6().GetAddressBytes(); // VIRTUAL NETWORK.
-            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE, ipBytes);
-            _nodeLauncher.StartNodeEvent += StartNodeEvent;
-            _nodeLauncher.NewMessageEvent += NewMessageEvent;
+            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE);
+            var p2pNode = _nodeLauncher.GetP2PNode();
+            p2pNode.StartNodeEvent += StartP2PNodeEvent;
+            p2pNode.NewMessageEvent += NewP2PMessageEvent;
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
-            _nodeLauncher.Launch();
+            _nodeLauncher.LaunchP2PNode(ipBytes);
             ExecuteMenu();
             // DisplayMenu();
             // FOR EACH TRANSACTION AN ADDRESS IS GENERATED.
@@ -158,13 +160,13 @@ namespace SimpleBlockChain.Wallet
             DisplayMenu();
         }
 
-        private static void StartNodeEvent(object sender, EventArgs e)
+        private static void StartP2PNodeEvent(object sender, EventArgs e)
         {
             MenuHelper.DisplayInformation("Node is listening");
             _nodeLauncher.ConnectP2PNetwork();
         }
 
-        private static void NewMessageEvent(object sender, StringEventArgs e)
+        private static void NewP2PMessageEvent(object sender, StringEventArgs e)
         {
             MenuHelper.DisplayInformation($"Message {e.Data} arrived");
         }

@@ -16,7 +16,7 @@ namespace SimpleBlockChain.Interop
             this.Dispose(false);
         }
 
-        internal IntPtr PinFunction<T>(T data) where T : class, ICloneable, ISerializable
+        internal IntPtr PinFunction<T>(T data) where T : class
         {
             FunctionPtr<T> functionPtr = new FunctionPtr<T>(data);
             this._pinnedAddresses.Add((IDisposable)functionPtr);
