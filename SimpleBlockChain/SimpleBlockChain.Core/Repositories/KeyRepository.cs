@@ -2,6 +2,7 @@
 using Org.BouncyCastle.Math;
 using SimpleBlockChain.Core.Crypto;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,15 +11,21 @@ namespace SimpleBlockChain.Core.Repositories
 {
     public class KeyRepository
     {
+        private object obj = new object();
         private const string _fileName = "wallet.json";
-        private byte[] _salt = new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
+        private static byte[] _salt = new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
 
         public KeyRepository()
         {
-
+            Keys = new List<Key>();
         }
 
-        public Key Key { get; set; }
+        public IList<Key> Keys { get; set; }
+
+        public bool Exists()
+        {
+            return File.Exists(GetPath());
+        }
 
         public void Load(string password)
         {
@@ -29,7 +36,7 @@ namespace SimpleBlockChain.Core.Repositories
 
             if (!File.Exists(GetPath()))
             {
-                // TODO : EXCEPTION
+                return;
             }
 
             var encrypted = File.ReadAllText(GetPath());
@@ -47,10 +54,19 @@ namespace SimpleBlockChain.Core.Repositories
                         cStream.Close();
                     }
                     var json = System.Text.Encoding.Unicode.GetString(mStream.ToArray());
-                    var jToken = JToken.Parse(json);
-                    var publicKey = jToken.Value<string>("publicKey");
-                    var privateKey = jToken.Value<string>("privateKey");
-                    Key = Key.Deserialize(new BigInteger(publicKey), new BigInteger(privateKey));
+                    var jArr = JToken.Parse(json) as JArray;
+                    if (jArr != null)
+                    {
+                        var keys = new List<Key>();
+                        foreach(var jToken in jArr)
+                        {
+                            var publicKey = jToken.Value<string>("publicKey");
+                            var privateKey = jToken.Value<string>("privateKey");
+                            keys.Add(Key.Deserialize(new BigInteger(publicKey), new BigInteger(privateKey)));
+                        }
+
+                        Keys = keys;
+                    }
                 }
             }
         }
@@ -62,35 +78,53 @@ namespace SimpleBlockChain.Core.Repositories
                 throw new ArgumentNullException(nameof(password));
             }
 
-            var publicKey = new BigInteger(Key.GetPublicKey().ToArray());
-            var privateKey = Key.GetPrivateKey();
-            if (File.Exists(GetPath()))
+            lock(obj)
             {
-                File.Delete(GetPath());
+                if (File.Exists(GetPath()))
+                {
+                    File.Delete(GetPath());
+                }
+
+                File.Create(GetPath()).Close();
             }
 
-            File.Create(GetPath()).Close();
-            var json = new JObject();
-            json.Add("publicKey", publicKey.ToString());
-            json.Add("privateKey", privateKey.ToString());
-            var bytesBuff = System.Text.Encoding.Unicode.GetBytes(json.ToString());
+            var jArr = new JArray();
+            foreach(var key in Keys)
+            {
+                jArr.Add(GetJson(key));
+            }
+            
+            var bytesBuff = System.Text.Encoding.Unicode.GetBytes(jArr.ToString());
             using (var aes = Aes.Create())
             {
                 Rfc2898DeriveBytes crypto = new Rfc2898DeriveBytes(password, _salt);
                 aes.Key = crypto.GetBytes(32);
                 aes.IV = crypto.GetBytes(16);
-                using (MemoryStream mStream = new MemoryStream())
+                lock (obj)
                 {
-                    using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    using (MemoryStream mStream = new MemoryStream())
                     {
-                        cStream.Write(bytesBuff, 0, bytesBuff.Length);
-                        cStream.Close();
-                    }
+                        using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                        {
+                            cStream.Write(bytesBuff, 0, bytesBuff.Length);
+                            cStream.Close();
+                        }
 
-                    File.WriteAllText(_fileName, System.Convert.ToBase64String(mStream.ToArray()));
+                        File.WriteAllText(GetPath(), System.Convert.ToBase64String(mStream.ToArray()));
+                    }
                 }
             }
         }
+
+        private static JObject GetJson(Key key)
+        {
+            var publicKey = new BigInteger(key.GetPublicKey().ToArray());
+            var privateKey = key.GetPrivateKey();
+            var json = new JObject();
+            json.Add("publicKey", publicKey.ToString());
+            json.Add("privateKey", privateKey.ToString());
+            return json;
+        } 
 
         private static string GetPath()
         {

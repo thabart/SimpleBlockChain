@@ -6,6 +6,7 @@ using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Stores;
+using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.Interop;
 using System;
 using System.Collections.Concurrent;
@@ -70,6 +71,11 @@ namespace SimpleBlockChain.Core
             _server = null;
         }
 
+        public Networks GetNetwork()
+        {
+            return _network;
+        }
+
         public Task ConnectP2PNetwork()
         {
             return _p2pNetworkConnector.Listen(_network);
@@ -83,6 +89,26 @@ namespace SimpleBlockChain.Core
         public ConcurrentBag<PeerConnector> GetActivePeers()
         {
             return _p2pNetworkConnector.GetActivePeers();
+        }
+
+        public void Broadcast(Message message)
+        {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            _p2pNetworkConnector.Broadcast(message);
+        }
+
+        public void Broadcast(BaseTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            _p2pNetworkConnector.Broadcast(transaction);
         }
 
         private void StartNode()

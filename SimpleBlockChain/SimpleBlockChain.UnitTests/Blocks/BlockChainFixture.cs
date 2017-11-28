@@ -8,6 +8,7 @@ using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace SimpleBlockChain.UnitTests.Blocks
@@ -84,8 +85,8 @@ namespace SimpleBlockChain.UnitTests.Blocks
         private Key GetKey()
         {
             var keyRepository = new KeyRepository();
-            keyRepository.Load("titi");
-            return keyRepository.Key;
+            keyRepository.Load("mili");
+            return keyRepository.Keys.First();
         }
     }
 }
