@@ -25,10 +25,7 @@ namespace SimpleBlockChain.FullNode
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.Launch();
-            while(true)
-            {
-                Thread.Sleep(200);
-            }
+            ExecuteFullNodeMenu();
         }
 
         public static void DisplayFullNodeMenu()
@@ -45,14 +42,27 @@ namespace SimpleBlockChain.FullNode
             }
         }
 
-        private static void DisplayP2PNetworkNotRunningMenu()
+        public static void ExecuteFullNodeMenu()
         {
-            MenuHelper.DisplayMenuItem("1. Start the node");
+            DisplayFullNodeMenu();
             var number = MenuHelper.EnterNumber();
+            var isP2PNetworkRunning = _nodeLauncher.IsP2PNetworkRunning();
+            if (isP2PNetworkRunning)
+            {
+                ExecuteP2PNetworkRunningMenu(number);
+            }
+            else
+            {
+                ExecuteP2PNetworkNotRunningMenu(number);
+            }
+        }
+
+        private static void ExecuteP2PNetworkNotRunningMenu(int number)
+        {
             if (number < 0 || number > 1)
             {
                 MenuHelper.DisplayError("Enter a number between [1-1]");
-                DisplayFullNodeMenu();
+                ExecuteFullNodeMenu();
                 return;
             }
 
@@ -63,19 +73,20 @@ namespace SimpleBlockChain.FullNode
                     break;
             }
 
-            DisplayFullNodeMenu();
+            ExecuteFullNodeMenu();
         }
 
-        private static void DisplayP2PNetworkRunningMenu()
+        private static void DisplayP2PNetworkNotRunningMenu()
         {
-            MenuHelper.DisplayMenuItem("1. Display number of FULL NODES", 1);
-            MenuHelper.DisplayMenuItem("2. Display active peers", 1);
-            MenuHelper.DisplayMenuItem("3. Stop the node", 1);
-            var number = MenuHelper.EnterNumber();
+            MenuHelper.DisplayMenuItem("1. Start the node");
+        }
+
+        private static void ExecuteP2PNetworkRunningMenu(int number)
+        {
             if (number < 0 || number > 3)
             {
                 MenuHelper.DisplayError("Enter a number between [1-3]");
-                DisplayFullNodeMenu();
+                ExecuteFullNodeMenu();
                 return;
             }
 
@@ -97,7 +108,14 @@ namespace SimpleBlockChain.FullNode
                     break;
             }
 
-            DisplayFullNodeMenu();
+            ExecuteFullNodeMenu();
+        }
+
+        private static void DisplayP2PNetworkRunningMenu()
+        {
+            MenuHelper.DisplayMenuItem("1. Display number of FULL NODES", 1);
+            MenuHelper.DisplayMenuItem("2. Display active peers", 1);
+            MenuHelper.DisplayMenuItem("3. Stop the node", 1);
         }
 
         private static void ConnectP2PEvent(object sender, EventArgs e)

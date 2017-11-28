@@ -53,6 +53,7 @@ namespace SimpleBlockChain.Core
 
         public void Launch()
         {
+            if (_server != null) { return; }
             PeersStore.Instance().SetMyIpAddress(_ipAddress);
             StartNode();
         }
@@ -65,6 +66,8 @@ namespace SimpleBlockChain.Core
             {
                 StopNodeEvent(this, EventArgs.Empty);
             }
+
+            _server = null;
         }
 
         public Task ConnectP2PNetwork()
