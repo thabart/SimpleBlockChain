@@ -52,7 +52,7 @@ namespace SimpleBlockChain.Core.Nodes
             }
             else
             {
-
+                response = ProcessRequest(request);
             }
 
             context.Response.ContentType = "application/json-rpc";
@@ -106,8 +106,6 @@ namespace SimpleBlockChain.Core.Nodes
                         jTransactions.Add(transaction.Serialize().ToHexString());
                     }
 
-                    // TRANSACTION FEE : AMOUNT REMAINING WHEN ALL OUTPUTS ARE SUBSTRACTED FROM ALL INPUTS.
-                    // FEE PAID TO THE MINER.
                     result.Add("expires", "");
                     result.Add("longpollid", "");
                     result.Add("height", blockChain.GetCurrentBlockHeight() + 1);

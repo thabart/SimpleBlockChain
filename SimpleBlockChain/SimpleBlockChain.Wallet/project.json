@@ -1,9 +1,9 @@
-﻿{
+{
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "copyToOutput": "libleveldb.dll"
   },
-
   "dependencies": {
     "Microsoft.NETCore.App": {
       "type": "platform",

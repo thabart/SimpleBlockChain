@@ -14,6 +14,7 @@ namespace SimpleBlockChain.Core
         public const uint DEFAULT_GENESIS_SEQUENCE = 0xFFFFFFFF;
         public const uint DEFAULT_GENESIS_TRANSACTION_VERSION = 1;
         public const uint DEFAULT_GENESIS_TRANSACTION_LOCKTIME = 0;
+        public const double DEFAULT_MIN_TX_FEE = 0.00001;
         public static BigInteger DEFAULT_GENESIS_PUBLIC_KEY_HASH = BigInteger.Parse("-474463243122920113583528411992877859882960781629");
         public const string DEFAULT_SIGNATURE_CONTENT = "simple_block_chain";
 

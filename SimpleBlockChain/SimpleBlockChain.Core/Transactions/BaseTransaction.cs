@@ -79,6 +79,15 @@ namespace SimpleBlockChain.Core.Transactions
             return new KeyValuePair<BaseTransaction, int>(result, currentStartIndex);
         }
 
+        public long GetFee()
+        {
+            var outputValue = TransactionOut.Sum(t => t.Value);
+            var inputValue = TransactionIn.Sum(t => t.GetValue());
+            var leftValue = outputValue - inputValue;
+            var result = (Serialize().Count() / 1000) * Constants.DEFAULT_MIN_TX_FEE;
+            return (long)result;
+        }
+
         public IEnumerable<byte> GetTxId()
         {
             var payload = Serialize();
@@ -179,14 +188,6 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public abstract int CompareTo(BaseTransaction obj);
-
-        public int GetFee()
-        {
-            // var allInput = TransactionIn.Sum(s => s.)
-            var allOutput = TransactionOut.Sum(s => s.Value);
-            // https://bitcoin.org/en/glossary/transaction-fee
-            return 1;
-        }
 
         public JObject SerializeJson()
         {

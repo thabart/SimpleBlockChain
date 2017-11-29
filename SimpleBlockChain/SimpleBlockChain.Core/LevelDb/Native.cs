@@ -38,6 +38,7 @@ namespace SimpleBlockChain.Core.LevelDb
         [DllImport("kernel32")]
         private static extern IntPtr LoadLibrary(string dllToLoad);
 #endif
+
         [DllImport("libleveldb", CallingConvention = CallingConvention.Cdecl)]
         public static extern void leveldb_compact_range(IntPtr db,
                                                         string startKey,

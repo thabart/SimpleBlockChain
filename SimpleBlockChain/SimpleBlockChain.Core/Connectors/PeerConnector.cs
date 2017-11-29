@@ -191,8 +191,8 @@ namespace SimpleBlockChain.Core.Connectors
 
         public void Dispose()
         {
-            _client.Dispose();
-            _timer.Dispose();
+            if (_client != null)_client.Dispose();
+            if (_timer != null) _timer.Dispose();
         }
     }
 }

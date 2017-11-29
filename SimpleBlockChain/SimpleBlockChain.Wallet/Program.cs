@@ -5,6 +5,7 @@ using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Repositories;
+using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Net;
@@ -13,14 +14,17 @@ namespace SimpleBlockChain.Wallet
 {
     class Program
     {
+        private static RpcClient _rpcClient;
         private static NodeLauncher _nodeLauncher;
         private static KeyRepository _keyRepository = new KeyRepository();
 
         static void Main(string[] args)
         {
+            // https://bitcoin.org/en/developer-guide#full-service-wallets
             Console.Title = "WALLET NODE";
             Console.WriteLine("==== Welcome to SimpleBlockChain (WALLET) ====");
             var network = MenuHelper.ChooseNetwork();
+            _rpcClient = new RpcClient(network);
             var ipBytes = IPAddress.Parse("192.254.72.190").MapToIPv6().GetAddressBytes(); // VIRTUAL NETWORK.
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE);
             var p2pNode = _nodeLauncher.GetP2PNode();
@@ -29,16 +33,8 @@ namespace SimpleBlockChain.Wallet
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.LaunchP2PNode(ipBytes);
+            _nodeLauncher.ConnectP2PNetwork();
             ExecuteMenu();
-            // DisplayMenu();
-            // FOR EACH TRANSACTION AN ADDRESS IS GENERATED.
-
-            // IMPLEMENT A FULL SERVICE WALLET.
-            // https://bitcoin.org/en/developer-guide#full-service-wallets
-            // TODO : Generate a PRIVATE KEY.
-            // TODO : Get my address.
-            // TODO : Enters an ADDRESS & BROADCAST a TRANSACTION.
-            // TODO : Display HOW MUCH LEFT IN MY WALLET.
         }
 
         private static void DisplayMenu()
@@ -75,14 +71,15 @@ namespace SimpleBlockChain.Wallet
             MenuHelper.DisplayMenuItem("1. Send a transaction");
             MenuHelper.DisplayMenuItem("2. Receive money");
             MenuHelper.DisplayMenuItem("3. See my amount of bitcoins");
-            MenuHelper.DisplayMenuItem("4. Exit the application");
+            MenuHelper.DisplayMenuItem("4. getrawmempool");
+            MenuHelper.DisplayMenuItem("5. Exit the application");
         }
 
         private static void ExecuteConnectedWallet(int number)
         {
-            if (number < 0 && number > 4)
+            if (number < 0 && number > 5)
             {
-                MenuHelper.DisplayError("Please enter an option between [1-4]");
+                MenuHelper.DisplayError("Please enter an option between [1-5]");
             }
             switch (number)
             {
@@ -117,6 +114,10 @@ namespace SimpleBlockChain.Wallet
                     ExecuteMenu();
                     return;
                 case 4:
+                    _rpcClient.GetRawMemPool();
+                    ExecuteMenu();
+                    return;
+                case 5:
                     Console.WriteLine("Bye bye");
                     Console.ReadLine();
                     return;

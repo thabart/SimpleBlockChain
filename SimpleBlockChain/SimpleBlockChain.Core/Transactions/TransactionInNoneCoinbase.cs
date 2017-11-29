@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Stores;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,6 +61,23 @@ namespace SimpleBlockChain.Core.Transactions
             var sequence = BitConverter.ToUInt32(payload.Skip(startIndex).Take(4).ToArray(), 0);
             startIndex += 4;
             return new KeyValuePair<TransactionInNoneCoinbase, int>(new TransactionInNoneCoinbase(outpoint, signatureScripts, sequence), startIndex);
+        }
+
+        public override long GetValue()
+        {
+            if (Outpoint == null || Outpoint.Hash == null)
+            {
+                return 0;
+            }
+
+            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            var transaction = blockChain.GetTransaction(Outpoint.Hash);
+            if (transaction == null || transaction.TransactionOut.Count() >= Outpoint.Index)
+            {
+                return 0;
+            }
+
+            return transaction.TransactionOut[(int)Outpoint.Index].Value;
         }
     }
 }

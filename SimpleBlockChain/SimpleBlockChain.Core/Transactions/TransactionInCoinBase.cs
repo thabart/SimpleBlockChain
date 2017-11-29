@@ -54,5 +54,10 @@ namespace SimpleBlockChain.Core.Transactions
             startIndex += 4;
             return new KeyValuePair<TransactionInCoinbase, int>(new TransactionInCoinbase(height, coinBaseScript, sequence), startIndex);
         }
+
+        public override long GetValue()
+        {
+            return 0;
+        }
     }
 }
