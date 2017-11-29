@@ -1,7 +1,6 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
-using SimpleBlockChain.Core.LevelDb;
 using SimpleBlockChain.Core.Nodes;
 using System;
 using System.Net;
@@ -15,10 +14,6 @@ namespace SimpleBlockChain.Client
 
         static void Main(string[] args)
         {
-            Console.Title = "SEED NODE";
-            var db = new DB(new Options { CreateIfMissing = true }, testPath);
-            string s = "";
-            /*
             Console.WriteLine("==== Welcome to SimpleBlockChain (SEED NODE) ====");
             var network = MenuHelper.ChooseNetwork();
             var ipBytes = IPAddress.Parse(Constants.DNS_IP_ADDRESS).MapToIPv6().GetAddressBytes();
@@ -31,7 +26,6 @@ namespace SimpleBlockChain.Client
             _nodeLauncher.LaunchP2PNode(ipBytes);
             _nodeLauncher.LaunchRPCNode();
             Console.ReadLine();
-            */
         }
 
         private static void ConnectP2PEvent(object sender, EventArgs e)

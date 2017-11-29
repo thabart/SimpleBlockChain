@@ -2,19 +2,14 @@
   "version": "1.0.0-*",
   "buildOptions": {
     "emitEntryPoint": true,
-    "copyToOutput": "libleveldb.dll"
+    "copyToOutput": "leveldb.dll",
+    "platform": "x86"
   },
   "dependencies": {
-    "Microsoft.NETCore.App": {
-      "type": "platform",
-      "version": "1.0.1"
-    },
     "SimpleBlockChain.Core": { "target": "project" }
   },
-
   "frameworks": {
-    "netcoreapp1.0": {
-      "imports": "dnxcore50"
-    }
-  }
+    "net46": {}
+  },
+  "runtimes": { "win": [ "win7-x86" ] }
 }

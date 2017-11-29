@@ -125,6 +125,8 @@ namespace SimpleBlockChain.Core.Connectors
                 if (peers.Any()) // DISCOVER THE PEERS FROM THE REPOSITORY.
                 {
                     await DiscoverNodesViaStore(peers);
+                    callback();
+                    return;
                 }
 
                 if (!_isSeedNode) // DISCOVER THE PEERS FROM THE SEEDS.

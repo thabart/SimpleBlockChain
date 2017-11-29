@@ -1,12 +1,12 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "copyToOutput": "leveldb.dll"
   },
   "dependencies": {
     "SimpleBlockChain.Core": { "target": "project" }
   },
-
   "frameworks": {
     "net46": {}
   }
