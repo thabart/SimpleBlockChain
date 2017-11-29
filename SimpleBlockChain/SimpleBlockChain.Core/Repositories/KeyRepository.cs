@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 
 namespace SimpleBlockChain.Core.Repositories
@@ -51,7 +52,7 @@ namespace SimpleBlockChain.Core.Repositories
                     using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateDecryptor(), CryptoStreamMode.Write))
                     {
                         cStream.Write(bytesBuff, 0, bytesBuff.Length);
-                        cStream.Close();
+                        cStream.Dispose();
                     }
                     var json = System.Text.Encoding.Unicode.GetString(mStream.ToArray());
                     var jArr = JToken.Parse(json) as JArray;
@@ -85,7 +86,7 @@ namespace SimpleBlockChain.Core.Repositories
                     File.Delete(GetPath());
                 }
 
-                File.Create(GetPath()).Close();
+                File.Create(GetPath()).Dispose();
             }
 
             var jArr = new JArray();
@@ -107,7 +108,7 @@ namespace SimpleBlockChain.Core.Repositories
                         using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                         {
                             cStream.Write(bytesBuff, 0, bytesBuff.Length);
-                            cStream.Close();
+                            cStream.Dispose();
                         }
 
                         File.WriteAllText(GetPath(), System.Convert.ToBase64String(mStream.ToArray()));
@@ -128,7 +129,7 @@ namespace SimpleBlockChain.Core.Repositories
 
         private static string GetPath()
         {
-            string path = AppDomain.CurrentDomain.BaseDirectory;
+            string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             return Path.Combine(path, _fileName);
         }
     }

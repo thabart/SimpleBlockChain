@@ -1,20 +1,19 @@
-﻿using NUnit.Framework;
-using SimpleBlockChain.Core;
+﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Transactions;
 using System;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Blocks
 {
-    [TestFixture]
     public class BlockFixture
     {
         private static uint NBits = 0x1e0ffff0;
 
-        [Test]
+        [Fact]
         public void WhenSerializeBlockWithOneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
@@ -33,7 +32,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             string s = "";
         }
 
-        [Test]
+        [Fact]
         public void WhenSerializeBlockWithOneCoinbaseTransactionAndTwoNoneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
@@ -58,7 +57,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             block.Serialize();
         }
 
-        [Test]
+        [Fact]
         public void WhenBuildGenesisBlock()
         {
             var block = Block.BuildGenesisBlock();

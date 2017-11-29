@@ -1,16 +1,15 @@
-﻿using NUnit.Framework;
-using SimpleBlockChain.Core.Builders;
+﻿using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Scripts;
 using SimpleBlockChain.Core.Transactions;
 using System.Text;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Builders
 {
-    [TestFixture]
     public class ScriptBuilderFixture
     {
-        [Test]
+        [Fact]
         public void Check16EqualTo16()
         {
             var scriptBuilder = new ScriptBuilder();
@@ -37,7 +36,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             Assert.True(isCorrect);
         }
 
-        [Test]
+        [Fact]
         public void CheckSignature()
         {
             var key = Key.Genererate();

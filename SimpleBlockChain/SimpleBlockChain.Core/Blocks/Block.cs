@@ -195,7 +195,7 @@ namespace SimpleBlockChain.Core.Blocks
         public byte[] GetHashHeader()
         {
             var payload = SerializeHeader();
-            var mySHA256 = SHA256Managed.Create();
+            var mySHA256 = SHA256.Create();
             return mySHA256.ComputeHash(mySHA256.ComputeHash(payload));
         }
 
@@ -232,7 +232,7 @@ namespace SimpleBlockChain.Core.Blocks
 
         private static IEnumerable<byte> CalculateMerkleTreeHash(IEnumerable<IEnumerable<byte>> lstTxIds)
         {
-            var mySHA256 = SHA256Managed.Create();
+            var mySHA256 = SHA256.Create();
             if (lstTxIds.Count() == 2)
             {
                 var record = new List<byte>();

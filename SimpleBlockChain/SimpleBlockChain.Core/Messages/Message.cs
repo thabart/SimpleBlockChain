@@ -40,7 +40,7 @@ namespace SimpleBlockChain.Core.Messages
             }
             else
             {
-                SHA256 mySHA256 = SHA256Managed.Create();
+                SHA256 mySHA256 = SHA256.Create();
                 var hashed = mySHA256.ComputeHash(mySHA256.ComputeHash(content));
                 checksum = hashed.Take(4).ToArray();
             }

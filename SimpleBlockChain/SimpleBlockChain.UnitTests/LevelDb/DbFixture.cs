@@ -1,13 +1,11 @@
-﻿using NUnit.Framework;
-using SimpleBlockChain.Core.LevelDb;
-using System.IO;
+﻿using SimpleBlockChain.Core.LevelDb;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.LevelDb
 {
-    [TestFixture]
     public class DbFixture
     {
-        [Test]
+        [Fact]
         public void WhenWriteAndReadSomeData()
         {
             var databasePath = @"c:\Project\SimpleBlockChain\SimpleBlockChain\db.dat";

@@ -79,7 +79,7 @@ namespace SimpleBlockChain.Core
 
             var checksum = decoded.Skip(decoded.Length - 4).Take(4);
             var content = decoded.Take(decoded.Length - 4);
-            var mySHA256 = SHA256Managed.Create();
+            var mySHA256 = SHA256.Create();
             var calculatedHash = mySHA256.ComputeHash(mySHA256.ComputeHash(content.ToArray()));
             var calculatedChecksum = calculatedHash.Take(4);
             if (!checksum.SequenceEqual(calculatedChecksum))
@@ -128,7 +128,7 @@ namespace SimpleBlockChain.Core
             var content = new List<byte>();
             content.Add(version);
             content.AddRange(publicKeyHashed);
-            var mySHA256 = SHA256Managed.Create();
+            var mySHA256 = SHA256.Create();
             var hashedContent = mySHA256.ComputeHash(mySHA256.ComputeHash(content.ToArray()));
             var checkSum = hashedContent.Take(4);
             var result = new List<byte>();

@@ -1,5 +1,4 @@
-﻿using NUnit.Framework;
-using SimpleBlockChain.Core;
+﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
@@ -10,16 +9,16 @@ using SimpleBlockChain.Core.Transactions;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Blocks
 {
-    [TestFixture]
     public class BlockChainFixture
     {
         private const ScriptTypes _scriptTypes = ScriptTypes.P2PKH;
         private const Networks _network = Networks.MainNet;
 
-        [Test]
+        [Fact]
         public void WhenGetGenesisBlock()
         {
             var blockChain = new BlockChain();
@@ -27,7 +26,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             Assert.NotNull(block);
         }
 
-        [Test]
+        [Fact]
         public void WhenAddBlock()
         {
             var blockChain = BlockChainStore.Instance().GetBlockChain(); // Get the genesis block.

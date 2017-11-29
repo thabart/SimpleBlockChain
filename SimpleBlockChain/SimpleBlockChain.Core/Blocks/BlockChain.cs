@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace SimpleBlockChain.Core.Blocks
 {
@@ -266,7 +267,7 @@ namespace SimpleBlockChain.Core.Blocks
 
         private static string GetDbFile()
         {
-            string path = AppDomain.CurrentDomain.BaseDirectory;
+            string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             return Path.Combine(path, _databaseFile);
         }
     }

@@ -51,7 +51,7 @@ namespace SimpleBlockChain.Core.Parsers
             if (payloadSize > 0)
             {
                 contentPayload = payload.Skip(24).Take(payloadSize).ToArray();
-                SHA256 mySHA256 = SHA256Managed.Create();
+                SHA256 mySHA256 = SHA256.Create();
                 var newCheckSum = mySHA256.ComputeHash(mySHA256.ComputeHash(contentPayload)).Take(4);
                 if (!newCheckSum.SequenceEqual(checkSum))
                 {

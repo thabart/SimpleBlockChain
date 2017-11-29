@@ -17,9 +17,8 @@ namespace SimpleBlockChain.Core.LevelDb
             {
                 return;
             }
-
-            throw new ApplicationException(error);
         }
+
         public static UIntPtr GetStringLength(string value)
         {
             if (value == null || value.Length == 0)

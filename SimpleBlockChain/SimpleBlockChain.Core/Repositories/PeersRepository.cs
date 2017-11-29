@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace SimpleBlockChain.Core.Storages
 {
@@ -43,7 +43,7 @@ namespace SimpleBlockChain.Core.Storages
             }
             lock (obj)
             {
-                using (var file = new StreamWriter(GetPath()))
+                using (var file = new StreamWriter(File.Open(GetPath(), FileMode.Open)))
                 {
                     var json = JsonConvert.SerializeObject(ipAddress);
                     file.WriteLine(json);
@@ -65,7 +65,7 @@ namespace SimpleBlockChain.Core.Storages
             lock (obj)
             {
                 File.WriteAllText(GetPath(), string.Empty);
-                using (var file = new StreamWriter(GetPath()))
+                using (var file = new StreamWriter(File.Open(GetPath(), FileMode.Open)))
                 {
                     foreach (var adr in ipAddressLst)
                     {
@@ -111,13 +111,13 @@ namespace SimpleBlockChain.Core.Storages
         {
             if (!File.Exists(GetPath()))
             {
-                File.Create(GetPath()).Close();
+                File.Create(GetPath()).Dispose();
             }
         }
 
         private static string GetPath()
         {
-            string path = AppDomain.CurrentDomain.BaseDirectory;
+            string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             return Path.Combine(path, _fileName);
         }
     }

@@ -8,13 +8,18 @@
     "Newtonsoft.Json": "9.0.1",
     "System.ComponentModel.EventBasedAsync": "4.0.10",
     "System.Threading.Timer": "4.3.0",
+    "System.Net.NameResolution": "4.3.0",
     "SimpleBlockChain.Interop": { "target": "project" }
   },
 
   "frameworks": {
     "netstandard1.6": {
       "imports": "dnxcore50"
-    }
+    },
+    "net46": { }
   },
-  "buildOptions": { "allowUnsafe": true }
+  "buildOptions": {
+    "allowUnsafe": true,
+    "copyToOutput": "libleveldb.dll"
+  }
 }

@@ -81,7 +81,7 @@ namespace SimpleBlockChain.Core.Transactions
         public IEnumerable<byte> GetTxId()
         {
             var payload = Serialize();
-            var mySHA256 = SHA256Managed.Create();
+            var mySHA256 = SHA256.Create();
             return mySHA256.ComputeHash(mySHA256.ComputeHash(payload.ToArray()));
         }
 

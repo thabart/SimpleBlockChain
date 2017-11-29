@@ -82,8 +82,8 @@ namespace SimpleBlockChain.Core.Crypto
 
         public byte[] GetPublicKeyHashed()
         {
-            var mySHA256 = SHA256Managed.Create(); // Explanations : https://bitcoin.org/en/developer-reference#address-conversion
-            var myRIPEMD160 = RIPEMD160Managed.Create();
+            var mySHA256 = SHA256.Create(); // Explanations : https://bitcoin.org/en/developer-reference#address-conversion
+            var myRIPEMD160 = new RIPEMD160Managed();
             var hashed = mySHA256.ComputeHash(GetPublicKey().ToArray());
             hashed = myRIPEMD160.ComputeHash(hashed);
             return hashed;

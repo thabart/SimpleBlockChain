@@ -11,8 +11,8 @@ namespace SimpleBlockChain.Core.Helpers
     {
         public byte[] GetIpv6Address()
         {
-            var hostName = Dns.GetHostName();
-            var ipEntry = Dns.GetHostEntry(hostName);
+            var hostName = Dns.GetHostName();            
+            var ipEntry = Dns.GetHostEntryAsync(hostName).Result;
             var addr = ipEntry.AddressList;
             var ipv6Addr = addr.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetworkV6);
             if (ipv6Addr == null)
@@ -26,7 +26,7 @@ namespace SimpleBlockChain.Core.Helpers
         public byte[] GetIpv4Address()
         {
             var hostName = Dns.GetHostName();
-            var ipEntry = Dns.GetHostEntry(hostName);
+            var ipEntry = Dns.GetHostEntryAsync(hostName).Result;
             var addr = ipEntry.AddressList;
             var ipv4Addr = addr.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
             if (ipv4Addr == null)

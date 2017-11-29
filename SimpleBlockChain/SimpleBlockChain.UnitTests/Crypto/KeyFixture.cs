@@ -1,15 +1,14 @@
-﻿using NUnit.Framework;
-using SimpleBlockChain.Core.Crypto;
+﻿using SimpleBlockChain.Core.Crypto;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Crypto
 {
-    [TestFixture]
     public class KeyFixture
     {
-        [Test]
+        [Fact]
         public void WhenCheckSignatureThenTrueIsReturned()
         {
             var key = Key.Genererate();

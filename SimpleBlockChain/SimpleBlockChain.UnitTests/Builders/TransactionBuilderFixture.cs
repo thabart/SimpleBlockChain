@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
@@ -8,10 +8,9 @@ using System;
 
 namespace SimpleBlockChain.UnitTests.Builders
 {
-    [TestFixture]
     public class TransactionBuilderFixture
     {
-        [Test]
+        [Fact]
         public void WhenBuildNoneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
@@ -23,7 +22,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             var deserializedTransaction = BaseTransaction.Deserialize(serializedTransaction, TransactionTypes.NoneCoinbase);
         }
 
-        [Test]
+        [Fact]
         public void WhenBuildCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
