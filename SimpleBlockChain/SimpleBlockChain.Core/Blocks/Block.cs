@@ -13,7 +13,7 @@ namespace SimpleBlockChain.Core.Blocks
 {
     public class Block
     {
-        private const int CURRENT_VERSION = 4;
+        public const int CURRENT_VERSION = 4;
         private int _version;
 
         private DateTime _blockHeaderHashingStartTime { get; set; }

@@ -16,5 +16,20 @@
 
             return null;
         }
+
+        public static string GetRPCPort(Networks network)
+        {
+            switch(network)
+            {
+                case Networks.MainNet:
+                    return Constants.RpcPorts.MainNet;
+                case Networks.RegTest:
+                    return Constants.RpcPorts.RegTest;
+                case Networks.TestNet:
+                    return Constants.RpcPorts.TestNet;
+            }
+
+            return null;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Common;
+﻿using Newtonsoft.Json.Linq;
+using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Scripts;
@@ -178,5 +179,32 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public abstract int CompareTo(BaseTransaction obj);
+
+        public int GetFee()
+        {
+            // var allInput = TransactionIn.Sum(s => s.)
+            var allOutput = TransactionOut.Sum(s => s.Value);
+            // https://bitcoin.org/en/glossary/transaction-fee
+            return 1;
+        }
+
+        public JObject SerializeJson()
+        {
+            var result = new JObject();
+            var content = new JObject();
+            var serialized = Serialize();
+            content.Add("size", serialized.Count());
+            /*
+            content.Add("fee", 0.1);
+            content.Add("modifiedfee", 0.1);
+            content.Add("time", null);
+            content.Add("height", null);
+            content.Add("startingpriority", null);
+            content.Add("currentpriority", null);
+            content.Add("currentpriority", null);
+            */
+            result.Add(GetTxId().ToHexString(), content);
+            return result;
+        }
     }
 }

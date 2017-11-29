@@ -24,6 +24,13 @@ namespace SimpleBlockChain.Core
             public const string RegTest = "18444";
         }
 
+        public class RpcPorts
+        {
+            public const string MainNet = "8332";
+            public const string TestNet = "18332";
+            public const string RegTest = "18332";
+        }
+
         public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr,
             MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr, MessageNames.Inventory,
             MessageNames.Transaction, MessageNames.Pong, MessageNames.MemPool };

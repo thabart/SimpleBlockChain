@@ -37,6 +37,11 @@ namespace SimpleBlockChain.Core.Blocks
             IntitializeCurrentBlock();
         }
 
+        public int GetCurrentBlockHeight()
+        {
+            return _currentBlockHeight;
+        }
+
         public Block GetCurrentBlock()
         {
             return GetBlock(_currentBlockHash);

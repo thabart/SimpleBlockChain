@@ -1,5 +1,4 @@
 ﻿using SimpleBlockChain.Core.Connectors;
-using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -25,6 +24,7 @@ namespace SimpleBlockChain.Core.Nodes
             _p2pNetworkConnector.ConnectEvent += P2PConnectEvent;
             _p2pNetworkConnector.DisconnectEvent += P2PDisconnectEvent;
             _p2pNode = new P2PNode(_network, _serviceFlag);
+            _rpcNode = new RPCNode(_network);
         }
 
         public RPCNode GetRpcNode()
@@ -52,7 +52,7 @@ namespace SimpleBlockChain.Core.Nodes
 
         public void LaunchRPCNode()
         {
-
+            _rpcNode.Start();
         }
 
         public Task ConnectP2PNetwork()
@@ -109,6 +109,7 @@ namespace SimpleBlockChain.Core.Nodes
         public void Dispose()
         {
             if (_p2pNode != null) _p2pNode.Dispose();
+            if (_rpcNode != null) _rpcNode.Dispose();
             _p2pNetworkConnector.Dispose();
         }
     }
