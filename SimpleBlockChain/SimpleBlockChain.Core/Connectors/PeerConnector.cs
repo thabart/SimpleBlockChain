@@ -1,7 +1,6 @@
 ﻿using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Helpers;
-using SimpleBlockChain.Core.Launchers;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.States;
@@ -24,7 +23,6 @@ namespace SimpleBlockChain.Core.Connectors
         private Timer _timer;
         private RpcClientApi _client;
         private MessageParser _messageParser;
-        private MessageLauncher _messageLauncher;
         private PeerConnection _peerConnection;
         private PongMessage _pongMessage;
         private IpAddress _currentIpAddress;
@@ -37,7 +35,6 @@ namespace SimpleBlockChain.Core.Connectors
             _client = null;
             _network = network;
             _messageParser = new MessageParser();
-            _messageLauncher = new MessageLauncher(p2pNetworkConnector);
             _cheeckPeerAvailabilityWorker = new BackgroundWorker();
             _cheeckPeerAvailabilityWorker.DoWork += CheckPeerAvailability;
             _messageCoordinator = new MessageCoordinator();

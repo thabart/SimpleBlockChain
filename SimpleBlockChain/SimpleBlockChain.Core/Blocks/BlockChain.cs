@@ -15,12 +15,13 @@ namespace SimpleBlockChain.Core.Blocks
         private int _currentBlockHeight = 0;
         private IEnumerable<byte> _currentBlockHash = null;
         private const string BLOCK_KEY = "BLOCK_{0}";
+        private const string BLOCK_HASH = "BLOCK_HASH_{0}";
+        private const string BLOCK_HEIGHT = "BLOCK_HEIGHT_{0}";
         private const string SPENT_TRANSACTION = "SPEND_TRANSACTION_{0}";
         private const string UNSPENT_TRANSACTION = "UNSPENT_TRANSACTION_{0}";
         private const string BLOCK_TRANSACTIONS = "BLOCK_TRANSACTIONS_{0}";
         private const string UNSPENT_TRANSACTION_CB = "UNSPENT_TRANSACTION_CB_{0}";
         private const string SPENT_TRANSACTION_CB = "SPENT_TRANSACTION_CB_{0}";
-        private const string BLOCK_HASH = "BLOCK_HASH_{0}";
         private const string CURRENT_BLOCK_HEIGHT = "CURRENT_BLOCK_HEIGHT";
         private const string CURRENT_BLOCK = "CURRENT_BLOCK";
         private const char TXID_SEPARATOR = ',';
@@ -65,17 +66,44 @@ namespace SimpleBlockChain.Core.Blocks
             var lst = new List<Block>();
             for (var i = _currentBlockHeight; i >= endIndex; i--)
             {
-                Slice result;
-                if (!_db.TryGet(ReadOptions.Default, string.Format(BLOCK_HASH, i), out result))
+                var block = GetBlock(i);
+                if (block == null)
                 {
                     continue;
                 }
 
-                var hash = result.ToString();
-                lst.Add(GetBlock(Convert.FromBase64String(hash)));
+                lst.Add(block);
             }
 
             return lst;
+        }
+
+        public Block GetBlock(int blockHeight)
+        {
+            Slice result;
+            if (!_db.TryGet(ReadOptions.Default, string.Format(BLOCK_HASH, blockHeight), out result))
+            {
+                return null;
+            }
+
+            var hash = result.ToString();
+            return GetBlock(Convert.FromBase64String(hash));
+        }
+
+        public int GetBlockHeight(IEnumerable<byte> hash)
+        {
+            if (hash == null)
+            {
+                throw new ArgumentNullException(nameof(hash));
+            }
+
+            Slice result;
+            if (!_db.TryGet(ReadOptions.Default, string.Format(BLOCK_HEIGHT, Convert.ToBase64String(hash.ToArray())), out result))
+            {
+                return -1;
+            }
+
+            return int.Parse(result.ToString());
         }
 
         public Block GetBlock(IEnumerable<byte> hash)
@@ -320,6 +348,7 @@ namespace SimpleBlockChain.Core.Blocks
             batch.Put(string.Format(BLOCK_TRANSACTIONS, hashHeader), b64);
             batch.Put(CURRENT_BLOCK, Convert.ToBase64String(block.GetHashHeader()));
             batch.Put(CURRENT_BLOCK_HEIGHT, _currentBlockHeight.ToString());
+            batch.Put(string.Format(BLOCK_HEIGHT, Convert.ToBase64String(block.GetHashHeader())), _currentBlockHeight.ToString());
             batch.Put(string.Format(BLOCK_HASH, _currentBlockHeight.ToString()), Convert.ToBase64String(block.GetHashHeader()));
             _db.Write(WriteOptions.Default, batch);
         }

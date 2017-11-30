@@ -1,9 +1,13 @@
 ﻿using SimpleBlockChain.Core.Connectors;
+using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
+using SimpleBlockChain.Core.Messages.DataMessages;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SimpleBlockChain.Core.Nodes
@@ -68,6 +72,30 @@ namespace SimpleBlockChain.Core.Nodes
         public bool IsP2PNetworkRunning()
         {
             return _p2pNetworkConnector.IsRunning;
+        }
+
+        public void RefreshBlockChain()
+        {
+            if (!_p2pNetworkConnector.IsRunning)
+            {
+                throw new P2PConnectorException(ErrorCodes.P2PNotReachable);
+            }
+
+            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            var blocks = blockChain.GetLastBlocks(Constants.DEFAULT_NB_BLOCKS_PAST);
+            var getBlocksMessage = new GetBlocksMessage(blocks.Select(b => b.GetHashHeader()), _network);
+            Broadcast(getBlocksMessage);
+        }
+
+        public void RefreshMemPool()
+        {
+            if (!_p2pNetworkConnector.IsRunning)
+            {
+                throw new P2PConnectorException(ErrorCodes.P2PNotReachable);
+            }
+
+            var msg = new MemPoolMessage(_network);
+            Broadcast(msg);
         }
 
         public ConcurrentBag<PeerConnector> GetActivePeers()

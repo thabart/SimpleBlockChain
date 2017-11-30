@@ -17,5 +17,6 @@
         public const string TransactionOutputExceedInput = "transaction_output_exceed_input";
         public const string PeerRpcError = "peer_rpc_error";
         public const string SeedPeersNotReachable = "seed_peers_not_reachable";
+        public const string P2PNotReachable = "p2p_not_connected";
     }
 }

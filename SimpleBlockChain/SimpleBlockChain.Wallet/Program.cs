@@ -3,14 +3,12 @@ using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
-using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
-using System.Linq;
 using System.Net;
 using System.Numerics;
 
@@ -74,24 +72,25 @@ namespace SimpleBlockChain.Wallet
             MenuHelper.DisplayMenuItem("1. Send a transaction");
             MenuHelper.DisplayMenuItem("2. Receive money");
             MenuHelper.DisplayMenuItem("3. See my amount of bitcoins");
-            MenuHelper.DisplayMenuItem("4. Exit the application");
+            MenuHelper.DisplayMenuItem("4. Refresh the BlockChain");
+            MenuHelper.DisplayMenuItem("5. Exit the application");
         }
 
         private static void ExecuteConnectedWallet(int number)
         {
-            if (number < 0 && number > 4)
+            if (number < 0 && number > 5)
             {
-                MenuHelper.DisplayError("Please enter an option between [1-4]");
+                MenuHelper.DisplayError("Please enter an option between [1-5]");
             }
             switch (number)
             {
                 case 1: // BROADCAST A UTXO TRANSACTION.
-                    GetBlocks();
                     Console.WriteLine("Please enter the address");
                     var receivedHash = Console.ReadLine();
                     var deserializedAdr = BlockChainAddress.Deserialize(receivedHash);
                     Console.WriteLine("How much do-you want to send ?");
                     var value = MenuHelper.EnterNumber();
+                    var blockChain = BlockChainStore.Instance().GetBlockChain();
                     var builder = new TransactionBuilder();
                     var transaction = builder.NewNoneCoinbaseTransaction()
                          // .Spend(0, )
@@ -101,8 +100,7 @@ namespace SimpleBlockChain.Wallet
                     _nodeLauncher.Broadcast(transaction);
                     ExecuteMenu();
                     return;
-                case 2:
-                    // GENERATE A NEW BITCOIN ADDRESS.
+                case 2:  // GENERATE A NEW BITCOIN ADDRESS.
                     var key = Key.Genererate();
                     var h = new BigInteger(key.GetPublicKeyHashed());
                     var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, _nodeLauncher.GetNetwork(), key);
@@ -119,6 +117,10 @@ namespace SimpleBlockChain.Wallet
                     ExecuteMenu();
                     return;
                 case 4:
+                    _nodeLauncher.RefreshBlockChain();
+                    ExecuteMenu();
+                    break;
+                case 5:
                     Console.WriteLine("Bye bye");
                     Console.ReadLine();
                     return;
@@ -176,13 +178,6 @@ namespace SimpleBlockChain.Wallet
         private static void DisplayWalletInformation()
         {
 
-        }
-
-        private static GetBlocksMessage GetBlocks()
-        {
-            var instance = BlockChainStore.Instance().GetBlockChain();
-            var blocks = instance.GetLastBlocks(5);
-            return new GetBlocksMessage(blocks.Select(b => b.GetHashHeader()), _nodeLauncher.GetNetwork());
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Common;
+﻿using SimpleBlockChain.Core.Blocks;
+using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
@@ -113,7 +114,51 @@ namespace SimpleBlockChain.Core.Connectors
 
             if (message.GetCommandName() == Constants.MessageNames.Block) // ADD THE BLOCK.
             {
-                return null;
+                var msg = message as BlockMessage;
+                var blockChain = BlockChainStore.Instance().GetBlockChain();
+                blockChain.AddBlock(msg.Block);
+            }
+            
+            if (message.GetCommandName() == Constants.MessageNames.GetBlocks) // RETURN THE BLOCKS : https://bitcoin.org/en/developer-reference#getblocks
+            {
+                var msg = message as GetBlocksMessage;
+                var blockChain = BlockChainStore.Instance().GetBlockChain();
+                int lastBlockHeight = -1;
+                foreach(var blockHash in msg.BlockHashes)
+                {
+                    lastBlockHeight = blockChain.GetBlockHeight(blockHash);
+                    if (lastBlockHeight != -1)
+                    {
+                        goto Found;
+                    }
+                }
+
+                Found:
+                var currentBlockHeight = blockChain.GetCurrentBlockHeight();
+                if (currentBlockHeight == lastBlockHeight)
+                {
+                    return new InventoryMessage(new List<Inventory>(), msg.MessageHeader.Network);
+                }
+
+                var nbBlocks = currentBlockHeight - lastBlockHeight;
+                if (lastBlockHeight == -1)
+                {
+                    nbBlocks = currentBlockHeight - 1;
+                }
+
+                if (nbBlocks > 500)
+                {
+                    nbBlocks = 500;
+                }
+
+                var blocks = blockChain.GetLastBlocks(nbBlocks);
+                var inventories = new List<Inventory>();
+                foreach(var block in blocks)
+                {
+                    inventories.Add(new Inventory(InventoryTypes.MSG_BLOCK, block.GetHashHeader()));
+                }
+
+                return new InventoryMessage(inventories, msg.MessageHeader.Network);
             }
 
             return null;
@@ -121,6 +166,11 @@ namespace SimpleBlockChain.Core.Connectors
 
         public Message Launch(PeerConnector peerConnector, Message message)
         {
+            if (message.GetCommandName() == Constants.MessageNames.GetBlocks)
+            {
+                Launch(peerConnector, message as GetBlocksMessage);
+            }
+
             if (message.GetCommandName() == Constants.MessageNames.Inventory)
             {
                 Launch(peerConnector, message as InventoryMessage);
@@ -152,6 +202,18 @@ namespace SimpleBlockChain.Core.Connectors
             }
 
             return null;
+        }
+
+        private void Launch(PeerConnector peerConnector, GetBlocksMessage message)
+        {
+            var payload = peerConnector.Execute(message.Serialize());
+            var result = _messageParser.Parse(payload.ToArray());
+            if (result.GetCommandName() != Constants.MessageNames.Inventory)
+            {
+                return;
+            }
+
+            Launch(peerConnector, result as InventoryMessage); 
         }
 
         private Message Launch(PeerConnector peerConnector, PingMessage message)

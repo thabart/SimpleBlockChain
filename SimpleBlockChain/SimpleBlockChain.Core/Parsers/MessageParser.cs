@@ -116,6 +116,10 @@ namespace SimpleBlockChain.Core.Parsers
             {
                 message = BlockMessage.Deserialize(contentPayload, network);
             }
+            else if (commandName == Constants.MessageNames.GetBlocks)
+            {
+                message = GetBlocksMessage.Deserialize(contentPayload, network);
+            }
 
             message.MessageHeader.Ipv6 = ipv6.ToArray();
             return message;
