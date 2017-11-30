@@ -7,9 +7,12 @@ using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Rpc;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
+using System.Linq;
 using System.Net;
+using System.Numerics;
 
 namespace SimpleBlockChain.Wallet
 {
@@ -83,6 +86,7 @@ namespace SimpleBlockChain.Wallet
             switch (number)
             {
                 case 1: // BROADCAST A UTXO TRANSACTION.
+                    GetBlocks();
                     Console.WriteLine("Please enter the address");
                     var receivedHash = Console.ReadLine();
                     var deserializedAdr = BlockChainAddress.Deserialize(receivedHash);
@@ -90,6 +94,7 @@ namespace SimpleBlockChain.Wallet
                     var value = MenuHelper.EnterNumber();
                     var builder = new TransactionBuilder();
                     var transaction = builder.NewNoneCoinbaseTransaction()
+                         // .Spend(0, )
                          .AddOutput(value, Script.CreateP2PKHScript(deserializedAdr.PublicKeyHash))
                          .Build();
                     var serializedTransaction = transaction.Serialize(); // SEND UTXO.
@@ -99,6 +104,7 @@ namespace SimpleBlockChain.Wallet
                 case 2:
                     // GENERATE A NEW BITCOIN ADDRESS.
                     var key = Key.Genererate();
+                    var h = new BigInteger(key.GetPublicKeyHashed());
                     var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, _nodeLauncher.GetNetwork(), key);
                     var hash = blockChainAddress.GetSerializedHash();
                     Console.WriteLine($"Give the bitcoin address to the person {hash}");
@@ -170,6 +176,13 @@ namespace SimpleBlockChain.Wallet
         private static void DisplayWalletInformation()
         {
 
+        }
+
+        private static GetBlocksMessage GetBlocks()
+        {
+            var instance = BlockChainStore.Instance().GetBlockChain();
+            var blocks = instance.GetLastBlocks(5);
+            return new GetBlocksMessage(blocks.Select(b => b.GetHashHeader()), _nodeLauncher.GetNetwork());
         }
     }
 }

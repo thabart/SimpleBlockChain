@@ -23,7 +23,7 @@ namespace SimpleBlockChain.Core.Connectors
             _peersStorage = new PeersRepository();
         }
 
-        public Message Receive(Message message, PeerConnector peer)
+        public Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector)
         {
             if (message.GetCommandName() == Constants.MessageNames.Version) // RETURNS VERSION.
             {
@@ -103,10 +103,11 @@ namespace SimpleBlockChain.Core.Connectors
                 return null;
             }
 
-            if (message.GetCommandName() == Constants.MessageNames.Transaction) // ADD TRANSACTION INTO MEMORY POOL.
+            if (message.GetCommandName() == Constants.MessageNames.Transaction) // ADD TRANSACTION INTO MEMORY POOL & BROADCAST IT.
             {
                 var msg = message as TransactionMessage;
                 AddTransaction(msg.Transaction);
+                p2pNetworkConnector.Broadcast(msg.Transaction, msg.MessageHeader.Ipv6);
                 return null;
             }
 

@@ -65,7 +65,7 @@ namespace SimpleBlockChain.Core.Nodes
                     NewMessageEvent(this, new StringEventArgs(message.GetCommandName()));
                 }
 
-                var response = _messageCoordinator.Receive(message, connectedPeer);
+                var response = _messageCoordinator.Receive(message, connectedPeer, _p2pNetworkConnector);
                 if (response == null)
                 {
                     return new byte[0];

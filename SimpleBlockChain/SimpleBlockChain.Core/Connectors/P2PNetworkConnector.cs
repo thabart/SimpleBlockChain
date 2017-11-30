@@ -57,7 +57,7 @@ namespace SimpleBlockChain.Core.Connectors
             await DiscoverNodes();
         }
 
-        public void Broadcast(BaseTransaction transaction)
+        public void Broadcast(BaseTransaction transaction, IEnumerable<byte> excludedIp = null)
         {
             if (transaction == null)
             {
@@ -66,7 +66,7 @@ namespace SimpleBlockChain.Core.Connectors
 
             var inventory = new Inventory(InventoryTypes.MSG_TX, transaction.GetTxId());
             var inventoryMessage = new InventoryMessage(new[] { inventory }, _network);
-            foreach (var activePeer in _peers.Where(p => p.GetServiceFlag() == ServiceFlags.NODE_NETWORK))
+            foreach (var activePeer in _peers.Where(p => excludedIp != null && !p.GetCurrentIpAddress().Ipv6.SequenceEqual(excludedIp)))
             {
                 activePeer.Execute(inventoryMessage.Serialize());
             }
@@ -244,13 +244,6 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 return;
             }
-
-            /*
-            if (ipAddr.Data.ServiceFlag != ServiceFlags.NODE_NETWORK)
-            {
-                return;
-            }
-            */
 
             var ipAdr = new IPAddress(ipAddr.Data.Ipv6);
             var ip = ipAdr.MapToIPv4().ToString();

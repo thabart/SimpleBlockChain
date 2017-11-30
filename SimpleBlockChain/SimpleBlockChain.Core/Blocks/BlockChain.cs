@@ -20,6 +20,7 @@ namespace SimpleBlockChain.Core.Blocks
         private const string BLOCK_TRANSACTIONS = "BLOCK_TRANSACTIONS_{0}";
         private const string UNSPENT_TRANSACTION_CB = "UNSPENT_TRANSACTION_CB_{0}";
         private const string SPENT_TRANSACTION_CB = "SPENT_TRANSACTION_CB_{0}";
+        private const string BLOCK_HASH = "BLOCK_HASH_{0}";
         private const string CURRENT_BLOCK_HEIGHT = "CURRENT_BLOCK_HEIGHT";
         private const string CURRENT_BLOCK = "CURRENT_BLOCK";
         private const char TXID_SEPARATOR = ',';
@@ -47,7 +48,36 @@ namespace SimpleBlockChain.Core.Blocks
         {
             return GetBlock(_currentBlockHash);
         }
-        
+
+        public IEnumerable<Block> GetLastBlocks(int nbBlocks)
+        {
+            if (nbBlocks > _currentBlockHeight)
+            {
+                nbBlocks = _currentBlockHeight;
+            }
+
+            var endIndex = (_currentBlockHeight - nbBlocks) + 1;
+            if (endIndex <= 0)
+            {
+                endIndex = 1;
+            }
+
+            var lst = new List<Block>();
+            for (var i = _currentBlockHeight; i >= endIndex; i--)
+            {
+                Slice result;
+                if (!_db.TryGet(ReadOptions.Default, string.Format(BLOCK_HASH, i), out result))
+                {
+                    continue;
+                }
+
+                var hash = result.ToString();
+                lst.Add(GetBlock(Convert.FromBase64String(hash)));
+            }
+
+            return lst;
+        }
+
         public Block GetBlock(IEnumerable<byte> hash)
         {
             if (hash == null)
@@ -290,6 +320,7 @@ namespace SimpleBlockChain.Core.Blocks
             batch.Put(string.Format(BLOCK_TRANSACTIONS, hashHeader), b64);
             batch.Put(CURRENT_BLOCK, Convert.ToBase64String(block.GetHashHeader()));
             batch.Put(CURRENT_BLOCK_HEIGHT, _currentBlockHeight.ToString());
+            batch.Put(string.Format(BLOCK_HASH, _currentBlockHeight.ToString()), Convert.ToBase64String(block.GetHashHeader()));
             _db.Write(WriteOptions.Default, batch);
         }
 

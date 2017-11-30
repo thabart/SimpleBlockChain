@@ -26,14 +26,15 @@ namespace SimpleBlockChain.Client
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.LaunchP2PNode(ipBytes);
-
+            Console.ReadLine();
+            /*
             var ba = BuildBlockChainAddress(); // ADD FAKE TRANSACTION TO MEMORY POOL.
             var builder = new TransactionBuilder();
             var transaction = builder.NewNoneCoinbaseTransaction()
                  .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
                  .Build();
             MemoryPool.Instance().AddTransaction(transaction);
-            Console.ReadLine();
+            */
         }
 
         private static void ConnectP2PEvent(object sender, EventArgs e)

@@ -27,6 +27,7 @@ namespace SimpleBlockChain.FullNode
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.LaunchP2PNode(_ipBytes);
+            _nodeLauncher.LaunchRPCNode();
             ExecuteFullNodeMenu();
         }
 

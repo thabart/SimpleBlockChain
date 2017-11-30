@@ -15,7 +15,7 @@ namespace SimpleBlockChain.Core
         public const uint DEFAULT_GENESIS_TRANSACTION_VERSION = 1;
         public const uint DEFAULT_GENESIS_TRANSACTION_LOCKTIME = 0;
         public const double DEFAULT_MIN_TX_FEE = 0.00001;
-        public static BigInteger DEFAULT_GENESIS_PUBLIC_KEY_HASH = BigInteger.Parse("-474463243122920113583528411992877859882960781629");
+        public static BigInteger DEFAULT_GENESIS_PUBLIC_KEY_HASH = BigInteger.Parse("-156319234400569929500613481175835971687206108403");
         public const string DEFAULT_SIGNATURE_CONTENT = "simple_block_chain";
 
         public class Ports
@@ -35,7 +35,7 @@ namespace SimpleBlockChain.Core
         public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr,
             MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr, MessageNames.Inventory,
             MessageNames.Transaction, MessageNames.Pong, MessageNames.MemPool,
-            MessageNames.GetData, MessageNames.Block };
+            MessageNames.GetData, MessageNames.Block, MessageNames.GetBlocks };
 
         public class MessageNames
         {
@@ -50,6 +50,7 @@ namespace SimpleBlockChain.Core
             public const string MemPool = "mempool";
             public const string GetData = "getdata";
             public const string Block = "block";
+            public const string GetBlocks = "getblocks";
         }
     }
 }
