@@ -17,7 +17,7 @@ namespace SimpleBlockChain.FullNode
         {
             Console.Title = "FULL NODE / MINER";
             Console.WriteLine("==== Welcome to SimpleBlockChain (FULL NODE / MINER) ====");
-            _ipBytes = IPAddress.Parse("127.0.0.1").MapToIPv6().GetAddressBytes();
+            _ipBytes = IPAddress.Parse("192.168.76.131").MapToIPv6().GetAddressBytes();
             var network = MenuHelper.ChooseNetwork();
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);
             var p2pNode = _nodeLauncher.GetP2PNode();

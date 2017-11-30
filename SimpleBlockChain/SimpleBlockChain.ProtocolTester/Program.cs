@@ -11,7 +11,7 @@ using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Net;
 
-namespace SimpleBlockChain.Wallet
+namespace SimpleBlockChain.ProtocolTester
 {
     class Program
     {
@@ -22,11 +22,11 @@ namespace SimpleBlockChain.Wallet
         static void Main(string[] args)
         {
             // https://bitcoin.org/en/developer-guide#full-service-wallets
-            Console.Title = "WALLET NODE";
-            Console.WriteLine("==== Welcome to SimpleBlockChain (WALLET) ====");
+            Console.Title = "PROTOCOL TESTER NODE";
+            Console.WriteLine("==== Welcome to SimpleBlockChain (PROTOCOL TESTER) ====");
             var network = MenuHelper.ChooseNetwork();
             _rpcClient = new RpcClient(network);
-            var ipBytes = IPAddress.Parse("192.168.76.132").MapToIPv6().GetAddressBytes(); // VIRTUAL NETWORK.
+            var ipBytes = IPAddress.Parse("192.168.76.133").MapToIPv6().GetAddressBytes(); // VIRTUAL NETWORK.
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE);
             var p2pNode = _nodeLauncher.GetP2PNode();
             p2pNode.StartNodeEvent += StartP2PNodeEvent;
@@ -34,6 +34,7 @@ namespace SimpleBlockChain.Wallet
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.LaunchP2PNode(ipBytes);
+            _nodeLauncher.LaunchRPCNode();
             ExecuteMenu();
         }
 
@@ -43,11 +44,11 @@ namespace SimpleBlockChain.Wallet
             var isP2PNetworkRunning = _nodeLauncher.IsP2PNetworkRunning();
             if (isP2PNetworkRunning)
             {
-                DisplayConnectedWallet();
+                DisplayConnected();
             }
             else
             {
-                DisplayDisconnectedWallet();
+                DisplayDisconnected();
             }
         }
 
@@ -58,61 +59,38 @@ namespace SimpleBlockChain.Wallet
             var isP2PNetworkRunning = _nodeLauncher.IsP2PNetworkRunning();
             if (isP2PNetworkRunning)
             {
-                ExecuteConnectedWallet(number);
+                ExecuteConnected(number);
             }
             else
             {
-                ExecuteDisconnectedWallet(number);
+                ExecuteDisconnected(number);
             }
         }
 
-        private static void DisplayConnectedWallet()
+        private static void DisplayConnected()
         {
-            MenuHelper.DisplayMenuItem("1. Send a transaction");
-            MenuHelper.DisplayMenuItem("2. Receive money");
-            MenuHelper.DisplayMenuItem("3. See my amount of bitcoins");
-            MenuHelper.DisplayMenuItem("4. Exit the application");
+            MenuHelper.DisplayMenuItem("1. getrawmempool");
+            MenuHelper.DisplayMenuItem("2. mempool");
+            MenuHelper.DisplayMenuItem("3. Exit the application");
         }
 
-        private static void ExecuteConnectedWallet(int number)
+        private static void ExecuteConnected(int number)
         {
-            if (number < 0 && number > 4)
+            if (number < 0 && number > 2)
             {
-                MenuHelper.DisplayError("Please enter an option between [1-4]");
+                MenuHelper.DisplayError("Please enter an option between [1-3]");
             }
             switch (number)
             {
-                case 1: // BROADCAST A UTXO TRANSACTION.
-                    Console.WriteLine("Please enter the address");
-                    var receivedHash = Console.ReadLine();
-                    var deserializedAdr = BlockChainAddress.Deserialize(receivedHash);
-                    Console.WriteLine("How much do-you want to send ?");
-                    var value = MenuHelper.EnterNumber();
-                    var builder = new TransactionBuilder();
-                    var transaction = builder.NewNoneCoinbaseTransaction()
-                         .AddOutput(value, Script.CreateP2PKHScript(deserializedAdr.PublicKeyHash))
-                         .Build();
-                    var serializedTransaction = transaction.Serialize(); // SEND UTXO.
-                    _nodeLauncher.Broadcast(transaction);
+                case 1: // getrawmempool.
+                    var result = _rpcClient.GetRawMemPool().Result;
+                    Console.WriteLine(result);
                     ExecuteMenu();
                     return;
-                case 2:
-                    // GENERATE A NEW BITCOIN ADDRESS.
-                    var key = Key.Genererate();
-                    var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, _nodeLauncher.GetNetwork(), key);
-                    var hash = blockChainAddress.GetSerializedHash();
-                    Console.WriteLine($"Give the bitcoin address to the person {hash}");
-                    Console.WriteLine("Please enter a password to protect your wallet");
-                    var password = Console.ReadLine();
-                    _keyRepository.Load(password);
-                    _keyRepository.Keys.Add(key);
-                    _keyRepository.Save(password);
+                case 2: // mempool.
+                    _nodeLauncher.Broadcast(new MemPoolMessage(_nodeLauncher.GetNetwork()));
                     break;
                 case 3:
-                    DisplayWalletInformation();
-                    ExecuteMenu();
-                    return;
-                case 4:
                     Console.WriteLine("Bye bye");
                     Console.ReadLine();
                     return;
@@ -121,12 +99,12 @@ namespace SimpleBlockChain.Wallet
             ExecuteMenu();
         }
 
-        private static void DisplayDisconnectedWallet()
+        private static void DisplayDisconnected()
         {
             MenuHelper.DisplayMenuItem("1. Exit the application");
         }
 
-        private static void ExecuteDisconnectedWallet(int number)
+        private static void ExecuteDisconnected(int number)
         {
             if (number < 0 && number > 1)
             {
@@ -165,11 +143,6 @@ namespace SimpleBlockChain.Wallet
         private static void NewP2PMessageEvent(object sender, StringEventArgs e)
         {
             MenuHelper.DisplayInformation($"Message {e.Data} arrived");
-        }
-
-        private static void DisplayWalletInformation()
-        {
-
         }
     }
 }

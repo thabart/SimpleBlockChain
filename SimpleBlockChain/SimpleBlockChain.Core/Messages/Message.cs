@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleBlockChain.Core.Stores;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -30,6 +31,7 @@ namespace SimpleBlockChain.Core.Messages
             }
 
             result.AddRange(commandNameBuffer);
+            result.AddRange(PeersStore.Instance().GetMyIpAddress().Ipv6);
             var content = GetSerializedContent();
             var size = BitConverter.GetBytes(content.Length);
             result.AddRange(size);

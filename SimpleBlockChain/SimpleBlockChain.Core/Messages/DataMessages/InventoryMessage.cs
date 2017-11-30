@@ -17,6 +17,7 @@ namespace SimpleBlockChain.Core.Messages.DataMessages
         public Inventory(InventoryTypes type, IEnumerable<byte> hash)
         {
             Type = type;
+            Hash = hash;
         }
 
         public InventoryTypes Type { get; private set; }

@@ -25,6 +25,7 @@ namespace SimpleBlockChain.Core.Connectors
         private Networks _network;
         private ConcurrentBag<PeerConnector> _peers;
         private MessageParser _messageParser;
+        private MessageCoordinator _messageCoordinator;
         private bool _isSeedNode = false;
 
         public P2PNetworkConnector()
@@ -32,6 +33,7 @@ namespace SimpleBlockChain.Core.Connectors
             _peers = new ConcurrentBag<PeerConnector>();
             _messageParser = new MessageParser();
             _peersRepository = new PeersRepository();
+            _messageCoordinator = new MessageCoordinator();
             var instance = PeerEventStore.Instance();
             instance.NewPeerEvt += ListenPeer;
         }
@@ -62,24 +64,25 @@ namespace SimpleBlockChain.Core.Connectors
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var message = new TransactionMessage(transaction, _network);
+            var inventory = new Inventory(InventoryTypes.MSG_TX, transaction.GetTxId());
+            var inventoryMessage = new InventoryMessage(new[] { inventory }, _network);
             foreach (var activePeer in _peers.Where(p => p.GetServiceFlag() == ServiceFlags.NODE_NETWORK))
             {
-                activePeer.Execute(message.Serialize());
+                activePeer.Execute(inventoryMessage.Serialize());
             }
         }
 
-        public IEnumerable<IEnumerable<byte>> Broadcast(Message message)
+        public IEnumerable<Message> Broadcast(Message message)
         {
             if (message == null)
             {
                 throw new ArgumentNullException(nameof(message));
             }
 
-            var result = new List<IEnumerable<byte>>();
+            var result = new List<Message>();
             foreach (var activePeer in _peers)
             {
-                result.Add(activePeer.Execute(message.Serialize()));
+                result.Add(_messageCoordinator.Launch(activePeer, message));
             }
             
             return result;
@@ -162,16 +165,18 @@ namespace SimpleBlockChain.Core.Connectors
             Broadcast(addrMessage);
             var getAddrMessage = new GetAddressMessage(_network);
             var getAddrLst = Broadcast(getAddrMessage);
-            foreach(var getAddr in getAddrLst)
+            if (getAddrLst != null && getAddrLst.Any())
             {
-                var message = _messageParser.Parse(getAddr.ToArray());
-                var getAdrMsg = message as AddrMessage;
-                if (getAdrMsg == null)
+                foreach(var getAddr in getAddrLst)
                 {
-                    continue;
-                }
+                    var getAdrMsg = getAddr as AddrMessage;
+                    if (getAdrMsg == null)
+                    {
+                        continue;
+                    }
 
-                _peersRepository.AddPeers(getAdrMsg.IpAddresses);
+                    _peersRepository.AddPeers(getAdrMsg.IpAddresses);
+                }
             }
 
             var peers = _peersRepository.GetAll();
@@ -201,6 +206,12 @@ namespace SimpleBlockChain.Core.Connectors
 
         public bool ContainsPeer(byte[] ipAdr)
         {
+            var peer = GetPeer(ipAdr);
+            return peer != null;
+        }
+
+        public PeerConnector GetPeer(byte[] ipAdr)
+        {
             if (ipAdr == null)
             {
                 throw new ArgumentNullException(nameof(ipAdr));
@@ -210,11 +221,11 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 if (activePeer.GetCurrentIpAddress().Ipv6.SequenceEqual(ipAdr))
                 {
-                    return true;
+                    return activePeer;
                 }
             }
 
-            return false;
+            return null;
         }
 
         private void ListenPeer(object sender, IpAddressEventArgs ipAddr)
@@ -234,10 +245,12 @@ namespace SimpleBlockChain.Core.Connectors
                 return;
             }
 
+            /*
             if (ipAddr.Data.ServiceFlag != ServiceFlags.NODE_NETWORK)
             {
                 return;
             }
+            */
 
             var ipAdr = new IPAddress(ipAddr.Data.Ipv6);
             var ip = ipAdr.MapToIPv4().ToString();
@@ -283,7 +296,7 @@ namespace SimpleBlockChain.Core.Connectors
 
             return Task.Factory.StartNew(() =>
             {
-                var peerConnector = new PeerConnector(_network);
+                var peerConnector = new PeerConnector(_network, this);
                 try
                 {
                     var manualResetEvent = new ManualResetEvent(false);

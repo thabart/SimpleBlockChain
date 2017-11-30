@@ -34,7 +34,8 @@ namespace SimpleBlockChain.Core
 
         public static List<string> MessageNameLst = new List<string> { Constants.MessageNames.Ping, MessageNames.Addr,
             MessageNames.Version, MessageNames.Verack, MessageNames.GetAddr, MessageNames.Inventory,
-            MessageNames.Transaction, MessageNames.Pong, MessageNames.MemPool };
+            MessageNames.Transaction, MessageNames.Pong, MessageNames.MemPool,
+            MessageNames.GetData, MessageNames.Block };
 
         public class MessageNames
         {
@@ -47,6 +48,8 @@ namespace SimpleBlockChain.Core
             public const string Transaction = "tx";
             public const string Inventory = "inv";
             public const string MemPool = "mempool";
+            public const string GetData = "getdata";
+            public const string Block = "block";
         }
     }
 }

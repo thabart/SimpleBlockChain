@@ -3,6 +3,7 @@
     public class MessageHeader
     {
         public Networks Network { get; set; } // Length : 4
+        public byte[] Ipv6 { get; set; }
 
         public byte[] GetStartString()
         {

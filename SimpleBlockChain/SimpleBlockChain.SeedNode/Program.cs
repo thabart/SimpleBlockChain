@@ -1,7 +1,10 @@
 ﻿using SimpleBlockChain.Core;
+using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Nodes;
+using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Net;
 
@@ -23,7 +26,13 @@ namespace SimpleBlockChain.Client
             _nodeLauncher.ConnectP2PEvent += ConnectP2PEvent;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.LaunchP2PNode(ipBytes);
-            _nodeLauncher.LaunchRPCNode();
+
+            var ba = BuildBlockChainAddress(); // ADD FAKE TRANSACTION TO MEMORY POOL.
+            var builder = new TransactionBuilder();
+            var transaction = builder.NewNoneCoinbaseTransaction()
+                 .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
+                 .Build();
+            MemoryPool.Instance().AddTransaction(transaction);
             Console.ReadLine();
         }
 
@@ -46,6 +55,16 @@ namespace SimpleBlockChain.Client
         private static void NewP2PMessageEvent(object sender, StringEventArgs e)
         {
             MenuHelper.DisplayInformation($"Message {e.Data} arrived");
+        }
+
+        private static BlockChainAddress BuildBlockChainAddress()
+        {
+            var network = Networks.MainNet;
+            var key = Key.Genererate();
+            var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, network, key);
+            var hash = blockChainAddress.GetSerializedHash();
+            var deserializedBA = BlockChainAddress.Deserialize(hash);
+            return deserializedBA;
         }
     }
 }

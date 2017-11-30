@@ -23,7 +23,7 @@ namespace SimpleBlockChain.Core.Nodes
             _p2pNetworkConnector = new P2PNetworkConnector();
             _p2pNetworkConnector.ConnectEvent += P2PConnectEvent;
             _p2pNetworkConnector.DisconnectEvent += P2PDisconnectEvent;
-            _p2pNode = new P2PNode(_network, _serviceFlag);
+            _p2pNode = new P2PNode(_network, _serviceFlag, _p2pNetworkConnector);
             _rpcNode = new RPCNode(_network);
         }
 

@@ -1,9 +1,7 @@
-﻿using SimpleBlockChain.Core.Common;
-using SimpleBlockChain.Core.Evts;
+﻿using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
-using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.States;
@@ -22,6 +20,7 @@ namespace SimpleBlockChain.Core.Connectors
         private const int CHECK_INTERVAL = 11000;
         private readonly BackgroundWorker _cheeckPeerAvailabilityWorker;
         private readonly Networks _network;
+        private readonly MessageCoordinator _messageCoordinator;
         private Timer _timer;
         private RpcClientApi _client;
         private MessageParser _messageParser;
@@ -32,15 +31,16 @@ namespace SimpleBlockChain.Core.Connectors
         private ServiceFlags _serviceFlag;
         private AutoResetEvent _autoEvent = null;
 
-        public PeerConnector(Networks network)
+        public PeerConnector(Networks network, P2PNetworkConnector p2pNetworkConnector)
         {
             _autoEvent = new AutoResetEvent(false);
             _client = null;
             _network = network;
             _messageParser = new MessageParser();
-            _messageLauncher = new MessageLauncher();
+            _messageLauncher = new MessageLauncher(p2pNetworkConnector);
             _cheeckPeerAvailabilityWorker = new BackgroundWorker();
             _cheeckPeerAvailabilityWorker.DoWork += CheckPeerAvailability;
+            _messageCoordinator = new MessageCoordinator();
         }
 
         public event EventHandler<IpAddressEventArgs> TimeOutEvent;
@@ -69,14 +69,22 @@ namespace SimpleBlockChain.Core.Connectors
             // Connection to peers : https://bitcoin.org/en/developer-guide#connecting-to-peers
             var instance = PeersStore.Instance();
             var transmittingNode = instance.GetMyIpAddress();
-
             var nonce = NonceHelper.GetNonceUInt64();
             var versionMessage = new VersionMessage(transmittingNode, _currentIpAddress, nonce, string.Empty, 0, false, _network);
             try
             {
-                var result = _client.Execute(versionMessage.Serialize());
                 _peerConnection = new PeerConnection(adrBytes);
-                Parse(result);
+                var result = _messageCoordinator.Launch(this, versionMessage);
+                if (result != null && result is VerackMessage)
+                {
+                    _peerConnection.Connect();
+                    if (ConnectEvent != null)
+                    {
+                        ConnectEvent(this, new IpAddressEventArgs(_currentIpAddress));
+                    }
+
+                    _timer = new Timer(TimerElapsed, _autoEvent, CHECK_INTERVAL, CHECK_INTERVAL); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
+                }
             }
             catch(RpcException)
             {
@@ -125,19 +133,14 @@ namespace SimpleBlockChain.Core.Connectors
             var pingMessage = new PingMessage(nonce, _network);
             try
             {
-                var payload = _client.Execute(pingMessage.Serialize());
-                var message = _messageParser.Parse(payload);
-                if (message.GetCommandName() != Constants.MessageNames.Pong)
+                var result = _messageCoordinator.Launch(this, pingMessage);
+                if (result == null)
                 {
                     callback();
-                }
-                
-                var pongMessage = message as PongMessage;
-                if (pongMessage == null)
-                {
-                    callback();
+                    return;
                 }
 
+                var pongMessage = result as PongMessage;
                 if (pongMessage.Nonce != nonce)
                 {
                     callback();
@@ -146,41 +149,6 @@ namespace SimpleBlockChain.Core.Connectors
             catch (RpcException)
             {
                 callback();
-            }
-        }
-
-        private void Parse(byte[] payload)
-        {
-            var message = _messageParser.Parse(payload);
-            var instance = PeersStore.Instance();
-            Message response = null;
-            if (message.GetCommandName() == Constants.MessageNames.Version)
-            {
-                var versionMessage = message as VersionMessage;
-                response = _messageLauncher.ClientRespond(versionMessage, _network);
-            }
-            else if (message.GetCommandName() == Constants.MessageNames.Verack)
-            {
-                _peerConnection.Connect();
-                if (ConnectEvent != null)
-                {
-                    ConnectEvent(this, new IpAddressEventArgs(_currentIpAddress));
-                }
-
-                _timer = new Timer(TimerElapsed, _autoEvent, CHECK_INTERVAL, CHECK_INTERVAL); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
-            }
-            else if (message.GetCommandName() == Constants.MessageNames.Pong)
-            {
-                _pongMessage = message as PongMessage;
-            }
-            else
-            {
-                response = _messageLauncher.Launch(message);
-            }
-
-            if (response != null)
-            {
-                Parse(_client.Execute(response.Serialize()));
             }
         }
 

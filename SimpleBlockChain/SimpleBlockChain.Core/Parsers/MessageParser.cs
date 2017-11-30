@@ -22,7 +22,7 @@ namespace SimpleBlockChain.Core.Parsers
                 throw new ParseMessageException(ErrorCodes.InvalidCommandLength);
             }
 
-            var header = payload.Take(24); // Extract the header.
+            var header = payload.Take(40); // Extract the header.
             var startStringPayload = header.Take(4);
             var network = Networks.MainNet;
             if (startStringPayload.SequenceEqual(new byte[] { 0xf9, 0xbe, 0xb4, 0xd9 }))
@@ -43,14 +43,15 @@ namespace SimpleBlockChain.Core.Parsers
             }
 
             var commandNamePayload = header.Skip(4).Take(12).Where(b => b != 0x00).ToArray();
-            var commandName = System.Text.Encoding.ASCII.GetString(commandNamePayload);            
-            var payloadSizePayload = header.Skip(16).Take(4).ToArray();
+            var commandName = System.Text.Encoding.ASCII.GetString(commandNamePayload);
+            var ipv6 = header.Skip(16).Take(16);     
+            var payloadSizePayload = header.Skip(32).Take(4).ToArray();
             var payloadSize = BitConverter.ToInt32(payloadSizePayload, 0);
-            var checkSum = header.Skip(20).Take(4);
+            var checkSum = header.Skip(36).Take(4);
             byte[] contentPayload = null;
             if (payloadSize > 0)
             {
-                contentPayload = payload.Skip(24).Take(payloadSize).ToArray();
+                contentPayload = payload.Skip(40).Take(payloadSize).ToArray();
                 SHA256 mySHA256 = SHA256.Create();
                 var newCheckSum = mySHA256.ComputeHash(mySHA256.ComputeHash(contentPayload)).Take(4);
                 if (!newCheckSum.SequenceEqual(checkSum))
@@ -107,7 +108,16 @@ namespace SimpleBlockChain.Core.Parsers
             {
                 message = new MemPoolMessage(network);
             }
+            else if (commandName == Constants.MessageNames.GetData)
+            {
+                message = GetDataMessage.Deserialize(contentPayload, network);
+            }
+            else if (commandName == Constants.MessageNames.Block)
+            {
+                message = BlockMessage.Deserialize(contentPayload, network);
+            }
 
+            message.MessageHeader.Ipv6 = ipv6.ToArray();
             return message;
         }
     }

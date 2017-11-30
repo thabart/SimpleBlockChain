@@ -170,6 +170,16 @@ namespace SimpleBlockChain.Core.Blocks
             return res;
         }
 
+        public bool ContainsBlock(IEnumerable<byte> hash)
+        {
+            if (hash == null)
+            {
+                throw new ArgumentNullException(nameof(hash));
+            }
+
+            return GetBlock(hash) != null;
+        }
+
         public bool ContainsTransaction(IEnumerable<byte> txId)
         {
             if (txId == null)
@@ -177,7 +187,7 @@ namespace SimpleBlockChain.Core.Blocks
                 throw new ArgumentNullException(nameof(txId));
             }
 
-            return false;
+            return GetTransaction(txId) != null;
         }
 
         public BaseTransaction GetTransaction(IEnumerable<byte> txId)
@@ -187,7 +197,32 @@ namespace SimpleBlockChain.Core.Blocks
                 throw new ArgumentNullException(nameof(txId));
             }
 
-            return null;
+            var callback = new Func<bool, BaseTransaction>((isCoinBased) =>
+            {
+                var k = isCoinBased ? UNSPENT_TRANSACTION_CB : UNSPENT_TRANSACTION;
+                Slice result;
+                if (!_db.TryGet(ReadOptions.Default, string.Format(k, Convert.ToBase64String(txId.ToArray())), out result))
+                {
+                    return null;
+                }
+
+                var payload = Convert.FromBase64String(result.ToString());
+                var kvp = BaseTransaction.Deserialize(payload, isCoinBased ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase);
+                if (kvp.Equals(default(KeyValuePair<BaseTransaction, int>)) && kvp.Key != null)
+                {
+                    return null;
+                }
+
+                return kvp.Key;
+            });
+
+            var res = callback(false);
+            if (res == null)
+            {
+                res = callback(true);
+            }
+
+            return res;
         }
 
         public void Dispose()

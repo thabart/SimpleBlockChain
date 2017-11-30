@@ -1,7 +1,7 @@
-﻿using SimpleBlockChain.Core.Evts;
+﻿using SimpleBlockChain.Core.Connectors;
+using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Launchers;
-using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Stores;
@@ -17,18 +17,20 @@ namespace SimpleBlockChain.Core.Nodes
     {
         private readonly Networks _network;
         private readonly ServiceFlags _serviceFlag;
+        private readonly P2PNetworkConnector _p2pNetworkConnector;
         private static RpcServerApi _server;
-        private MessageParser _messageParser;
-        private MessageLauncher _messageLauncher;
+        private readonly MessageParser _messageParser;
+        private readonly MessageCoordinator _messageCoordinator;
         private IpAdrHelper _ipAdrHelper;
         private IpAddress _ipAddress;
 
-        public P2PNode(Networks network, ServiceFlags serviceFlag)
+        public P2PNode(Networks network, ServiceFlags serviceFlag, P2PNetworkConnector p2pNetworkConnector)
         {
             _network = network;
             _serviceFlag = serviceFlag;
+            _p2pNetworkConnector = p2pNetworkConnector;
             _messageParser = new MessageParser();
-            _messageLauncher = new MessageLauncher();
+            _messageCoordinator = new MessageCoordinator();
             _ipAdrHelper = new IpAdrHelper();
         }
 
@@ -57,27 +59,13 @@ namespace SimpleBlockChain.Core.Nodes
             _server.OnExecute += delegate (IRpcClientInfo client, byte[] arg)
             {
                 var message = _messageParser.Parse(arg);
+                var connectedPeer = _p2pNetworkConnector.GetPeer(message.MessageHeader.Ipv6);
                 if (NewMessageEvent != null)
                 {
                     NewMessageEvent(this, new StringEventArgs(message.GetCommandName()));
                 }
 
-                Message response = null;
-                if (message.GetCommandName() == Constants.MessageNames.Version)
-                {
-                    var msg = message as VersionMessage;
-                    response = _messageLauncher.ServerRespond(msg);
-                }
-                else if (message.GetCommandName() == Constants.MessageNames.Verack)
-                {
-                    var verackMessage = message as VerackMessage;
-                    response = _messageLauncher.ServerRespond(verackMessage, _network);
-                }
-                else
-                {
-                    response = _messageLauncher.Launch(message);
-                }
-
+                var response = _messageCoordinator.Receive(message, connectedPeer);
                 if (response == null)
                 {
                     return new byte[0];

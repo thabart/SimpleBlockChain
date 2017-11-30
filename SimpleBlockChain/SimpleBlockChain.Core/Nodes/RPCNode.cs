@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using SimpleBlockChain.Core.Helpers;
 using System;
 
