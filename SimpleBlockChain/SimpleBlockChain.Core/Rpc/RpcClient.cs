@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using SimpleBlockChain.Core.Helpers;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace SimpleBlockChain.Core.Rpc
             _network = network;
         }
         
-        public async Task GetRawMemPool()
+        public async Task<string> GetRawMemPool()
         {
             var httpClient = new HttpClient();
             var jObj = new JObject();
@@ -24,12 +25,12 @@ namespace SimpleBlockChain.Core.Rpc
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                Content = content
+                Content = content,
+                RequestUri = new Uri($"http://localhost:{PortsHelper.GetRPCPort(_network)}")
             };
 
             var response = await httpClient.SendAsync(request).ConfigureAwait(false);
-            var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            return;
+            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         }
     }
 }

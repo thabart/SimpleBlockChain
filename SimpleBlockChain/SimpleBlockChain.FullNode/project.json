@@ -7,8 +7,6 @@
     "net46": {}
   },
   "buildOptions": {
-    "emitEntryPoint": true,
-    "copyToOutput": "leveldb.dll",
-    "platform": "x86"
+    "emitEntryPoint": true
   }
 }

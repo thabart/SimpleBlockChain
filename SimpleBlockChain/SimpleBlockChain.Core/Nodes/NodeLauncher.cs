@@ -37,6 +37,11 @@ namespace SimpleBlockChain.Core.Nodes
             return _p2pNode;
         }
 
+        public P2PNetworkConnector GetP2PNetwork()
+        {
+            return _p2pNetworkConnector;
+        }
+
         public Networks GetNetwork()
         {
             return _network;

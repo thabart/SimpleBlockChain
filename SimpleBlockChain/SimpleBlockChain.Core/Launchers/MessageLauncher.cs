@@ -82,6 +82,7 @@ namespace SimpleBlockChain.Core.Launchers
             {
                 var msg = message as TransactionMessage;
                 AddTransaction(msg.Transaction);
+                return null;
             }
 
             throw new InterpretMessageException(ErrorCodes.MessageNotSupported);

@@ -107,6 +107,7 @@ namespace SimpleBlockChain.FullNode
                     break;
                 case 3:
                     _nodeLauncher.GetP2PNode().Stop();
+                    _nodeLauncher.GetP2PNetwork().Stop();
                     break;
             }
 

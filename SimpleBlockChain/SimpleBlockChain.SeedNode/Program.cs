@@ -10,7 +10,6 @@ namespace SimpleBlockChain.Client
     class Program
     {
         private static NodeLauncher _nodeLauncher;
-        static string testPath = @"C:\Temp\Test";
 
         static void Main(string[] args)
         {

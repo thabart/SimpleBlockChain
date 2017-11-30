@@ -113,7 +113,8 @@ namespace SimpleBlockChain.Wallet
                     ExecuteMenu();
                     return;
                 case 4:
-                    _rpcClient.GetRawMemPool();
+                    var result = _rpcClient.GetRawMemPool().Result;
+                    Console.WriteLine(result);
                     ExecuteMenu();
                     return;
                 case 5:

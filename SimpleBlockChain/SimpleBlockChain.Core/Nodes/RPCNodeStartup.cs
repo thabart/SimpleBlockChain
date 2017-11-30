@@ -8,6 +8,7 @@ using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Stores;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -61,14 +62,34 @@ namespace SimpleBlockChain.Core.Nodes
 
         private JObject ProcessRequest(JObject request)
         {
-            var id = request.Value<string>("id");
-            var method = request.Value<string>("method");
-            var parameters = request.Values<string>("params");
-            if (string.IsNullOrWhiteSpace(method))
+            var id = string.Empty;
+            var method = string.Empty;
+            IEnumerable<string> parameters = new List<string>();
+            JToken idToken = null;
+            JToken methodToken = null;
+            JToken parametersToken = null;
+            if (request.TryGetValue("id", out idToken))
+            {
+                id = idToken.ToString();
+            }
+
+            if (!request.TryGetValue("method", out methodToken))
             {
                 return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_REQUEST, "Method parameter is missing");
+            } else
+            {
+                method = methodToken.ToString();
             }
-            
+
+            if (request.TryGetValue("params", out parametersToken))
+            {
+                var arr = parametersToken as JArray;
+                if (arr != null)
+                {
+                    parameters = arr.Select(a => a.ToString());
+                }
+            }
+                        
             var transactions = MemoryPool.Instance().GetTransactions();
             var blockChain = BlockChainStore.Instance().GetBlockChain();
             switch (method)
