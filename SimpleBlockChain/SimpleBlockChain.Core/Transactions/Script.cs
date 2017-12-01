@@ -96,6 +96,17 @@ namespace SimpleBlockChain.Core.Transactions
             return new Script(result);
         }
 
+        public static Script CreateCorrectScript()
+        {
+            var result = new List<ScriptRecord>();
+            result.Add(new ScriptRecord(OpCodes.OP_15));
+            result.Add(new ScriptRecord(OpCodes.OP_ADD));
+            result.Add(new ScriptRecord(OpCodes.OP_16));
+            result.Add(new ScriptRecord(OpCodes.OP_EQUAL));
+            result.Add(new ScriptRecord(OpCodes.OP_VERIFY));
+            return new Script(result);
+        }
+
         public static Script Deserialize(IEnumerable<byte> payload)
         {
             if (payload == null)

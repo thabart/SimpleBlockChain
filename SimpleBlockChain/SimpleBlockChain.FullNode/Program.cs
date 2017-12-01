@@ -16,7 +16,7 @@ namespace SimpleBlockChain.FullNode
         static void Main(string[] args)
         {
             Console.Title = "FULL NODE / MINER";
-            Console.WriteLine("==== Welcome to SimpleBlockChain (FULL NODE / MINER) ====");
+            Console.WriteLine("==== Welcome to SimpleBlockChain (FULL NODE) ====");
             _ipBytes = IPAddress.Parse("192.168.76.131").MapToIPv6().GetAddressBytes();
             var network = MenuHelper.ChooseNetwork();
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);
@@ -86,9 +86,9 @@ namespace SimpleBlockChain.FullNode
 
         private static void ExecuteP2PNetworkRunningMenu(int number)
         {
-            if (number < 0 || number > 3)
+            if (number < 0 || number > 4)
             {
-                MenuHelper.DisplayError("Enter a number between [1-3]");
+                MenuHelper.DisplayError("Enter a number between [1-4]");
                 ExecuteFullNodeMenu();
                 return;
             }
@@ -107,6 +107,13 @@ namespace SimpleBlockChain.FullNode
                     }
                     break;
                 case 3:
+                    _nodeLauncher.RefreshMemPool();
+                    _nodeLauncher.RefreshBlockChain();
+                    break;
+                case 4:
+                    
+                    break;
+                case 5:
                     _nodeLauncher.GetP2PNode().Stop();
                     _nodeLauncher.GetP2PNetwork().Stop();
                     break;
@@ -119,7 +126,9 @@ namespace SimpleBlockChain.FullNode
         {
             MenuHelper.DisplayMenuItem("1. Display number of FULL NODES", 1);
             MenuHelper.DisplayMenuItem("2. Display active peers", 1);
-            MenuHelper.DisplayMenuItem("3. Stop the node", 1);
+            MenuHelper.DisplayMenuItem("3. Refresh the mempool + block chain", 1);
+            MenuHelper.DisplayMenuItem("4. Start to mine", 1);
+            MenuHelper.DisplayMenuItem("5. Stop the node", 1);
         }
 
         private static void ConnectP2PEvent(object sender, EventArgs e)

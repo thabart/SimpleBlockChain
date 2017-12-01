@@ -7,6 +7,7 @@ using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Stores;
+using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -92,6 +93,7 @@ namespace SimpleBlockChain.Core.Nodes
                         
             var transactions = MemoryPool.Instance().GetTransactions();
             var blockChain = BlockChainStore.Instance().GetBlockChain();
+            JObject response = CreateResponse(id);
             switch (method)
             {
                 case "getrawmempool": // Get the memory POOL.
@@ -113,13 +115,19 @@ namespace SimpleBlockChain.Core.Nodes
                     }
                     */
 
-                    JObject response = CreateResponse(id);
                     response["result"] = new JArray(transactions.Select(t => t.GetTxId()));
                     return response;
                 case "getblocktemplate": // https://bitcoin.org/en/developer-reference#getblocktemplate
                     var currentBlock = blockChain.GetCurrentBlock();
+                    var height = blockChain.GetCurrentBlockHeight();
                     var previousBlockHash = currentBlock.GetHashHeader().ToHexString();
                     var transactionBuilder = new TransactionBuilder();
+                    var nonce = BitConverter.GetBytes(NonceHelper.GetNonceUInt64());
+                    var value = transactions.Sum(t => t.GetFee());
+                    var coinBaseTransaction = transactionBuilder.NewCoinbaseTransaction()
+                        .SetInput((uint)height + 1, nonce)
+                        .AddOutput(value, Script.CreateCorrectScript())
+                        .Build();
                     var result = new JObject();
                     var jTransactions = new JArray();
                     foreach(var transaction in transactions)
@@ -127,16 +135,22 @@ namespace SimpleBlockChain.Core.Nodes
                         jTransactions.Add(transaction.Serialize().ToHexString());
                     }
 
-                    result.Add("expires", "");
+
+                    var currentTime = DateTime.UtcNow.ToUnixTimeUInt32();
+                    var coinBaseTxnObj = new JObject();
+                    coinBaseTxnObj.Add("data", coinBaseTransaction.Serialize().ToHexString());
+                    result.Add("coinbasetxn", coinBaseTxnObj);
+                    result.Add("expires", "120");
                     result.Add("longpollid", "");
                     result.Add("height", blockChain.GetCurrentBlockHeight() + 1);
-                    result.Add("curtime", "");
+                    result.Add("curtime", currentTime);
                     result.Add("previousblockhash", previousBlockHash);
                     result.Add("transactions", jTransactions);
                     result.Add("version", Block.CURRENT_VERSION);
-                    result.Add("target", TargetHelper.GetTarget(Constants.DEFAULT_NBITS).ToString("X"));
+                    result.Add("target", TargetHelper.GetTarget(Constants.DEFAULT_NBITS).ToHexString());
                     result.Add("bits", Constants.DEFAULT_NBITS);
-                    break;
+                    response["result"] = result;
+                    return response;
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

@@ -17,6 +17,7 @@ namespace SimpleBlockChain.Core
         public const double DEFAULT_MIN_TX_FEE = 0.00001;
         public const int DEFAULT_NB_BLOCKS_PAST = 5;
         public const int DEFAULT_MAX_GET_INVENTORIES = 500;
+        public const int MIN_NB_TRANSACTIONS_BLOCK = 1;
         public static BigInteger DEFAULT_GENESIS_PUBLIC_KEY_HASH = BigInteger.Parse("-156319234400569929500613481175835971687206108403");
         public const string DEFAULT_SIGNATURE_CONTENT = "simple_block_chain";
 

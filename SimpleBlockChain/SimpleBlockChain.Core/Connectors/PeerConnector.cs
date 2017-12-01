@@ -27,7 +27,7 @@ namespace SimpleBlockChain.Core.Connectors
         private PongMessage _pongMessage;
         private IpAddress _currentIpAddress;
         private ServiceFlags _serviceFlag;
-        private AutoResetEvent _autoEvent = null;
+        private readonly AutoResetEvent _autoEvent = null;
 
         public PeerConnector(Networks network, P2PNetworkConnector p2pNetworkConnector)
         {
@@ -83,7 +83,7 @@ namespace SimpleBlockChain.Core.Connectors
                     _timer = new Timer(TimerElapsed, _autoEvent, CHECK_INTERVAL, CHECK_INTERVAL); // CHECK PEERS AVAILABILITY EVERY 60 SECONDS.
                 }
             }
-            catch(RpcException)
+            catch(Interop.RpcException)
             {
                 throw new PeerConnectorException(ErrorCodes.PeerRpcError);
             }
@@ -143,7 +143,7 @@ namespace SimpleBlockChain.Core.Connectors
                     callback();
                 }
             }
-            catch (RpcException)
+            catch (Interop.RpcException)
             {
                 callback();
             }

@@ -17,7 +17,7 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public uint Height { get; private set; }
-        public byte[] CoinBaseScript { get; private set; }
+        public byte[] CoinBaseScript { get; set; }
         public uint Sequence { get; private set; }
 
         public override byte[] Serialize()

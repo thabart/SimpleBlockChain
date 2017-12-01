@@ -1,4 +1,4 @@
-﻿using SimpleBlockChain.Core.LevelDb;
+﻿using LevelDB;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -28,7 +28,7 @@ namespace SimpleBlockChain.UnitTests.LevelDb
             {
                 CreateIfMissing = true
             };
-            var database = new DB(options, databasePath);
+            var database = DB.Open(databasePath, options);
             database.Put(null, "key1", "value1");
             database.Put(null, "key2", "value2");
             database.Put(null, "key3", "value3");

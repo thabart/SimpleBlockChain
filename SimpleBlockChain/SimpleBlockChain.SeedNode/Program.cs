@@ -1,5 +1,4 @@
 ﻿using SimpleBlockChain.Core;
-using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Helpers;

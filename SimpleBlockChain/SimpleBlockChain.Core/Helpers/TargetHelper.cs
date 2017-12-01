@@ -6,7 +6,7 @@ namespace SimpleBlockChain.Core.Helpers
 {
     public class TargetHelper
     {
-        public static BigInteger GetTarget(uint nbits)
+        public static byte[] GetTarget(uint nbits)
         {
             var hexStr = string.Format("0x{0:X}", nbits);
             hexStr = hexStr.Replace("0x", "");
@@ -14,7 +14,13 @@ namespace SimpleBlockChain.Core.Helpers
             var prefixStr = string.Join("", hexStr.Skip(2));
             var nbBytes = int.Parse(nbBytesStr, System.Globalization.NumberStyles.HexNumber);
             var prefix = int.Parse(prefixStr, System.Globalization.NumberStyles.HexNumber);
-            return new BigInteger(prefix * Math.Pow(256, (nbBytes - 3)));
+            var result = BitConverter.GetBytes(prefix * Math.Pow(256, (nbBytes - 3))).ToList();
+            for (var i = result.Count(); i < 32; i++)
+            {
+                result.Add(0);
+            }
+
+            return result.ToArray();
         }
     }
 }
