@@ -73,14 +73,15 @@ namespace SimpleBlockChain.Wallet
             MenuHelper.DisplayMenuItem("2. Receive money");
             MenuHelper.DisplayMenuItem("3. See my amount of bitcoins");
             MenuHelper.DisplayMenuItem("4. Refresh the BlockChain");
-            MenuHelper.DisplayMenuItem("5. Exit the application");
+            MenuHelper.DisplayMenuItem("5. Refresh the connected peers");
+            MenuHelper.DisplayMenuItem("6. Exit the application");
         }
 
         private static void ExecuteConnectedWallet(int number)
         {
-            if (number < 0 && number > 5)
+            if (number < 0 && number > 6)
             {
-                MenuHelper.DisplayError("Please enter an option between [1-5]");
+                MenuHelper.DisplayError("Please enter an option between [1-6]");
             }
             switch (number)
             {
@@ -121,6 +122,10 @@ namespace SimpleBlockChain.Wallet
                     ExecuteMenu();
                     break;
                 case 5:
+                    _nodeLauncher.RefreshConnectedPeers();
+                    ExecuteMenu();
+                    break;
+                case 6:
                     Console.WriteLine("Bye bye");
                     Console.ReadLine();
                     return;

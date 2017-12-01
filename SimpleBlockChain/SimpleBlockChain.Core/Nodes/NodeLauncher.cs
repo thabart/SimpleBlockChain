@@ -1,6 +1,7 @@
 ﻿using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Messages;
+using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
@@ -85,6 +86,17 @@ namespace SimpleBlockChain.Core.Nodes
             var blocks = blockChain.GetLastBlocks(Constants.DEFAULT_NB_BLOCKS_PAST);
             var getBlocksMessage = new GetBlocksMessage(blocks.Select(b => b.GetHashHeader()), _network);
             Broadcast(getBlocksMessage);
+        }
+
+        public void RefreshConnectedPeers()
+        {
+            if (!_p2pNetworkConnector.IsRunning)
+            {
+                throw new P2PConnectorException(ErrorCodes.P2PNotReachable);
+            }
+
+            var getAddrMessage = new GetAddressMessage(_network);
+            Broadcast(getAddrMessage);
         }
 
         public void RefreshMemPool()

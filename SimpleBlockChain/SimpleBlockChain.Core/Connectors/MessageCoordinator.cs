@@ -118,6 +118,11 @@ namespace SimpleBlockChain.Core.Connectors
                 var blockChain = BlockChainStore.Instance().GetBlockChain();
                 blockChain.AddBlock(msg.Block);
             }
+
+            if (message.GetCommandName() == Constants.MessageNames.NotFound) //  SOME INVENTORIES ARE NOT FOUND.
+            {
+                return null;
+            }
             
             if (message.GetCommandName() == Constants.MessageNames.GetBlocks) // RETURN THE BLOCKS : https://bitcoin.org/en/developer-reference#getblocks
             {
@@ -146,9 +151,9 @@ namespace SimpleBlockChain.Core.Connectors
                     nbBlocks = currentBlockHeight - 1;
                 }
 
-                if (nbBlocks > 500)
+                if (nbBlocks > Constants.DEFAULT_MAX_GET_INVENTORIES)
                 {
-                    nbBlocks = 500;
+                    nbBlocks = Constants.DEFAULT_MAX_GET_INVENTORIES;
                 }
 
                 var blocks = blockChain.GetLastBlocks(nbBlocks);
@@ -213,7 +218,13 @@ namespace SimpleBlockChain.Core.Connectors
                 return;
             }
 
-            Launch(peerConnector, result as InventoryMessage); 
+            var getDataMessage = Execute(result as InventoryMessage);
+            if (getDataMessage == null)
+            {
+                return;
+            }
+
+            peerConnector.Execute(getDataMessage.Serialize());
         }
 
         private Message Launch(PeerConnector peerConnector, PingMessage message)
@@ -293,6 +304,7 @@ namespace SimpleBlockChain.Core.Connectors
         {
             var blockChain = BlockChainStore.Instance().GetBlockChain();
             var messages = new List<Message>();
+            var notFoundInventory = new List<Inventory>();
             if (msg.Inventories.Any())
             {
                 foreach (var inventory in msg.Inventories)
@@ -304,6 +316,7 @@ namespace SimpleBlockChain.Core.Connectors
                             if (tx != null)
                             {
                                 messages.Add(new TransactionMessage(tx, msg.MessageHeader.Network));
+                                continue;
                             }
                             break;
                         case InventoryTypes.MSG_BLOCK:
@@ -311,10 +324,20 @@ namespace SimpleBlockChain.Core.Connectors
                             if (block != null)
                             {
                                 messages.Add(new BlockMessage(block, msg.MessageHeader.Network));
+                                continue;
                             }
                             break;
                     }
+
+                    notFoundInventory.Add(inventory);
                 }
+            }
+
+
+            if (notFoundInventory.Any())
+            {
+                var notFoundMessage = new NotFoundMessage(notFoundInventory, msg.MessageHeader.Network);
+                messages.Add(notFoundMessage);
             }
 
             return messages;
