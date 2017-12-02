@@ -2,6 +2,7 @@
 using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -78,6 +79,14 @@ namespace SimpleBlockChain.Core.Blocks
             if (!currentBlock.GetHashHeader().SequenceEqual(BlockHeader.PreviousBlockHeader))
             {
                 throw new ValidationException(ErrorCodes.InvalidPreviousHashHeader);
+            }
+
+            var hash = currentBlock.GetHashHeader();
+            var currentNBits = Constants.DEFAULT_NBITS; // TODO : CALCULATE THE DEFAULT NBITS : https://bitcoin.org/en/developer-guide#proof-of-work
+            var target = TargetHelper.GetTarget(currentNBits);
+            if (!TargetHelper.IsValid(hash, target))
+            {
+                throw new ValidationException(ErrorCodes.NotEnoughDifficult);
             }
 
             foreach (var transaction in Transactions) // Check ALL TRANSACTIONS.

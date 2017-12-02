@@ -56,5 +56,12 @@ namespace SimpleBlockChain.Core
             public const string GetBlocks = "getblocks";
             public const string NotFound = "notfound";
         }
+
+        public class RpcOperations
+        {
+            public const string Getblocktemplate = "getblocktemplate";
+            public const string Submitblock = "submitblock";
+            public const string Getrawmempool = "getrawmempool";
+        }
     }
 }

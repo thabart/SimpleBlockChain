@@ -50,23 +50,13 @@ namespace SimpleBlockChain.MiningSoft
             try
             {
                 var blockTemplate = _rpcClient.GetBlockTemplate().Result;
-                var nbZero = 0;
-                foreach(var b in blockTemplate.Target)
-                {
-                    if (b == 0)
-                    {
-                        nbZero++;
-                        continue;
-                    }
-
-                    break;
-                }
-
-                var block = CalculateHeader(blockTemplate, 0, 0, nbZero);
+                var block = CalculateHeader(blockTemplate, 0, 0);
                 if (block == null)
                 {
                     Mine(null);
                 }
+
+                // SUBMIT THE BLOCK.
 
                 _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
             }
@@ -76,7 +66,7 @@ namespace SimpleBlockChain.MiningSoft
             }
         }
 
-        private static Block CalculateHeader(BlockTemplate blockTemplate, uint nonce, uint extraNonce, int nbZero)
+        private static Block CalculateHeader(BlockTemplate blockTemplate, uint nonce, uint extraNonce)
         {
             var transactions = new List<BaseTransaction>();
             var coinBaseInTrans = blockTemplate.CoinBaseTx.TransactionIn[0] as TransactionInCoinbase;
@@ -86,7 +76,7 @@ namespace SimpleBlockChain.MiningSoft
             var block = new Block(blockTemplate.PreviousBlockHash, blockTemplate.Bits, nonce, blockTemplate.Version);
             block.Transactions = transactions;
             var serialized = block.GetHashHeader();
-            if (CheckTarget(serialized, nbZero))
+            if (TargetHelper.IsValid(serialized, blockTemplate.Target))
             {
                 return block;
             }
@@ -105,29 +95,7 @@ namespace SimpleBlockChain.MiningSoft
 
             Thread.Sleep(100);
             nonce++;
-            return CalculateHeader(blockTemplate, nonce, extraNonce, nbZero);
-        }
-
-        private static bool CheckTarget(byte[] hash, int nbZero)
-        {
-            int nbHashZero = 0;
-            for (int i = hash.Count() - 1; i >= 0; i--)
-            {
-                if (nbZero == nbHashZero)
-                {
-                    return true;
-                }
-
-                if (hash[i] == 0)
-                {
-                    nbHashZero++;
-                    continue;
-                }
-
-                return false;
-            }
-
-            return false;
+            return CalculateHeader(blockTemplate, nonce, extraNonce);
         }
 
         public void Dispose()

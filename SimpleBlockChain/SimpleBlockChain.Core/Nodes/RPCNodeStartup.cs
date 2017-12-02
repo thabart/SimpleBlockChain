@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Evts;
+using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Stores;
@@ -22,6 +24,9 @@ namespace SimpleBlockChain.Core.Nodes
         RPC_METHOD_NOT_FOUND = -32601,
         RPC_INVALID_PARAMS = -32602,
         RPC_PARSE_ERROR = -32700,
+        RPC_VERIFY_ERROR = -25,
+        RPC_VERIFY_REJECTED = -26,
+        RPC_VERIFY_ALREADY_IN_CHAIN = -27
     }
 
     public class RPCNodeStartup
@@ -96,7 +101,7 @@ namespace SimpleBlockChain.Core.Nodes
             JObject response = CreateResponse(id);
             switch (method)
             {
-                case "getrawmempool": // Get the memory POOL.
+                case Constants.RpcOperations.Getrawmempool: // https://bitcoin.org/en/developer-reference#getrawmempool
                     var verboseOutput = false;
                     if (parameters.Any())
                     {
@@ -117,7 +122,7 @@ namespace SimpleBlockChain.Core.Nodes
 
                     response["result"] = new JArray(transactions.Select(t => t.GetTxId()));
                     return response;
-                case "getblocktemplate": // https://bitcoin.org/en/developer-reference#getblocktemplate
+                case Constants.RpcOperations.Getblocktemplate: // https://bitcoin.org/en/developer-reference#getblocktemplate
                     var currentBlock = blockChain.GetCurrentBlock();
                     var height = blockChain.GetCurrentBlockHeight();
                     var previousBlockHash = currentBlock.GetHashHeader().ToHexString();
@@ -151,6 +156,26 @@ namespace SimpleBlockChain.Core.Nodes
                     result.Add("bits", Constants.DEFAULT_NBITS);
                     response["result"] = result;
                     return response;
+                case Constants.RpcOperations.Submitblock: // https://bitcoin.org/en/developer-reference#submitblock
+                    if (!parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The block is missing");
+                    }
+
+                    var payload = parameters.First().FromHexString();
+                    var block = Block.Deserialize(payload);
+                    try
+                    {
+                        block.Check();
+                        BlockChainStore.Instance().GetBlockChain().AddBlock(block);
+                        P2PConnectorEventStore.Instance().NewBlock(block);
+                        response["result"] = null;
+                        return response;
+                    }
+                    catch(ValidationException ex)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
+                    }
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

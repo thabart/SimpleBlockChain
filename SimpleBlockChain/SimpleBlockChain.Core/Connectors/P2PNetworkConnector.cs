@@ -36,6 +36,7 @@ namespace SimpleBlockChain.Core.Connectors
             _messageCoordinator = new MessageCoordinator();
             var instance = PeerEventStore.Instance();
             instance.NewPeerEvt += ListenPeer;
+            P2PConnectorEventStore.Instance().NewBlockEvt += BroadcastNewBlock;
         }
 
         public bool IsRunning { get; private set; }
@@ -356,6 +357,22 @@ namespace SimpleBlockChain.Core.Connectors
             Stop();
             System.Threading.Thread.Sleep(RETRY_P2P_CONNECTION_INTERVAL);
             DiscoverNodes();
+        }
+
+        private void BroadcastNewBlock(object sender, BlockEventArgs e)
+        {
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            if (e.Data == null)
+            {
+                throw new ArgumentNullException(nameof(e.Data));
+            }
+
+            var blockMessage = new BlockMessage(e.Data, _network);
+            Broadcast(blockMessage);
         }
 
         private void RemovePeer(object sender, IpAddressEventArgs ipAdr)

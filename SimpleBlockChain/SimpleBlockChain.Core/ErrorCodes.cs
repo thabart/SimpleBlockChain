@@ -19,5 +19,6 @@
         public const string SeedPeersNotReachable = "seed_peers_not_reachable";
         public const string P2PNotReachable = "p2p_not_connected";
         public const string NotCorrectNodeService = "not_correct_node_service";
+        public const string NotEnoughDifficult = "not_enough_difficult";
     }
 }
