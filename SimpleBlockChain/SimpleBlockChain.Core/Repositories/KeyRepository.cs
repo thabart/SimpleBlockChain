@@ -13,11 +13,21 @@ namespace SimpleBlockChain.Core.Repositories
     public class KeyRepository
     {
         private object obj = new object();
+        private readonly string _fileDir;
         private const string _fileName = "wallet.json";
         private static byte[] _salt = new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
 
-        public KeyRepository()
+        public KeyRepository(string fileDir = null)
         {
+            if (string.IsNullOrWhiteSpace(fileDir))
+            {
+                _fileDir = GetPath();
+            }
+            else
+            {
+                _fileDir = fileDir;
+            }
+
             Keys = new List<Key>();
         }
 
@@ -25,7 +35,7 @@ namespace SimpleBlockChain.Core.Repositories
 
         public bool Exists()
         {
-            return File.Exists(GetPath());
+            return File.Exists(_fileDir);
         }
 
         public void Load(string password)
@@ -35,12 +45,12 @@ namespace SimpleBlockChain.Core.Repositories
                 throw new ArgumentNullException(nameof(password));
             }
 
-            if (!File.Exists(GetPath()))
+            if (!File.Exists(_fileDir))
             {
                 return;
             }
 
-            var encrypted = File.ReadAllText(GetPath());
+            var encrypted = File.ReadAllText(_fileDir);
             byte[] bytesBuff = Convert.FromBase64String(encrypted);
             using (var aes = Aes.Create())
             {
@@ -81,12 +91,12 @@ namespace SimpleBlockChain.Core.Repositories
 
             lock(obj)
             {
-                if (File.Exists(GetPath()))
+                if (File.Exists(_fileDir))
                 {
-                    File.Delete(GetPath());
+                    File.Delete(_fileDir);
                 }
 
-                File.Create(GetPath()).Dispose();
+                File.Create(_fileDir).Dispose();
             }
 
             var jArr = new JArray();
@@ -111,7 +121,7 @@ namespace SimpleBlockChain.Core.Repositories
                             cStream.Dispose();
                         }
 
-                        File.WriteAllText(GetPath(), System.Convert.ToBase64String(mStream.ToArray()));
+                        File.WriteAllText(_fileDir, System.Convert.ToBase64String(mStream.ToArray()));
                     }
                 }
             }

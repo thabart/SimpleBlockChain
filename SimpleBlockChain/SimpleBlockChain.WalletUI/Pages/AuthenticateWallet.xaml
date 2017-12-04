@@ -3,21 +3,42 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+      xmlns:behavior="clr-namespace:SimpleBlockChain.WalletUI.Behaviors"
       xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
       Title="AuthenticateWallet">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Label>Enter a password</Label>
-        <TextBox Grid.Column="2"></TextBox>
-        <Button Grid.Column="0" Grid.Row="1">Connect</Button>
-    </Grid>
+    <Page.Resources>
+        <Thickness x:Key="ColumnMargin">10 5 10 5</Thickness>
+        <Thickness x:Key="ControlMargin">0 5 0 0</Thickness>
+    </Page.Resources>
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <Label Margin="{StaticResource ControlMargin}" Grid.Row="0" Grid.Column="0">Choose a wallet</Label>
+            <ComboBox Margin="{StaticResource ControlMargin}" Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Path=Wallets}" DisplayMemberPath="Name" SelectedItem="{Binding Path=SelectedWallet, Mode=TwoWay}">
+            </ComboBox>
+            <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Enter a password</Label>
+            <PasswordBox Margin="{StaticResource ControlMargin}"
+                         Controls:TextBoxHelper.UseFloatingWatermark="True"
+                         Grid.Column="1"
+                         Grid.Row="1"
+                         Style="{StaticResource Win8MetroPasswordBox}">
+                <i:Interaction.Behaviors>
+                    <behavior:PasswordBoxBindingBehavior Password="{Binding Password, Mode=TwoWay}"/>
+                </i:Interaction.Behaviors>
+            </PasswordBox>
+            <Button Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="2" Command="{Binding Path=AuthenticateWallet}">Connect</Button>
+        </Grid>
+    </StackPanel>
 </Page>

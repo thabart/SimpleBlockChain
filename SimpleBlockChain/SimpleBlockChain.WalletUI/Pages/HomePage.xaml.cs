@@ -16,7 +16,7 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void NavigateToWallet(object sender, EventArgs e)
         {
-            NavigationService.Navigate(new WalletPage());
+            NavigationService.Navigate(new AuthenticateWallet());
         }
     }
 }

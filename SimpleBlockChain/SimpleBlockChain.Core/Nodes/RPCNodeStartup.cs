@@ -168,7 +168,7 @@ namespace SimpleBlockChain.Core.Nodes
                     {
                         block.Check();
                         BlockChainStore.Instance().GetBlockChain().AddBlock(block);
-                        P2PConnectorEventStore.Instance().NewBlock(block);
+                        P2PConnectorEventStore.Instance().Broadcast(block);
                         response["result"] = null;
                         return response;
                     }

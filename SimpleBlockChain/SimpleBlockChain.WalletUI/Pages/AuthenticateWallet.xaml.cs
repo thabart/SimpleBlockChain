@@ -1,28 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleBlockChain.WalletUI.ViewModels;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SimpleBlockChain.WalletUI.Pages
 {
-    /// <summary>
-    /// Logique d'interaction pour AuthenticateWallet.xaml
-    /// </summary>
     public partial class AuthenticateWallet : Page
     {
+        private readonly AuthenticateWalletViewModel _viewModel;
+
         public AuthenticateWallet()
         {
+            _viewModel = new AuthenticateWalletViewModel();
             InitializeComponent();
+            DataContext = _viewModel;
+            Loaded += Load;
+        }
+
+        private void Load(object sender, RoutedEventArgs e)
+        {
+            var walletPath = GetWalletPath();
+            if (!Directory.Exists(walletPath))
+            {
+                Directory.CreateDirectory(walletPath);
+            }
+
+            var wallets = Directory.GetFiles(walletPath, "*.json");
+            foreach(var wallet in wallets)
+            {
+                var fileName = Path.GetFileName(wallet);
+                _viewModel.Wallets.Add(new WalletItemViewModel
+                {
+                    Name = fileName,
+                    Path = wallet
+                });
+            }
+        }
+
+        private static string GetWalletPath()
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), "wallets");
         }
     }
 }
