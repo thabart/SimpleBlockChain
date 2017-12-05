@@ -5,11 +5,11 @@ using System.Windows.Controls;
 
 namespace SimpleBlockChain.WalletUI.Pages
 {
-    public partial class AuthenticateWallet : Page
+    public partial class AuthenticateWalletPage : Page
     {
         private readonly AuthenticateWalletViewModel _viewModel;
 
-        public AuthenticateWallet()
+        public AuthenticateWalletPage()
         {
             _viewModel = new AuthenticateWalletViewModel();
             InitializeComponent();

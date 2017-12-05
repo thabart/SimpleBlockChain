@@ -6,18 +6,34 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:localization="clr-namespace:SimpleBlockChain.WalletUI.Localization"
       xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.Pages"
+      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+      xmlns:behavior="clr-namespace:SimpleBlockChain.WalletUI.Behaviors"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
       Title="CreateWalletPage">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-    </Grid>
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Label Grid.Column="0" Grid.Row="0">Wallet name</Label>
+            <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=WalletName, Mode=TwoWay}"></TextBox>
+            <Label Grid.Column="0" Grid.Row="1">Password</Label>
+            <PasswordBox Controls:TextBoxHelper.UseFloatingWatermark="True"
+                         Grid.Column="1"
+                         Grid.Row="1"
+                         Style="{StaticResource Win8MetroPasswordBox}">
+                <i:Interaction.Behaviors>
+                    <behavior:PasswordBoxBindingBehavior Password="{Binding Password, Mode=TwoWay}"/>
+                </i:Interaction.Behaviors>
+            </PasswordBox>
+            <Button Grid.Column="0" Grid.Row="2" Command="{Binding Path=CreateWallet}">Create</Button>
+        </Grid>
+    </StackPanel>
 </Page>

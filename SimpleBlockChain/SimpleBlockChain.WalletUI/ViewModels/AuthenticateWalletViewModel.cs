@@ -25,6 +25,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
 
         public ObservableCollection<WalletItemViewModel> Wallets { get; private set; }
+
         public ICommand AuthenticateWallet
         {
             get
@@ -32,7 +33,6 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 return _authenticateWalletCommand;
             }
         }
-
 
         public SecureString Password
         {
