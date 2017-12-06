@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using SimpleBlockChain.Data.Sqlite;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SimpleBlockChain.WalletUI.Pages;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System.Windows;
+using SimpleBlockChain.Data.Sqlite;
 
 namespace SimpleBlockChain.WalletUI
 {
@@ -21,6 +20,7 @@ namespace SimpleBlockChain.WalletUI
 
             serviceCollection.AddTransient<HomePageViewModel>();
             serviceCollection.AddTransient<CreateWalletViewModel>();
+            serviceCollection.AddTransient<AuthenticateWalletViewModel>();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {

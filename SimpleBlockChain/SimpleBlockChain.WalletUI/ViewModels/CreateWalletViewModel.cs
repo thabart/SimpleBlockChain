@@ -2,6 +2,8 @@
 using SimpleBlockChain.WalletUI.Commands;
 using System.Security;
 using System.Windows.Input;
+using SimpleBlockChain.Core.Aggregates;
+using System;
 
 namespace SimpleBlockChain.WalletUI.ViewModels
 {
@@ -16,6 +18,8 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             _walletRepository = walletRepository;
             _createWallet = new RelayCommand(p => CreateWalletExecute(), p => CanCreateWallet());
         }
+
+        public event EventHandler CreateWalletEvt;
 
         public ICommand CreateWallet
         {
@@ -45,7 +49,10 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 
         private void CreateWalletExecute()
         {
-
+            if (CreateWalletEvt != null)
+            {
+                CreateWalletEvt(this, EventArgs.Empty);
+            }
         }
 
         private bool CanCreateWallet()

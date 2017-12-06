@@ -1,5 +1,6 @@
-﻿using SimpleBlockChain.WalletUI.ViewModels;
-using System.IO;
+﻿using SimpleBlockChain.Core.Repositories;
+using SimpleBlockChain.WalletUI.ViewModels;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -8,38 +9,40 @@ namespace SimpleBlockChain.WalletUI.Pages
     public partial class AuthenticateWalletPage : Page
     {
         private readonly AuthenticateWalletViewModel _viewModel;
+        private readonly IWalletRepository _walletRepository;
 
-        public AuthenticateWalletPage()
+        public AuthenticateWalletPage(AuthenticateWalletViewModel viewModel, IWalletRepository walletRepository)
         {
-            _viewModel = new AuthenticateWalletViewModel();
+            _viewModel = viewModel;
+            _viewModel.ConnectEvt += Connect;
+            _walletRepository = walletRepository;
             InitializeComponent();
             DataContext = _viewModel;
             Loaded += Load;
         }
 
-        private void Load(object sender, RoutedEventArgs e)
+        private void Connect(object sender, EventArgs e)
         {
-            var walletPath = GetWalletPath();
-            if (!Directory.Exists(walletPath))
-            {
-                Directory.CreateDirectory(walletPath);
-            }
 
-            var wallets = Directory.GetFiles(walletPath, "*.json");
-            foreach(var wallet in wallets)
-            {
-                var fileName = Path.GetFileName(wallet);
-                _viewModel.Wallets.Add(new WalletItemViewModel
-                {
-                    Name = fileName,
-                    Path = wallet
-                });
-            }
         }
 
-        private static string GetWalletPath()
+        private void Load(object sender, RoutedEventArgs e)
         {
-            return Path.Combine(Directory.GetCurrentDirectory(), "wallets");
+            _viewModel.Wallets.Clear();
+            _walletRepository.GetAll().ContinueWith((r) =>
+            {
+                var names = r.Result;
+                foreach (var name in names)
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _viewModel.Wallets.Add(new WalletItemViewModel
+                        {
+                            Name = name
+                        });
+                    });
+                }
+            });
         }
     }
 }

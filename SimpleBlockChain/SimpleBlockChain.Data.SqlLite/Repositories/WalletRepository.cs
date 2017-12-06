@@ -3,29 +3,157 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Aggregates;
+using System.Security;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using SimpleBlockChain.Data.Sqlite.Models;
+using System.Text;
+using System.Security.Cryptography;
+using System.IO;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace SimpleBlockChain.Data.Sqlite.Repositories
 {
     public class WalletRepository : IWalletRepository
     {
-        public Task<bool> Add(WalletAggregate wallet)
+        private readonly CurrentDbContext _currentDbContext;
+        private static byte[] _salt = new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
+
+        public WalletRepository(CurrentDbContext currentDbContext)
+        {
+            _currentDbContext = currentDbContext;
+        }
+
+        public async Task<bool> Add(WalletAggregate wallet, SecureString password)
         {
             if (wallet == null)
             {
                 throw new ArgumentNullException(nameof(wallet));
             }
 
-            return Task.FromResult(true);
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
+            var walletJson = ToJson(wallet);
+            var record = new Wallet(wallet.Name, Protect(walletJson, password));
+            _currentDbContext.Wallets.Add(record);
+            await _currentDbContext.SaveChangesAsync().ConfigureAwait(false);
+            return true;
         }
 
-        public Task<WalletAggregate> Get(string name)
+        public async Task<WalletAggregate> Get(string name, SecureString password)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var record = await _currentDbContext.Wallets.FirstOrDefaultAsync(w => w.Name == name);
+            if (record == null)
+            {
+                return null;
+            }
+
+            var unprotectedJson = Unprotect(record.SerializedContent, password);
+            return GetJson(unprotectedJson);
         }
 
-        public Task<IEnumerable<WalletAggregate>> GetAll()
+        public async Task<IEnumerable<string>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _currentDbContext.Wallets.Select(w => w.Name).ToListAsync().ConfigureAwait(false);
+        }
+
+        private static WalletAggregate GetJson(JObject jObj)
+        {
+            if (jObj == null)
+            {
+                throw new ArgumentNullException(nameof(jObj));
+            }
+
+            var name = jObj.Value<string>("name");
+            JToken arrToken = null;
+            var addresses = new List<WalletAggregateAddress>();
+            if (jObj.TryGetValue("addrs", out arrToken))
+            {
+                var arr = arrToken as JArray;
+                if (arr != null)
+                {
+                    foreach(var adr in arr)
+                    {
+                        addresses.Add(JsonConvert.DeserializeObject<WalletAggregateAddress>(adr.ToString()));
+                    }
+                }
+            }
+
+            return new WalletAggregate
+            {
+                Name = name,
+                Addresses = addresses
+            };
+        }
+
+        private static JObject ToJson(WalletAggregate wallet)
+        {
+            var result = new JObject();
+            result.Add("name", wallet.Name);
+            if (wallet.Addresses != null)
+            {
+                var arr = new JArray();
+                foreach(var addr in wallet.Addresses)
+                {
+                    var serializedAddr = JsonConvert.SerializeObject(addr);
+                    arr.Add(serializedAddr);
+                }
+
+                result.Add("addrs", arr);
+            }
+
+            return result;
+        }
+
+        private static string Protect(JObject json, SecureString password)
+        {
+            var bytesBuff = Encoding.Unicode.GetBytes(json.ToString());
+            using (var aes = Aes.Create())
+            {
+                Rfc2898DeriveBytes crypto = new Rfc2898DeriveBytes(password.ToString(), _salt);
+                aes.Key = crypto.GetBytes(32);
+                aes.IV = crypto.GetBytes(16);
+                using (MemoryStream mStream = new MemoryStream())
+                {
+                    using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cStream.Write(bytesBuff, 0, bytesBuff.Length);
+                        cStream.Dispose();
+                    }
+
+                    return Convert.ToBase64String(mStream.ToArray());
+                }
+            }
+        }
+
+        private static JObject Unprotect(string protectedStr, SecureString password)
+        {
+            byte[] bytesBuff = Convert.FromBase64String(protectedStr);
+            using (var aes = Aes.Create())
+            {
+                Rfc2898DeriveBytes crypto = new Rfc2898DeriveBytes(password.ToString(), _salt);
+                aes.Key = crypto.GetBytes(32);
+                aes.IV = crypto.GetBytes(16);
+                using (MemoryStream mStream = new MemoryStream())
+                {
+                    using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cStream.Write(bytesBuff, 0, bytesBuff.Length);
+                        cStream.Dispose();
+                    }
+                    var json = System.Text.Encoding.Unicode.GetString(mStream.ToArray());
+                    return JObject.Parse(json);
+                }
+            }
         }
     }
 }

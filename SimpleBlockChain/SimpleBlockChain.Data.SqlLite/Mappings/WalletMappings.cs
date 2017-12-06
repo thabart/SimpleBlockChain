@@ -16,10 +16,6 @@ namespace SimpleBlockChain.Data.Sqlite.Mappings
             modelBuilder.Entity<Wallet>()
                 .ToTable("wallets")
                 .HasKey(w => w.Name);
-            modelBuilder.Entity<Wallet>()
-                .HasMany(w => w.Addresses)
-                .WithOne(wa => wa.Wallet)
-                .HasForeignKey(wa => wa.WalletName);
             return modelBuilder;
         }
     }

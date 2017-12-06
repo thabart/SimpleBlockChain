@@ -14,8 +14,7 @@ namespace SimpleBlockChain.Data.Sqlite
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.AddWalletMapping()
-                .AddWalletAddressMapping();
+            modelBuilder.AddWalletMapping();
             base.OnModelCreating(modelBuilder);
         }
     }
