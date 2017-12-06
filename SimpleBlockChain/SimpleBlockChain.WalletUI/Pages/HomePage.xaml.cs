@@ -6,23 +6,27 @@ namespace SimpleBlockChain.WalletUI.Pages
 {
     public partial class HomePage : Page
     {
-        public HomePage()
+        private CreateWalletPage _createWalletPage;
+        private AuthenticateWalletPage _authenticateWalletPage;
+
+        public HomePage(HomePageViewModel homePageViewModel, CreateWalletPage createWalletPage, AuthenticateWalletPage authenticateWalletPage)
         {
+            _createWalletPage = createWalletPage;
+            _authenticateWalletPage = authenticateWalletPage;
             InitializeComponent();
-            var viewModel = new HomePageViewModel();
-            DataContext = viewModel;
-            viewModel.NavigateToWalletEvt += NavigateToWallet;
-            viewModel.CreateWalletEvt += NavigateToCreateWallet;
+            DataContext = homePageViewModel;
+            homePageViewModel.NavigateToWalletEvt += NavigateToWallet;
+            homePageViewModel.CreateWalletEvt += NavigateToCreateWallet;
         }
 
         private void NavigateToWallet(object sender, EventArgs e)
         {
-            NavigationService.Navigate(new AuthenticateWalletPage());
+            NavigationService.Navigate(_authenticateWalletPage);
         }
 
         private void NavigateToCreateWallet(object sender, EventArgs e)
         {
-            NavigationService.Navigate(new CreateWalletPage());
+            NavigationService.Navigate(_createWalletPage);
         }
     }
 }

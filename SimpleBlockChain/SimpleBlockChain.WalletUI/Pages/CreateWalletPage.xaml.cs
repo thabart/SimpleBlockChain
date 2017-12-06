@@ -7,10 +7,10 @@ namespace SimpleBlockChain.WalletUI.Pages
     {
         private readonly CreateWalletViewModel _viewModel;
 
-        public CreateWalletPage()
+        public CreateWalletPage(CreateWalletViewModel viewModel)
         {
+            _viewModel = viewModel;
             InitializeComponent();
-            _viewModel = new CreateWalletViewModel();
             DataContext = _viewModel;
         }
     }

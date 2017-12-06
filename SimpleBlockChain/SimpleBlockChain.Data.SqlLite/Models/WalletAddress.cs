@@ -1,6 +1,6 @@
 ﻿namespace SimpleBlockChain.Data.Sqlite.Models
 {
-    internal class WalletAddress
+    public class WalletAddress
     {
         public string Hash { get; set; }
         public string SerializedKey { get; set; }

@@ -4,7 +4,7 @@ using SimpleBlockChain.Data.Sqlite.Models;
 
 namespace SimpleBlockChain.Data.Sqlite
 {
-    internal class CurrentDbContext : DbContext
+    public class CurrentDbContext : DbContext
     {
         public CurrentDbContext(DbContextOptions dbContextOptions):base(dbContextOptions)
         {

@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.WalletUI.Commands;
+﻿using SimpleBlockChain.Core.Repositories;
+using SimpleBlockChain.WalletUI.Commands;
 using System.Security;
 using System.Windows.Input;
 
@@ -6,11 +7,13 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 {
     public class CreateWalletViewModel : BaseViewModel
     {
+        private readonly IWalletRepository _walletRepository;
         private readonly ICommand _createWallet;
         private SecureString _password;
 
-        public CreateWalletViewModel()
+        public CreateWalletViewModel(IWalletRepository walletRepository)
         {
+            _walletRepository = walletRepository;
             _createWallet = new RelayCommand(p => CreateWalletExecute(), p => CanCreateWallet());
         }
 
