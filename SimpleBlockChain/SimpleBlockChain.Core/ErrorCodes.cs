@@ -20,5 +20,7 @@
         public const string P2PNotReachable = "p2p_not_connected";
         public const string NotCorrectNodeService = "not_correct_node_service";
         public const string NotEnoughDifficult = "not_enough_difficult";
+        public const string BadPassword = "bad_password";
+        public const string AlreadyExists = "already_exists";
     }
 }

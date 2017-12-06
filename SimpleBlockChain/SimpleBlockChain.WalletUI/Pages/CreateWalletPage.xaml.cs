@@ -22,12 +22,32 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void CreateWallet(object sender, EventArgs e)
         {
+            if (_viewModel.Password == null || string.IsNullOrWhiteSpace(_viewModel.WalletName))
+            {
+                return;
+            }
+
             var record = new WalletAggregate
             {
                 Name = _viewModel.WalletName
             };
 
-            _walletRepository.Add(record, _viewModel.Password);
+            _viewModel.ToggleLoading();
+            _walletRepository.Add(record, _viewModel.Password).ContinueWith((r) =>
+            {
+                try
+                {
+                    var b = r.Result;
+                }
+                catch
+                {
+
+                }
+                finally
+                {
+                    _viewModel.ToggleLoading();
+                }
+            });
         }
     }
 }

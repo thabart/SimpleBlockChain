@@ -11,29 +11,52 @@
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
       Title="CreateWalletPage">
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Grid>
+    <Page.Resources>
+        <Thickness x:Key="ColumnMargin">10 5 10 5</Thickness>
+        <Thickness x:Key="ControlMargin">0 5 0 0</Thickness>
+    </Page.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
-            <Label Grid.Column="0" Grid.Row="0">Wallet name</Label>
-            <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=WalletName, Mode=TwoWay}"></TextBox>
-            <Label Grid.Column="0" Grid.Row="1">Password</Label>
-            <PasswordBox Controls:TextBoxHelper.UseFloatingWatermark="True"
+            <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Wallet name</Label>
+            <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=WalletName, Mode=TwoWay}" IsEnabled="{Binding Path=IsNotLoading}"></TextBox>
+            <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Password</Label>
+            <PasswordBox Margin="{StaticResource ControlMargin}" Controls:TextBoxHelper.UseFloatingWatermark="True"
                          Grid.Column="1"
                          Grid.Row="1"
-                         Style="{StaticResource Win8MetroPasswordBox}">
+                         Style="{StaticResource Win8MetroPasswordBox}"
+                         IsEnabled="{Binding Path=IsNotLoading}">
                 <i:Interaction.Behaviors>
                     <behavior:PasswordBoxBindingBehavior Password="{Binding Password, Mode=TwoWay}"/>
                 </i:Interaction.Behaviors>
             </PasswordBox>
-            <Button Grid.Column="0" Grid.Row="2" Command="{Binding Path=CreateWallet}">Create</Button>
+            <Button Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="2" Command="{Binding Path=CreateWallet}" IsEnabled="{Binding Path=IsNotLoading}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource MahApps.Metro.Styles.MetroButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsNotLoading}" Value="false">
+                                <Setter Property="Content" Value="Loading ..." />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsNotLoading}" Value="true">
+                                <Setter Property="Content" Value="Create" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
-    </StackPanel>
+    </Grid>
 </Page>

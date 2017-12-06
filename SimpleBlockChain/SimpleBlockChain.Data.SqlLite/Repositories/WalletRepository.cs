@@ -12,6 +12,9 @@ using System.Security.Cryptography;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Exceptions;
+using SimpleBlockChain.Core;
 
 namespace SimpleBlockChain.Data.Sqlite.Repositories
 {
@@ -35,6 +38,12 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
             if (password == null)
             {
                 throw new ArgumentNullException(nameof(password));
+            }
+
+            var exists = await _currentDbContext.Wallets.AnyAsync(w => w.Name == wallet.Name).ConfigureAwait(false);
+            if (exists)
+            {
+                throw new DataWalletException(ErrorCodes.AlreadyExists);
             }
 
             var walletJson = ToJson(wallet);
@@ -117,14 +126,15 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
         private static string Protect(JObject json, SecureString password)
         {
             var bytesBuff = Encoding.Unicode.GetBytes(json.ToString());
-            using (var aes = Aes.Create())
+            using (var rijndael = Rijndael.Create())
             {
-                Rfc2898DeriveBytes crypto = new Rfc2898DeriveBytes(password.ToString(), _salt);
-                aes.Key = crypto.GetBytes(32);
-                aes.IV = crypto.GetBytes(16);
+                var p = password.SecureStringToString();
+                Rfc2898DeriveBytes crypto = new Rfc2898DeriveBytes(p, _salt);
+                rijndael.IV = crypto.GetBytes(rijndael.BlockSize / 8);
+                rijndael.Key = crypto.GetBytes(rijndael.KeySize / 8);
                 using (MemoryStream mStream = new MemoryStream())
                 {
-                    using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                    using (CryptoStream cStream = new CryptoStream(mStream, rijndael.CreateEncryptor(), CryptoStreamMode.Write))
                     {
                         cStream.Write(bytesBuff, 0, bytesBuff.Length);
                         cStream.Dispose();
@@ -138,21 +148,33 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
         private static JObject Unprotect(string protectedStr, SecureString password)
         {
             byte[] bytesBuff = Convert.FromBase64String(protectedStr);
-            using (var aes = Aes.Create())
+            Rijndael rijndael = Rijndael.Create();
+            MemoryStream mStream = new MemoryStream();
+            CryptoStream cStream = null;
+            try
             {
-                Rfc2898DeriveBytes crypto = new Rfc2898DeriveBytes(password.ToString(), _salt);
-                aes.Key = crypto.GetBytes(32);
-                aes.IV = crypto.GetBytes(16);
-                using (MemoryStream mStream = new MemoryStream())
-                {
-                    using (CryptoStream cStream = new CryptoStream(mStream, aes.CreateDecryptor(), CryptoStreamMode.Write))
-                    {
-                        cStream.Write(bytesBuff, 0, bytesBuff.Length);
-                        cStream.Dispose();
-                    }
-                    var json = System.Text.Encoding.Unicode.GetString(mStream.ToArray());
-                    return JObject.Parse(json);
-                }
+                var p = password.SecureStringToString();
+                Rfc2898DeriveBytes crypto = new Rfc2898DeriveBytes(p, _salt);
+                rijndael.IV = crypto.GetBytes(rijndael.BlockSize / 8);
+                rijndael.Key = crypto.GetBytes(rijndael.KeySize / 8);
+                cStream = new CryptoStream(mStream, rijndael.CreateDecryptor(), CryptoStreamMode.Write);
+                cStream.Write(bytesBuff, 0, bytesBuff.Length);
+                cStream.Dispose();
+                var json = System.Text.Encoding.Unicode.GetString(mStream.ToArray());
+                return JObject.Parse(json);
+            }
+            catch (CryptographicException)
+            {
+                throw new NotAuthorizedWalletException(ErrorCodes.BadPassword);
+            }
+            catch (JsonReaderException)
+            {
+                throw new NotAuthorizedWalletException(ErrorCodes.BadPassword);
+            }
+            finally
+            {
+                rijndael.Dispose();
+                mStream.Dispose();
             }
         }
     }

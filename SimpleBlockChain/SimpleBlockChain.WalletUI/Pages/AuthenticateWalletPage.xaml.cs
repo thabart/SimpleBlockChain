@@ -23,7 +23,23 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void Connect(object sender, EventArgs e)
         {
+            if (_viewModel.SelectedWallet == null)
+            {
+                return;
+            }
 
+            _walletRepository.Get(_viewModel.SelectedWallet.Name, _viewModel.Password).ContinueWith((r) =>
+            {
+                try
+                {
+                    var result = r.Result;
+                    string s = "";
+                }
+                catch (AggregateException ex)
+                {
+
+                }
+            });
         }
 
         private void Load(object sender, RoutedEventArgs e)

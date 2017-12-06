@@ -2,6 +2,11 @@
 {
     public class Wallet
     {
+        public Wallet()
+        {
+
+        }
+
         public Wallet(string name, string serializedContent)
         {
             Name = name;
@@ -10,6 +15,5 @@
 
         public string Name { get; set; }
         public string SerializedContent { get; set; }
-        // public virtual ICollection<WalletAddress> Addresses { get; set; }
     }
 }
