@@ -7,6 +7,8 @@
       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
       xmlns:behavior="clr-namespace:SimpleBlockChain.WalletUI.Behaviors"
       xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.Pages"
+      xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+      Dialog:DialogParticipation.Register="{Binding}"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
       Title="AuthenticateWallet">
@@ -52,7 +54,7 @@
                                 <Setter Property="Content" Value="Loading ..." />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding Path=IsNotLoading}" Value="true">
-                                <Setter Property="Content" Value="Create" />
+                                <Setter Property="Content" Value="Connect" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>

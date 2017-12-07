@@ -1,22 +1,22 @@
-﻿using SimpleBlockChain.Core.Repositories;
-using SimpleBlockChain.WalletUI.Commands;
+﻿using SimpleBlockChain.WalletUI.Commands;
 using System.Security;
 using System.Windows.Input;
 using System;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace SimpleBlockChain.WalletUI.ViewModels
 {
     public class CreateWalletViewModel : BaseViewModel
     {
-        private readonly IWalletRepository _walletRepository;
+        private readonly IDialogCoordinator _dialogCoordinator;
         private readonly ICommand _createWallet;
         private SecureString _password;
         private bool _isNotLoading = false;
 
-        public CreateWalletViewModel(IWalletRepository walletRepository)
+        public CreateWalletViewModel(IDialogCoordinator dialogCoordinator)
         {
+            _dialogCoordinator = dialogCoordinator;
             _isNotLoading = true;
-            _walletRepository = walletRepository;
             _createWallet = new RelayCommand(p => CreateWalletExecute(), p => CanCreateWallet());
         }
 
@@ -67,6 +67,11 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public void ToggleLoading()
         {
             IsNotLoading = !_isNotLoading;
+        }
+
+        public void DisplayMessage(string title, string message)
+        {
+            _dialogCoordinator.ShowMessageAsync(this, title, message);
         }
 
         private void CreateWalletExecute()

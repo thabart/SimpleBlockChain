@@ -1,16 +1,15 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimpleBlockChain.Core.Builders;
+﻿using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Scripts;
 using SimpleBlockChain.Core.Transactions;
 using System.Text;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Builders
 {
-    [TestClass]
     public class ScriptBuilderFixture
     {
-        [TestMethod]
+        [Fact]
         public void Check16EqualTo16()
         {
             var scriptBuilder = new ScriptBuilder();
@@ -34,10 +33,10 @@ namespace SimpleBlockChain.UnitTests.Builders
             var interpreter = new Interpreter();
             bool isCorrect = interpreter.Check(deserializedInputScript, deserializedOutputScript);
 
-            Assert.IsTrue(isCorrect);
+            Assert.True(isCorrect);
         }
 
-        [TestMethod]
+        [Fact]
         public void CheckSignature()
         {
             var key = Key.Genererate();
@@ -66,7 +65,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             var interpreter = new Interpreter();
             bool isCorrect = interpreter.Check(deserializedInputScript, deserializedOutputScript);
 
-            Assert.IsTrue(isCorrect);
+            Assert.True(isCorrect);
         }
     }
 }

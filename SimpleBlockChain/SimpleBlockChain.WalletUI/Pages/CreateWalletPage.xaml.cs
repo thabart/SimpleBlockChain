@@ -11,13 +11,11 @@ namespace SimpleBlockChain.WalletUI.Pages
     {
         private readonly IWalletRepository _walletRepository;
         private readonly CreateWalletViewModel _viewModel;
-        private readonly IDialogCoordinator _dialogCoordinator;
 
-        public CreateWalletPage(CreateWalletViewModel viewModel, IWalletRepository walletRepository, IDialogCoordinator dialogCoordinator)
+        public CreateWalletPage(IWalletRepository walletRepository)
         {
             _walletRepository = walletRepository;
-            _viewModel = viewModel;
-            _dialogCoordinator = dialogCoordinator;
+            _viewModel = new CreateWalletViewModel(DialogCoordinator.Instance);
             _viewModel.CreateWalletEvt += CreateWallet;
             InitializeComponent();
             DataContext = _viewModel;
@@ -44,7 +42,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 }
                 catch
                 {
-                    _dialogCoordinator.ShowMessageAsync(this, "Error", "An error occured while trying to create the wallet");
+                    _viewModel.DisplayMessage("Error", "An error occured while trying to create the wallet");
                 }
                 finally
                 {

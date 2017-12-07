@@ -3,16 +3,16 @@ using System;
 
 namespace SimpleBlockChain.WalletUI.Singletons
 {
-    public class AuthenticatedWallet
+    public class WalletStore
     {
         private WalletAggregate _authenticatedWallet;
-        private static AuthenticatedWallet _instance;
+        private static WalletStore _instance;
 
-        public static AuthenticatedWallet Instance()
+        public static WalletStore Instance()
         {
-            if (_instance != null)
+            if (_instance == null)
             {
-                _instance = new AuthenticatedWallet();
+                _instance = new WalletStore();
             }
 
             return _instance;

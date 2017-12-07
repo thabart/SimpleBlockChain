@@ -1,13 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimpleBlockChain.Core.Extensions;
+﻿using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Helpers
 {
-    [TestClass]
     public class TargetHelperFixture
     {
-        [TestMethod]
+        [Fact]
         public void WhenGetTarget()
         {
             uint nbits = 0x1d00ffff; // 4 bits     

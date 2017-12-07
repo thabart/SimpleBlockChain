@@ -1,10 +1,12 @@
 ﻿using LevelDB;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.LevelDb
 {
-    [TestClass]
     public class DbFixture
     {
         public static byte[] ToByteArray(string HexString)
@@ -18,7 +20,7 @@ namespace SimpleBlockChain.UnitTests.LevelDb
             return bytes;
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenWriteAndReadSomeData()
         {
             var databasePath = @"c:\Project\SimpleBlockChain\SimpleBlockChain\db.dat";

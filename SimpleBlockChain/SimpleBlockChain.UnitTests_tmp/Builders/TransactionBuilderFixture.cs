@@ -1,17 +1,16 @@
-﻿using SimpleBlockChain.Core;
+﻿using Xunit;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Transactions;
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SimpleBlockChain.UnitTests.Builders
 {
-    [TestClass]
     public class TransactionBuilderFixture
     {
-        [TestMethod]
+        [Fact]
         public void WhenBuildNoneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
@@ -23,7 +22,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             var deserializedTransaction = BaseTransaction.Deserialize(serializedTransaction, TransactionTypes.NoneCoinbase);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenBuildCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();

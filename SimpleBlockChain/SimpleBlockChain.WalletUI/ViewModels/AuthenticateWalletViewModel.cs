@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.WalletUI.Commands;
+﻿using MahApps.Metro.Controls.Dialogs;
+using SimpleBlockChain.WalletUI.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.Security;
@@ -13,12 +14,15 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 
     public class AuthenticateWalletViewModel : BaseViewModel
     {
+        private readonly IDialogCoordinator _dialogCoordinator;
         private readonly ICommand _authenticateWalletCommand;
         private SecureString _password;
         private bool _isNotLoading = false;
 
-        public AuthenticateWalletViewModel()
+        public AuthenticateWalletViewModel(IDialogCoordinator dialogCoordinator)
         {
+            _dialogCoordinator = dialogCoordinator;
+            _isNotLoading = true;
             Wallets = new ObservableCollection<WalletItemViewModel>();
             _authenticateWalletCommand = new RelayCommand(p => AuthenticateWalletCommand(), p => CanAuthenticateWalletCommand());
         }
@@ -69,6 +73,11 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public void ToggleLoading()
         {
             IsNotLoading = !_isNotLoading;
+        }
+
+        public void DisplayMessage(string title, string message)
+        {
+            _dialogCoordinator.ShowMessageAsync(this, title, message);
         }
 
         private void AuthenticateWalletCommand()

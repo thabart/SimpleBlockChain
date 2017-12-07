@@ -12,15 +12,12 @@ namespace SimpleBlockChain.WalletUI.Pages
     {
         private readonly AuthenticateWalletViewModel _viewModel;
         private readonly IWalletRepository _walletRepository;
-        private readonly IDialogCoordinator _dialogCoordinator;
         private readonly WalletPage _walletPage;
 
-        public AuthenticateWalletPage(AuthenticateWalletViewModel viewModel, 
-            IWalletRepository walletRepository, IDialogCoordinator dialogCoordinator, WalletPage walletPage)
+        public AuthenticateWalletPage(IWalletRepository walletRepository, WalletPage walletPage)
         {
-            _viewModel = viewModel;
+            _viewModel = new AuthenticateWalletViewModel(DialogCoordinator.Instance);
             _walletRepository = walletRepository;
-            _dialogCoordinator = dialogCoordinator;
             _walletPage = walletPage;
             _viewModel.ConnectEvt += Connect;
             InitializeComponent();
@@ -41,12 +38,15 @@ namespace SimpleBlockChain.WalletUI.Pages
                 try
                 {
                     var result = r.Result;
-                    AuthenticatedWallet.Instance().SetAuthenticatedWallet(r.Result);
-                    NavigationService.Navigate(_walletPage);
+                    WalletStore.Instance().SetAuthenticatedWallet(r.Result);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        NavigationService.Navigate(_walletPage);
+                    });
                 }
                 catch (AggregateException)
                 {
-                    _dialogCoordinator.ShowMessageAsync(this, "Error", "Cannot connect to the wallet");
+                    _viewModel.DisplayMessage("Error", "Cannot connect to the wallet");
                 }
                 finally
                 {

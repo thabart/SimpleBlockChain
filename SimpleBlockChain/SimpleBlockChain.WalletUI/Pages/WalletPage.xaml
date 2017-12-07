@@ -7,14 +7,18 @@
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
       Title="WalletPage">
+    <Page.Resources>
+        <Thickness x:Key="ColumnMargin">10 5 10 5</Thickness>
+        <Thickness x:Key="ControlMargin">0 5 0 0</Thickness>
+    </Page.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="4*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="3*" />
         </Grid.RowDefinitions>
         <!-- Transfer money to another account -->
         <Grid Grid.Column="0" Grid.Row="0">
@@ -28,13 +32,13 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <!-- Amount of money -->
-            <Label Grid.Column="0" Grid.Row="0">Amount of money</Label>
-            <TextBox Grid.Column="1" Grid.Row="0"></TextBox>
+            <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Amount of money</Label>
+            <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0"></TextBox>
             <!-- Address -->
-            <Label Grid.Column="0" Grid.Row="1">Address</Label>
-            <TextBox Grid.Column="1" Grid.Row="1"></TextBox>
+            <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Address</Label>
+            <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1"></TextBox>
             <!-- Submit button -->
-            <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Send</Button>
+            <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Send</Button>
         </Grid>
         <!-- Display available money -->
         <Grid Grid.Column="0" Grid.Row="1">

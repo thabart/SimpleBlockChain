@@ -23,5 +23,20 @@ namespace SimpleBlockChain.Core.Extensions
                 Marshal.FreeBSTR(bstr);
             }
         }
+
+        public static SecureString ToSecureString(this string source)
+        {
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                return null;
+            }
+            SecureString result = new SecureString();
+            foreach (char c in source.ToCharArray())
+            {
+                result.AppendChar(c);
+            }
+
+            return result;
+        }
     }
 }

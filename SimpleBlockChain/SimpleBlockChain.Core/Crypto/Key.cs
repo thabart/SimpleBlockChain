@@ -1,8 +1,10 @@
-﻿using Org.BouncyCastle.Asn1.Sec;
+﻿using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
+using SimpleBlockChain.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,8 @@ namespace SimpleBlockChain.Core.Crypto
 {
     public class Key
     {
+        private const string _publicKeyName = "public_key";
+        private const string _privateKeyName = "private_key";
         private ECPublicKeyParameters _publicKey;
         private ECPrivateKeyParameters _privateKey;  
 
@@ -117,6 +121,52 @@ namespace SimpleBlockChain.Core.Crypto
             signer.Init(false, _publicKey);
             signer.BlockUpdate(payload.ToArray(), 0, payload.Count());
             return signer.VerifySignature(signature.ToArray());
+        }
+
+        public JObject GetJson()
+        {
+            var result = new JObject();
+            var publicKey = GetPublicKey();
+            if (publicKey == null)
+            {
+                throw new SerializeException(string.Format(ErrorCodes.ParameterMissing, _publicKeyName));
+            }
+
+            var privateKey = GetPrivateKey();
+            if (privateKey == null)
+            {
+                throw new SerializeException(string.Format(ErrorCodes.ParameterMissing, _privateKey));
+            }
+
+            result.Add(_publicKeyName, (new BigInteger(publicKey.ToArray())).ToString());
+            result.Add(_privateKeyName, GetPrivateKey().ToString());
+            return result;
+        }
+
+        public static Key FromJson(JObject jObj)
+        {
+            if (jObj == null)
+            {
+                throw new ArgumentNullException(nameof(jObj));
+            }
+
+            JToken publicKeyToken = null;
+            if (!jObj.TryGetValue(_publicKeyName, out publicKeyToken))
+            {
+                throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _publicKeyName));
+            }
+            
+            JToken privateKeyToken = null;
+            if (!jObj.TryGetValue(_privateKeyName, out privateKeyToken))
+            {
+                throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _privateKeyName));
+            }
+
+            BigInteger publicKey,
+                privateKey;
+            publicKey = new BigInteger(publicKeyToken.ToString());
+            privateKey = new BigInteger(privateKeyToken.ToString());
+            return Deserialize(publicKey, privateKey);
         }
     }
 }

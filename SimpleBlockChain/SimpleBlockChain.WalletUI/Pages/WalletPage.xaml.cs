@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.WalletUI.ViewModels;
+using System;
 using System.Windows.Controls;
 
 namespace SimpleBlockChain.WalletUI.Pages
@@ -10,13 +11,13 @@ namespace SimpleBlockChain.WalletUI.Pages
         public WalletPage(WalletPageViewModel viewModel)
         {
             _viewModel = viewModel;
-            _viewModel.SendMoneyEvt += _viewModel_SendMoneyEvt;
+            _viewModel.SendMoneyEvt += SendMoney;
             InitializeComponent();
         }
 
-        private void _viewModel_SendMoneyEvt(object sender, System.EventArgs e)
+        private void SendMoney(object sender, EventArgs e)
         {
-            throw new System.NotImplementedException();
+
         }
     }
 }

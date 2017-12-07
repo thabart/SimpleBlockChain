@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SimpleBlockChain.Core;
+﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
@@ -8,25 +7,26 @@ using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System.Linq;
+using System.Numerics;
 using System.Text;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Blocks
 {
-    [TestClass]
     public class BlockChainFixture
     {
         private const ScriptTypes _scriptTypes = ScriptTypes.P2PKH;
         private const Networks _network = Networks.MainNet;
 
-        [TestMethod]
+        [Fact]
         public void WhenGetGenesisBlock()
         {
             var blockChain = new BlockChain();
             var block = blockChain.GetCurrentBlock();
-            Assert.IsNotNull(block);
+            Assert.NotNull(block);
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenAddBlock()
         {
             var blockChain = BlockChainStore.Instance().GetBlockChain(); // Get the genesis block.

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.0
+VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01. Nodes", "01. Nodes", "{BCD9A7CB-F7FC-4C3E-BF0F-DDC006E82ACD}"
 EndProject
@@ -10,8 +10,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00. Core", "00. Core", "{6717E883-ECB1-420E-8157-972C8CFF8041}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03. Tests", "03. Tests", "{F885727F-9947-4B71-AD90-BFD48B8437DA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.UnitTests", "SimpleBlockChain.UnitTests\SimpleBlockChain.UnitTests.csproj", "{0DC8E1D9-8B85-460A-B51C-67056446CA85}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.Wallet", "SimpleBlockChain.Wallet\SimpleBlockChain.Wallet.csproj", "{55F8C2AA-57CA-4532-9337-8546A57029D1}"
 EndProject
@@ -31,16 +29,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.Core", "Si
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.Data.SqlLite", "SimpleBlockChain.Data.SqlLite\SimpleBlockChain.Data.SqlLite.csproj", "{7741DDAD-487A-45B3-948B-4FDE78CBAA58}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.UnitTests", "SimpleBlockChain.UnitTests\SimpleBlockChain.UnitTests.csproj", "{F59F4464-7E48-4534-A6C2-9FEA5FCC9E69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0DC8E1D9-8B85-460A-B51C-67056446CA85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0DC8E1D9-8B85-460A-B51C-67056446CA85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0DC8E1D9-8B85-460A-B51C-67056446CA85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0DC8E1D9-8B85-460A-B51C-67056446CA85}.Release|Any CPU.Build.0 = Release|Any CPU
 		{55F8C2AA-57CA-4532-9337-8546A57029D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{55F8C2AA-57CA-4532-9337-8546A57029D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55F8C2AA-57CA-4532-9337-8546A57029D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -77,12 +73,15 @@ Global
 		{7741DDAD-487A-45B3-948B-4FDE78CBAA58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7741DDAD-487A-45B3-948B-4FDE78CBAA58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7741DDAD-487A-45B3-948B-4FDE78CBAA58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F59F4464-7E48-4534-A6C2-9FEA5FCC9E69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F59F4464-7E48-4534-A6C2-9FEA5FCC9E69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F59F4464-7E48-4534-A6C2-9FEA5FCC9E69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F59F4464-7E48-4534-A6C2-9FEA5FCC9E69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{0DC8E1D9-8B85-460A-B51C-67056446CA85} = {F885727F-9947-4B71-AD90-BFD48B8437DA}
 		{55F8C2AA-57CA-4532-9337-8546A57029D1} = {BCD9A7CB-F7FC-4C3E-BF0F-DDC006E82ACD}
 		{0B18EA56-2F61-4922-93FC-0EFE86B7198A} = {BCD9A7CB-F7FC-4C3E-BF0F-DDC006E82ACD}
 		{F4F20862-3697-4C9D-A16E-546F6E0028D0} = {BCD9A7CB-F7FC-4C3E-BF0F-DDC006E82ACD}
@@ -92,6 +91,7 @@ Global
 		{DD7BA4D3-CAB6-465D-98C1-4CA301546925} = {6717E883-ECB1-420E-8157-972C8CFF8041}
 		{4A439F83-BD08-40A6-98A2-E923516AF605} = {6717E883-ECB1-420E-8157-972C8CFF8041}
 		{7741DDAD-487A-45B3-948B-4FDE78CBAA58} = {6717E883-ECB1-420E-8157-972C8CFF8041}
+		{F59F4464-7E48-4534-A6C2-9FEA5FCC9E69} = {F885727F-9947-4B71-AD90-BFD48B8437DA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {15965AB6-80A5-450B-AEAA-FB9FD5FB5E65}

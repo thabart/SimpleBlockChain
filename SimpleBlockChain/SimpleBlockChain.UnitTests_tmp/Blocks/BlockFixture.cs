@@ -1,22 +1,19 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SimpleBlockChain.Core;
+﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Transactions;
 using System;
+using Xunit;
 
 namespace SimpleBlockChain.UnitTests.Blocks
 {
-    [TestClass]
     public class BlockFixture
     {
         private static uint NBits = 0x1e0ffff0;
 
-        [TestMethod]
+        [Fact]
         public void WhenSerializeBlockWithOneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
@@ -35,7 +32,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             string s = "";
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenSerializeBlockWithOneCoinbaseTransactionAndTwoNoneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();
@@ -60,13 +57,13 @@ namespace SimpleBlockChain.UnitTests.Blocks
             block.Serialize();
         }
 
-        [TestMethod]
+        [Fact]
         public void WhenBuildGenesisBlock()
         {
             var block = Block.BuildGenesisBlock();
             var payload = block.Serialize();
             var deserialized = Block.Deserialize(payload);
-            Assert.IsTrue(true);
+            Assert.True(true);
         }
 
         private static BlockChainAddress BuildBlockChainAddress()
@@ -74,7 +71,6 @@ namespace SimpleBlockChain.UnitTests.Blocks
             var network = Networks.MainNet;
             var key = Key.Genererate();
             var blockChainAddress = new BlockChainAddress(ScriptTypes.P2PKH, network, key);
-            var s = blockChainAddress.GetJson().ToString();
             var hash = blockChainAddress.GetSerializedHash();
             var deserializedBA = BlockChainAddress.Deserialize(hash);
             return deserializedBA;

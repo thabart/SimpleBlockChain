@@ -92,7 +92,7 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
                 {
                     foreach(var adr in arr)
                     {
-                        addresses.Add(JsonConvert.DeserializeObject<WalletAggregateAddress>(adr.ToString()));
+                        addresses.Add(WalletAggregateAddress.FromJson(JObject.Parse(adr.ToString())));
                     }
                 }
             }
@@ -113,8 +113,7 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
                 var arr = new JArray();
                 foreach(var addr in wallet.Addresses)
                 {
-                    var serializedAddr = JsonConvert.SerializeObject(addr);
-                    arr.Add(serializedAddr);
+                    arr.Add(addr.GetJson());
                 }
 
                 result.Add("addrs", arr);

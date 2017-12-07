@@ -1,6 +1,8 @@
-﻿using SimpleBlockChain.Core.Crypto;
+﻿using Newtonsoft.Json.Linq;
+using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Encoding;
 using SimpleBlockChain.Core.Exceptions;
+using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,10 @@ namespace SimpleBlockChain.Core
 {
     public class BlockChainAddress
     {
+        private const string _networkName = "network";
+        private const string _typeName = "type";
+        private const string _keyName = "key";
+        private const string _publicKeyHashName = "public_key_hash";
         private readonly Key _key;
 
         public BlockChainAddress(ScriptTypes type, Networks network, Key key)
@@ -136,6 +142,74 @@ namespace SimpleBlockChain.Core
             result.AddRange(publicKeyHashed);
             result.AddRange(checkSum);
             return result;
+        }
+
+        public JObject GetJson()
+        {
+            var result = new JObject();
+            if (PublicKeyHash == null)
+            {
+                throw new SerializeException(string.Format(ErrorCodes.ParameterMissing, _publicKeyHashName));
+            }
+
+            if (_key == null)
+            {
+                throw new SerializeException(string.Format(ErrorCodes.ParameterMissing, _keyName));
+            }
+
+            result.Add(_networkName, Enum.GetName(typeof(Networks), Network));
+            result.Add(_typeName, Enum.GetName(typeof(ScriptTypes), Type));
+            result.Add(_publicKeyHashName, PublicKeyHash.ToHexString());
+            result.Add(_keyName, _key.GetJson());
+            return result;
+        }
+
+        public static BlockChainAddress FromJson(JObject jObj)
+        {
+            if (jObj == null)
+            {
+                throw new ArgumentNullException(nameof(jObj));
+            }
+
+            JToken networkToken = null,
+                typeToken = null,
+                publicKeyHashToken = null,
+                keyToken = null;
+            if (!jObj.TryGetValue(_networkName, out networkToken))
+            {
+                throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _networkName));
+            }
+
+            if (!jObj.TryGetValue(_typeName, out typeToken))
+            {
+                throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _typeName));
+            }
+
+            if (!jObj.TryGetValue(_publicKeyHashName, out publicKeyHashToken))
+            {
+                throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _publicKeyHashName));
+            }
+
+            if (!jObj.TryGetValue(_keyName, out keyToken))
+            {
+                throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _keyName));
+            }
+
+            ScriptTypes type;
+            Networks network;
+            if (!Enum.TryParse(typeToken.ToString(), out type))
+            {
+                throw new ParseException(ErrorCodes.NotCorrectType);
+            }
+
+            if (!Enum.TryParse(typeToken.ToString(), out network))
+            {
+                throw new ParseException(ErrorCodes.NotCorrectNetwork);
+            }
+
+            var publicKeyHash = publicKeyHashToken.ToString().FromHexString();
+            var keyObj = JObject.Parse(keyToken.ToString());
+            return new BlockChainAddress(type, network, publicKeyHash, Key.FromJson(keyObj));
         }
     }
 }
