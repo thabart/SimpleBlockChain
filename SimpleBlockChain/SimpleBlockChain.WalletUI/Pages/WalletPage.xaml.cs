@@ -1,28 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using SimpleBlockChain.WalletUI.ViewModels;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SimpleBlockChain.WalletUI.Pages
 {
-    /// <summary>
-    /// Logique d'interaction pour WalletPage.xaml
-    /// </summary>
     public partial class WalletPage : Page
     {
-        public WalletPage()
+        private readonly WalletPageViewModel _viewModel;
+
+        public WalletPage(WalletPageViewModel viewModel)
         {
+            _viewModel = viewModel;
+            _viewModel.SendMoneyEvt += _viewModel_SendMoneyEvt;
             InitializeComponent();
+        }
+
+        private void _viewModel_SendMoneyEvt(object sender, System.EventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

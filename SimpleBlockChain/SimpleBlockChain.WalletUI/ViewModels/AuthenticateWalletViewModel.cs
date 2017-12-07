@@ -1,5 +1,4 @@
-﻿using SimpleBlockChain.Core.Repositories;
-using SimpleBlockChain.WalletUI.Commands;
+﻿using SimpleBlockChain.WalletUI.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.Security;
@@ -14,9 +13,9 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 
     public class AuthenticateWalletViewModel : BaseViewModel
     {
-        private readonly IWalletRepository _walletRepository;
         private readonly ICommand _authenticateWalletCommand;
         private SecureString _password;
+        private bool _isNotLoading = false;
 
         public AuthenticateWalletViewModel()
         {
@@ -49,7 +48,28 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             }
         }
 
+        public bool IsNotLoading
+        {
+            get
+            {
+                return _isNotLoading;
+            }
+            private set
+            {
+                if (value != _isNotLoading)
+                {
+                    _isNotLoading = value;
+                    NotifyPropertyChanged(nameof(IsNotLoading));
+                }
+            }
+        }
+
         public WalletItemViewModel SelectedWallet { get; set; }
+
+        public void ToggleLoading()
+        {
+            IsNotLoading = !_isNotLoading;
+        }
 
         private void AuthenticateWalletCommand()
         {

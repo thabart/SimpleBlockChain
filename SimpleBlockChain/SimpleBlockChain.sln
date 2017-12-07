@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+VisualStudioVersion = 15.0.27130.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01. Nodes", "01. Nodes", "{BCD9A7CB-F7FC-4C3E-BF0F-DDC006E82ACD}"
 EndProject
@@ -11,17 +11,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00. Core", "00. Core", "{67
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03. Tests", "03. Tests", "{F885727F-9947-4B71-AD90-BFD48B8437DA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleBlockChain.UnitTests", "SimpleBlockChain.UnitTests\SimpleBlockChain.UnitTests.xproj", "{0DC8E1D9-8B85-460A-B51C-67056446CA85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.UnitTests", "SimpleBlockChain.UnitTests\SimpleBlockChain.UnitTests.csproj", "{0DC8E1D9-8B85-460A-B51C-67056446CA85}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleBlockChain.Wallet", "SimpleBlockChain.Wallet\SimpleBlockChain.Wallet.xproj", "{55F8C2AA-57CA-4532-9337-8546A57029D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.Wallet", "SimpleBlockChain.Wallet\SimpleBlockChain.Wallet.csproj", "{55F8C2AA-57CA-4532-9337-8546A57029D1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleBlockChain.FullNode", "SimpleBlockChain.FullNode\SimpleBlockChain.FullNode.xproj", "{0B18EA56-2F61-4922-93FC-0EFE86B7198A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.FullNode", "SimpleBlockChain.FullNode\SimpleBlockChain.FullNode.csproj", "{0B18EA56-2F61-4922-93FC-0EFE86B7198A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleBlockChain.SeedNode", "SimpleBlockChain.SeedNode\SimpleBlockChain.SeedNode.xproj", "{F4F20862-3697-4C9D-A16E-546F6E0028D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.SeedNode", "SimpleBlockChain.SeedNode\SimpleBlockChain.SeedNode.csproj", "{F4F20862-3697-4C9D-A16E-546F6E0028D0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleBlockChain.ProtocolTester", "SimpleBlockChain.ProtocolTester\SimpleBlockChain.ProtocolTester.xproj", "{18CB12C4-02E7-4F95-9171-2FCAB5B43D62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.ProtocolTester", "SimpleBlockChain.ProtocolTester\SimpleBlockChain.ProtocolTester.csproj", "{18CB12C4-02E7-4F95-9171-2FCAB5B43D62}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleBlockChain.MiningSoft", "SimpleBlockChain.MiningSoft\SimpleBlockChain.MiningSoft.xproj", "{78B52C50-6EF5-4C3E-9B2D-5539BEAE2ADD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.MiningSoft", "SimpleBlockChain.MiningSoft\SimpleBlockChain.MiningSoft.csproj", "{78B52C50-6EF5-4C3E-9B2D-5539BEAE2ADD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.WalletUI", "SimpleBlockChain.WalletUI\SimpleBlockChain.WalletUI.csproj", "{8222003B-150C-490C-A6D5-96C96BE25675}"
 EndProject
@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.Interop", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.Core", "SimpleBlockChain.Core\SimpleBlockChain.Core.csproj", "{4A439F83-BD08-40A6-98A2-E923516AF605}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBlockChain.Data.SqlLite", "SimpleBlockChain.Data.SqlLite\SimpleBlockChain.Data.SqlLite.csproj", "{7741DDAD-487A-45B3-948B-4FDE78CBAA58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleBlockChain.Data.SqlLite", "SimpleBlockChain.Data.SqlLite\SimpleBlockChain.Data.SqlLite.csproj", "{7741DDAD-487A-45B3-948B-4FDE78CBAA58}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

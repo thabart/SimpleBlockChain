@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Aggregates;
+﻿using MahApps.Metro.Controls.Dialogs;
+using SimpleBlockChain.Core.Aggregates;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
@@ -10,11 +11,13 @@ namespace SimpleBlockChain.WalletUI.Pages
     {
         private readonly IWalletRepository _walletRepository;
         private readonly CreateWalletViewModel _viewModel;
+        private readonly IDialogCoordinator _dialogCoordinator;
 
-        public CreateWalletPage(CreateWalletViewModel viewModel, IWalletRepository walletRepository)
+        public CreateWalletPage(CreateWalletViewModel viewModel, IWalletRepository walletRepository, IDialogCoordinator dialogCoordinator)
         {
             _walletRepository = walletRepository;
             _viewModel = viewModel;
+            _dialogCoordinator = dialogCoordinator;
             _viewModel.CreateWalletEvt += CreateWallet;
             InitializeComponent();
             DataContext = _viewModel;
@@ -41,7 +44,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 }
                 catch
                 {
-
+                    _dialogCoordinator.ShowMessageAsync(this, "Error", "An error occured while trying to create the wallet");
                 }
                 finally
                 {

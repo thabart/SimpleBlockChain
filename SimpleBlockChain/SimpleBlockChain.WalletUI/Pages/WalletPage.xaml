@@ -12,6 +12,42 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="4*" />
+        </Grid.RowDefinitions>
+        <!-- Transfer money to another account -->
+        <Grid Grid.Column="0" Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!-- Amount of money -->
+            <Label Grid.Column="0" Grid.Row="0">Amount of money</Label>
+            <TextBox Grid.Column="1" Grid.Row="0"></TextBox>
+            <!-- Address -->
+            <Label Grid.Column="0" Grid.Row="1">Address</Label>
+            <TextBox Grid.Column="1" Grid.Row="1"></TextBox>
+            <!-- Submit button -->
+            <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Send</Button>
+        </Grid>
+        <!-- Display available money -->
+        <Grid Grid.Column="0" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0">Your account</Label>
+            <TextBlock Grid.Column="1"></TextBlock>
+        </Grid>
+        <!-- Transaction history -->
+        <Grid Grid.Column="1" Grid.RowSpan="2">
+            
+        </Grid>
     </Grid>
 </Page>

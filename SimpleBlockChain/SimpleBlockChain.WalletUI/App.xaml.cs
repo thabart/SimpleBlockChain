@@ -3,6 +3,7 @@ using SimpleBlockChain.WalletUI.Pages;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System.Windows;
 using SimpleBlockChain.Data.Sqlite;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace SimpleBlockChain.WalletUI
 {
@@ -17,10 +18,13 @@ namespace SimpleBlockChain.WalletUI
             serviceCollection.AddTransient<HomePage>();
             serviceCollection.AddTransient<CreateWalletPage>();
             serviceCollection.AddTransient<AuthenticateWalletPage>();
+            serviceCollection.AddTransient<WalletPage>();
 
             serviceCollection.AddTransient<HomePageViewModel>();
             serviceCollection.AddTransient<CreateWalletViewModel>();
             serviceCollection.AddTransient<AuthenticateWalletViewModel>();
+            serviceCollection.AddTransient<WalletPageViewModel>();
+            serviceCollection.AddSingleton<IDialogCoordinator>(DialogCoordinator.Instance);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {

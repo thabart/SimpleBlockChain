@@ -1,4 +1,6 @@
-﻿using SimpleBlockChain.Core.Repositories;
+﻿using MahApps.Metro.Controls.Dialogs;
+using SimpleBlockChain.Core.Repositories;
+using SimpleBlockChain.WalletUI.Singletons;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Windows;
@@ -10,12 +12,17 @@ namespace SimpleBlockChain.WalletUI.Pages
     {
         private readonly AuthenticateWalletViewModel _viewModel;
         private readonly IWalletRepository _walletRepository;
+        private readonly IDialogCoordinator _dialogCoordinator;
+        private readonly WalletPage _walletPage;
 
-        public AuthenticateWalletPage(AuthenticateWalletViewModel viewModel, IWalletRepository walletRepository)
+        public AuthenticateWalletPage(AuthenticateWalletViewModel viewModel, 
+            IWalletRepository walletRepository, IDialogCoordinator dialogCoordinator, WalletPage walletPage)
         {
             _viewModel = viewModel;
-            _viewModel.ConnectEvt += Connect;
             _walletRepository = walletRepository;
+            _dialogCoordinator = dialogCoordinator;
+            _walletPage = walletPage;
+            _viewModel.ConnectEvt += Connect;
             InitializeComponent();
             DataContext = _viewModel;
             Loaded += Load;
@@ -28,16 +35,22 @@ namespace SimpleBlockChain.WalletUI.Pages
                 return;
             }
 
+            _viewModel.ToggleLoading();
             _walletRepository.Get(_viewModel.SelectedWallet.Name, _viewModel.Password).ContinueWith((r) =>
             {
                 try
                 {
                     var result = r.Result;
-                    string s = "";
+                    AuthenticatedWallet.Instance().SetAuthenticatedWallet(r.Result);
+                    NavigationService.Navigate(_walletPage);
                 }
-                catch (AggregateException ex)
+                catch (AggregateException)
                 {
-
+                    _dialogCoordinator.ShowMessageAsync(this, "Error", "Cannot connect to the wallet");
+                }
+                finally
+                {
+                    _viewModel.ToggleLoading();
                 }
             });
         }
