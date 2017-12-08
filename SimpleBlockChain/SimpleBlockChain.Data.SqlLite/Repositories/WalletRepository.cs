@@ -83,6 +83,7 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
             }
 
             var name = jObj.Value<string>("name");
+            var network = jObj.Value<int>("network");
             JToken arrToken = null;
             var addresses = new List<WalletAggregateAddress>();
             if (jObj.TryGetValue("addrs", out arrToken))
@@ -100,6 +101,7 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
             return new WalletAggregate
             {
                 Name = name,
+                Network = (Networks)network,
                 Addresses = addresses
             };
         }
@@ -108,6 +110,7 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
         {
             var result = new JObject();
             result.Add("name", wallet.Name);
+            result.Add("network", (int)wallet.Network);
             if (wallet.Addresses != null)
             {
                 var arr = new JArray();

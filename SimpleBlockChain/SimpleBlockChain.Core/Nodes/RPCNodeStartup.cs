@@ -8,6 +8,7 @@ using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -18,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace SimpleBlockChain.Core.Nodes
 {
-    public enum RpcErrorCodes
+    internal enum RpcErrorCodes
     {
         RPC_INVALID_REQUEST = -32600,
         RPC_METHOD_NOT_FOUND = -32601,
@@ -29,8 +30,17 @@ namespace SimpleBlockChain.Core.Nodes
         RPC_VERIFY_ALREADY_IN_CHAIN = -27
     }
 
-    public class RPCNodeStartup
+    internal class RPCNodeStartup
     {
+        private readonly IWalletRepository _walletRepository;
+        private readonly Networks _network;
+
+        public RPCNodeStartup(IWalletRepository walletRepository, Networks network)
+        {
+            _walletRepository = walletRepository;
+            _network = network;
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             app.Run(context =>
@@ -183,7 +193,7 @@ namespace SimpleBlockChain.Core.Nodes
                         if (int.TryParse(parameters.First().ToString(), out confirmationScore)) { }
                     }
 
-
+                    // blockChain.GetUnspentTransaction();
                     break;
             }
 

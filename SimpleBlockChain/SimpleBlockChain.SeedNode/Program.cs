@@ -1,9 +1,12 @@
-﻿using SimpleBlockChain.Core;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Evts;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.Data.Sqlite;
 using System;
 using System.Net;
 
@@ -15,10 +18,16 @@ namespace SimpleBlockChain.SeedNode
 
         static void Main(string[] args)
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddCore();
+            serviceCollection.AddInMemory();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var nodeLauncherFactory = serviceProvider.GetService<INodeLauncherFactory>();
+
             Console.WriteLine("==== Welcome to SimpleBlockChain (SEED NODE) ====");
             var network = MenuHelper.ChooseNetwork();
             var ipBytes = IPAddress.Parse(Constants.DNS_IP_ADDRESS).MapToIPv6().GetAddressBytes();
-            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);
+            _nodeLauncher = nodeLauncherFactory.Build(network, ServiceFlags.NODE_NETWORK);
             var p2pNode = _nodeLauncher.GetP2PNode();
             p2pNode.StartNodeEvent += StartP2PNodeEvent;
             p2pNode.NewMessageEvent += NewP2PMessageEvent;

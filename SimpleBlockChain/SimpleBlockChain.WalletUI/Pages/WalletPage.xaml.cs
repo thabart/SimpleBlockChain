@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.WalletUI.Events;
@@ -20,9 +21,11 @@ namespace SimpleBlockChain.WalletUI.Pages
         private Timer _timer;
         private readonly AutoResetEvent _autoEvent = null;
         private readonly BackgroundWorker _refreshUiBackgroundWorker;
+        private readonly INodeLauncherFactory _nodeLauncherFactory;
 
-        public WalletPage()
+        public WalletPage(INodeLauncherFactory nodeLauncherFactory)
         {
+            _nodeLauncherFactory = nodeLauncherFactory;
             _autoEvent = new AutoResetEvent(false);
             _refreshUiBackgroundWorker = new BackgroundWorker();
             _refreshUiBackgroundWorker.DoWork += RefreshUi;
@@ -70,7 +73,7 @@ namespace SimpleBlockChain.WalletUI.Pages
         {
             Disconnect();
             var ipBytes = IPAddress.Parse("192.168.76.132").MapToIPv6().GetAddressBytes();
-            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE);
+            _nodeLauncher = _nodeLauncherFactory.Build(network, ServiceFlags.NODE_NONE);
             _nodeLauncher.LaunchP2PNode(ipBytes);
             _nodeLauncher.LaunchRPCNode();
             _nodeLauncher.ConnectP2PNetwork();

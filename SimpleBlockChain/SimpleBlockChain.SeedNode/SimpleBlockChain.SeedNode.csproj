@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SimpleBlockChain.Core\SimpleBlockChain.Core.csproj" />
+    <ProjectReference Include="..\SimpleBlockChain.Data.SqlLite\SimpleBlockChain.Data.SqlLite.csproj" />
   </ItemGroup>
 
 </Project>

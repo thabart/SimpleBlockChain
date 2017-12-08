@@ -1,5 +1,6 @@
 ﻿using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Exceptions;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;
@@ -21,7 +22,7 @@ namespace SimpleBlockChain.Core.Nodes
         private P2PNode _p2pNode;
         private RPCNode _rpcNode;
 
-        public NodeLauncher(Networks network, ServiceFlags serviceFlag)
+        internal NodeLauncher(Networks network, ServiceFlags serviceFlag, IRpcNodeFactory rpcNodeFactory)
         {
             _network = network;
             _serviceFlag = serviceFlag;
@@ -29,7 +30,7 @@ namespace SimpleBlockChain.Core.Nodes
             _p2pNetworkConnector.ConnectEvent += P2PConnectEvent;
             _p2pNetworkConnector.DisconnectEvent += P2PDisconnectEvent;
             _p2pNode = new P2PNode(_network, _serviceFlag, _p2pNetworkConnector);
-            _rpcNode = new RPCNode(_network);
+            _rpcNode = rpcNodeFactory.Build(_network);
         }
 
         public RPCNode GetRpcNode()

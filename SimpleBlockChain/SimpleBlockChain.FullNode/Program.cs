@@ -1,7 +1,10 @@
-﻿using SimpleBlockChain.Core;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Evts;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Nodes;
+using SimpleBlockChain.Data.Sqlite;
 using System;
 using System.Linq;
 using System.Net;
@@ -15,11 +18,17 @@ namespace SimpleBlockChain.FullNode
 
         static void Main(string[] args)
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddCore();
+            serviceCollection.AddInMemory();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var nodeLauncherFactory = serviceProvider.GetService<INodeLauncherFactory>();
+
             Console.Title = "FULL NODE / MINER";
             Console.WriteLine("==== Welcome to SimpleBlockChain (FULL NODE) ====");
             _ipBytes = IPAddress.Parse("192.168.76.131").MapToIPv6().GetAddressBytes();
             var network = MenuHelper.ChooseNetwork();
-            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NETWORK);
+            _nodeLauncher = nodeLauncherFactory.Build(network, ServiceFlags.NODE_NETWORK);
             var p2pNode = _nodeLauncher.GetP2PNode();
             p2pNode.StartNodeEvent += StartP2PNodeEvent;
             p2pNode.StopNodeEvent += StopP2PNodeEvent;

@@ -1,13 +1,16 @@
-﻿using SimpleBlockChain.Core;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Evts;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.Data.Sqlite;
 using System;
 using System.Net;
 using System.Numerics;
@@ -22,13 +25,19 @@ namespace SimpleBlockChain.Wallet
 
         static void Main(string[] args)
         {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddCore();
+            serviceCollection.AddInMemory();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var nodeLauncherFactory = serviceProvider.GetService<INodeLauncherFactory>();
+
             // https://bitcoin.org/en/developer-guide#full-service-wallets
             Console.Title = "WALLET NODE";
             Console.WriteLine("==== Welcome to SimpleBlockChain (WALLET) ====");
             var network = MenuHelper.ChooseNetwork();
             _rpcClient = new RpcClient(network);
             var ipBytes = IPAddress.Parse("192.168.76.132").MapToIPv6().GetAddressBytes(); // VIRTUAL NETWORK.
-            _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE);
+            _nodeLauncher = nodeLauncherFactory.Build(network, ServiceFlags.NODE_NONE);
             var p2pNode = _nodeLauncher.GetP2PNode();
             p2pNode.StartNodeEvent += StartP2PNodeEvent;
             p2pNode.NewMessageEvent += NewP2PMessageEvent;

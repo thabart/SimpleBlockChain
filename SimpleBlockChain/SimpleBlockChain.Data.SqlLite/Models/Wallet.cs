@@ -7,7 +7,7 @@
 
         }
 
-        public Wallet(string name, string serializedContent)
+        public Wallet(string name,string serializedContent)
         {
             Name = name;
             SerializedContent = serializedContent;

@@ -9,9 +9,11 @@ namespace SimpleBlockChain.Core.Aggregates
     {
         private const string _hash = "hash";
         private const string _key = "key";
+        private const string _network = "network";
 
         public string Hash { get; set; }
         public Key Key { get; set; }
+        public Networks Network { get; set; }
 
         public JObject GetJson()
         {
@@ -28,6 +30,7 @@ namespace SimpleBlockChain.Core.Aggregates
 
             result.Add(_hash, Hash);
             result.Add(_key, Key.GetJson());
+            result.Add(_network, (int)Network);
             return result;
         }
 
@@ -50,6 +53,19 @@ namespace SimpleBlockChain.Core.Aggregates
                 throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _key));
             }
 
+            JToken networkToken;
+            if (!jObj.TryGetValue(_network, out networkToken))
+            {
+                throw new ParseException(string.Format(ErrorCodes.ParameterMissing, _network));
+            }
+
+            int network = 0;
+            if (!int.TryParse(networkToken.ToString(), out network))
+            {
+                throw new ParseException(ErrorCodes.NotCorrectNetwork);
+            }
+
+            Networks networkEnum = (Networks)network;
             var hash = hashToken.ToString();
             var keyObj = JObject.Parse(keyToken.ToString());
             if (keyObj == null)
@@ -60,7 +76,8 @@ namespace SimpleBlockChain.Core.Aggregates
             return new WalletAggregateAddress
             {
                 Hash = hash,
-                Key = Key.FromJson(keyObj)
+                Key = Key.FromJson(keyObj),
+                Network = networkEnum
             };
         }
     }
