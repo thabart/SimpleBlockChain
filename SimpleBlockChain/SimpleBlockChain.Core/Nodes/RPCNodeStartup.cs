@@ -176,6 +176,15 @@ namespace SimpleBlockChain.Core.Nodes
                     {
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
                     }
+                case Constants.RpcOperations.ListUnspent:
+                    int confirmationScore = 1;
+                    if (parameters.Any())
+                    {
+                        if (int.TryParse(parameters.First().ToString(), out confirmationScore)) { }
+                    }
+
+
+                    break;
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

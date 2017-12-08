@@ -7,7 +7,7 @@ using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Net;
 
-namespace SimpleBlockChain.SeedNode
+namespace SimpleBlockChain.Client
 {
     class Program
     {
@@ -26,6 +26,14 @@ namespace SimpleBlockChain.SeedNode
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PEvent;
             _nodeLauncher.LaunchP2PNode(ipBytes);
             Console.ReadLine();
+            /*
+            var ba = BuildBlockChainAddress(); // ADD FAKE TRANSACTION TO MEMORY POOL.
+            var builder = new TransactionBuilder();
+            var transaction = builder.NewNoneCoinbaseTransaction()
+                 .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
+                 .Build();
+            MemoryPool.Instance().AddTransaction(transaction);
+            */
         }
 
         private static void ConnectP2PEvent(object sender, EventArgs e)

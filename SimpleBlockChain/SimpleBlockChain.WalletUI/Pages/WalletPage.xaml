@@ -12,46 +12,85 @@
         <Thickness x:Key="ControlMargin">0 5 0 0</Thickness>
     </Page.Resources>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*" />
-            <RowDefinition Height="3*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <!-- Transfer money to another account -->
-        <Grid Grid.Column="0" Grid.Row="0">
+        <!-- MENU -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="Network" >
+                <MenuItem Header="MainNet" IsCheckable="True" IsChecked="{Binding IsMainNetChecked}" Command="{Binding Path=MainNetCommand}"/>
+                <MenuItem Header="TestNet" IsCheckable="True" IsChecked="{Binding IsTestNextChecked}" Command="{Binding Path=TestNetCommand}" />
+            </MenuItem>
+        </Menu>
+        <!-- CONTENT -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="3*" />
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <!-- Amount of money -->
-            <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Amount of money</Label>
-            <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0"></TextBox>
-            <!-- Address -->
-            <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Address</Label>
-            <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1"></TextBox>
-            <!-- Submit button -->
-            <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Send</Button>
+            <!-- Transfer money to another account -->
+            <Grid Grid.Column="0" Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <!-- Amount of money -->
+                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Amount of money</Label>
+                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0"></TextBox>
+                <!-- Address -->
+                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Address</Label>
+                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1"></TextBox>
+                <!-- Submit button -->
+                <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Send</Button>
+            </Grid>
+            <!-- Display available money -->
+            <Grid Grid.Column="0" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0">Your account</Label>
+                <StackPanel VerticalAlignment="Center" Grid.Column="1">
+                    <TextBlock FontSize="30">5 BTCS</TextBlock>
+                </StackPanel>
+            </Grid>
+            <!-- Transaction history -->
+            <Grid Grid.Column="1" Grid.RowSpan="2">
+
+            </Grid>
         </Grid>
-        <!-- Display available money -->
-        <Grid Grid.Column="0" Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0">Your account</Label>
-            <TextBlock Grid.Column="1"></TextBlock>
-        </Grid>
-        <!-- Transaction history -->
-        <Grid Grid.Column="1" Grid.RowSpan="2">
-            
-        </Grid>
+        <!-- FOOTER -->
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Background="#CC119EDA">
+            <TextBlock Typography.Capitals="AllSmallCaps">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsConnected}" Value="true">
+                                <Setter Property="Text" Value="Connected" />
+                                <Setter Property="Foreground" Value="Green" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsConnected}" Value="false">
+                                <Setter Property="Text" Value="Not connected" />
+                                <Setter Property="Foreground" Value="Red" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Background="White" />
+            <TextBlock Foreground="White" Typography.Capitals="AllSmallCaps">Number of blocks</TextBlock>
+            <TextBlock Foreground="White" Text="{Binding Path=NbBlocks}"></TextBlock>
+        </StackPanel>
     </Grid>
 </Page>
