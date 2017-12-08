@@ -52,6 +52,7 @@ namespace SimpleBlockChain.WalletUI.Pages
             _nodeLauncher = new NodeLauncher(network, ServiceFlags.NODE_NONE);
             _nodeLauncher.LaunchP2PNode(ipBytes);
             _nodeLauncher.LaunchRPCNode();
+            _nodeLauncher.ConnectP2PNetwork();
             _nodeLauncher.ConnectP2PEvent += ConnectP2PNetwork;
             _nodeLauncher.DisconnectP2PEvent += DisconnectP2PNetwork;
         }
