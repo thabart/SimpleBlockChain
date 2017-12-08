@@ -27,7 +27,8 @@ namespace SimpleBlockChain.Core.Nodes
         RPC_PARSE_ERROR = -32700,
         RPC_VERIFY_ERROR = -25,
         RPC_VERIFY_REJECTED = -26,
-        RPC_VERIFY_ALREADY_IN_CHAIN = -27
+        RPC_VERIFY_ALREADY_IN_CHAIN = -27,
+        RPC_WALLET_NOT_FOUND = -18
     }
 
     internal class RPCNodeStartup
@@ -193,7 +194,38 @@ namespace SimpleBlockChain.Core.Nodes
                         if (int.TryParse(parameters.First().ToString(), out confirmationScore)) { }
                     }
 
-                    // blockChain.GetUnspentTransaction();
+                    var wallet = WalletStore.Instance().GetAuthenticatedWallet();
+                    if (wallet == null)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_WALLET_NOT_FOUND, "No authenticated wallet");
+                    }
+
+                    var addresses = wallet.Addresses;
+                    if (addresses != null)
+                    {
+                        var unspentTxIds = blockChain.GetUnspentTransactions();
+                        if (unspentTxIds != null)
+                        {
+                            foreach(var unspentTxId in unspentTxIds)
+                            {
+                                var transaction = blockChain.GetUnspentTransaction(unspentTxId);
+                                if (transaction == null)
+                                {
+                                    continue;
+                                }
+
+                                foreach(var addr in addresses)
+                                {
+                                    // transaction.Check
+                                }
+                            }
+                        }
+
+                        foreach(var adr in addresses)
+                        {
+
+                        }
+                    }
                     break;
             }
 

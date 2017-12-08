@@ -19,6 +19,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\LevelDB.Net\LevelDB.Net.csproj" />
     <ProjectReference Include="..\SimpleBlockChain.Core\SimpleBlockChain.Core.csproj" />
   </ItemGroup>
   <ItemGroup />

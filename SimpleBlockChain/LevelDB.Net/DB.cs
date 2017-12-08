@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -21,6 +21,32 @@ namespace LevelDB
         public DB(string name)
             : this(name, new Options())
         {
+        }
+
+        public Dictionary<string, string> Find(ReadOptions options, Slice prefix)
+        {
+            var result = new Dictionary<string, string>();
+            using (Iterator it = NewIterator(options))
+            {
+                for (it.Seek(prefix); it.Valid(); it.Next())
+                {
+                    Slice key = it.Key();
+                    byte[] x = key.ToArray();
+                    byte[] y = prefix.ToArray();
+                    if (x.Length < y.Length) break;
+                    if (!x.Take(y.Length).SequenceEqual(y)) break;
+                    var v = it.Value();
+                    var c = ((Slice)(v)).ToString();
+                    result.Add(((Slice)key).ToString(), ((Slice)v).ToString());
+                }
+            }
+
+            return result;
+        }
+
+        public Iterator NewIterator(ReadOptions options)
+        {
+            return new Iterator(LevelDBInterop.leveldb_create_iterator(Handle, options.Handle));
         }
 
         /// <summary>
@@ -182,6 +208,66 @@ namespace LevelDB
         public string Get(string key)
         {
             return Get(key, new ReadOptions());
+        }
+
+        public Slice Get(ReadOptions options, Slice key)
+        {
+            IntPtr length;
+            IntPtr error;
+            IntPtr value = LevelDBInterop.leveldb_get(this.Handle, options.Handle, key.buffer, (IntPtr)key.buffer.Length, out length, out error);
+            try
+            {
+                if (value == IntPtr.Zero)
+                    throw new LevelDBException("not found");
+                return new Slice(value, length);
+            }
+            finally
+            {
+                if (value != IntPtr.Zero) LevelDBInterop.leveldb_free(value);
+            }
+        }
+
+        public bool TryGet(ReadOptions options, Slice key, out Slice value)
+        {
+            IntPtr length;
+            IntPtr error;
+            IntPtr v = LevelDBInterop.leveldb_get(Handle, options.Handle, key.buffer, (IntPtr)key.buffer.Length, out length, out error);
+            if (error != IntPtr.Zero)
+            {
+                LevelDBInterop.leveldb_free(error);
+                value = default(Slice);
+                return false;
+            }
+
+            if (v == IntPtr.Zero)
+            {
+                value = default(Slice);
+                return false;
+            }
+
+            value = new Slice(v, length);
+            LevelDBInterop.leveldb_free(v);
+            return true;
+        }
+        
+
+        public void Write(WriteOptions options, WriteBatch write_batch)
+        {
+            byte retry = 0;
+            while (true)
+            {
+                try
+                {
+                    IntPtr error;
+                    LevelDBInterop.leveldb_write(Handle, options.Handle, write_batch.Handle, out error);
+                    break;
+                }
+                catch (LevelDBException ex)
+                {
+                    if (++retry >= 4) throw;
+                    System.IO.File.AppendAllText("leveldb.log", ex.Message + "\r\n");
+                }
+            }
         }
 
         /// <summary>

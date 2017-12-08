@@ -1,7 +1,7 @@
 ﻿using SimpleBlockChain.Core.Aggregates;
 using System;
 
-namespace SimpleBlockChain.WalletUI.Singletons
+namespace SimpleBlockChain.Core.Stores
 {
     public class WalletStore
     {

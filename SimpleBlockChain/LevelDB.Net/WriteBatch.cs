@@ -49,6 +49,11 @@ namespace LevelDB
             return this;
         }
 
+        public void Put(Slice key, Slice value)
+        {
+            LevelDBInterop.leveldb_writebatch_put(Handle, key.buffer, (IntPtr)key.buffer.Length, value.buffer, (IntPtr)value.buffer.Length);
+        }
+
         /// <summary>
         /// If the database contains a mapping for "key", erase it.  
         /// Else do nothing.

@@ -18,9 +18,11 @@ namespace SimpleBlockChain.Core.Blocks
         private const string BLOCK_HASH = "BLOCK_HASH_{0}";
         private const string BLOCK_HEIGHT = "BLOCK_HEIGHT_{0}";
         private const string SPENT_TRANSACTION = "SPEND_TRANSACTION_{0}";
-        private const string UNSPENT_TRANSACTION = "UNSPENT_TRANSACTION_{0}";
+        private const string UNSPENT_TRANSACTION = "UNSPENT_TRANSACTION";
+        private const string UNSPENT_TRANSACTION_ELT = UNSPENT_TRANSACTION + "_{0}";
         private const string BLOCK_TRANSACTIONS = "BLOCK_TRANSACTIONS_{0}";
-        private const string UNSPENT_TRANSACTION_CB = "UNSPENT_TRANSACTION_CB_{0}";
+        private const string UNSPENT_TRANSACTION_CB = "UNSPENT_TRANSACTION_CB";
+        private const string UNSPENT_TRANSACTION_CB_ELT = UNSPENT_TRANSACTION_CB + "_{0}";
         private const string SPENT_TRANSACTION_CB = "SPENT_TRANSACTION_CB_{0}";
         private const string CURRENT_BLOCK_HEIGHT = "CURRENT_BLOCK_HEIGHT";
         private const string CURRENT_BLOCK = "CURRENT_BLOCK";
@@ -138,7 +140,7 @@ namespace SimpleBlockChain.Core.Blocks
                     continue;
                 }
 
-                if (_db.TryGet(string.Format(UNSPENT_TRANSACTION, txIdPayload), ReadOptions.Default, out utf8Transaction))
+                if (_db.TryGet(string.Format(UNSPENT_TRANSACTION_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
                     var kvp = BaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.NoneCoinbase);
                     transactions.Add(kvp.Key);
@@ -152,7 +154,7 @@ namespace SimpleBlockChain.Core.Blocks
                     continue;
                 }
 
-                if (_db.TryGet(string.Format(UNSPENT_TRANSACTION_CB, txIdPayload), ReadOptions.Default, out utf8Transaction))
+                if (_db.TryGet(string.Format(UNSPENT_TRANSACTION_CB_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
                     var kvp = BaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.Coinbase);
                     transactions.Add(kvp.Key);
@@ -188,7 +190,31 @@ namespace SimpleBlockChain.Core.Blocks
             return transaction != null;
         }
 
-        public BaseTransaction GetUnspentTransaction(IEnumerable<byte> txId, uint index)
+        public IEnumerable<IEnumerable<byte>> GetUnspentTransactions()
+        {
+            var dic = _db.Find(ReadOptions.Default, UNSPENT_TRANSACTION);
+            if (dic == null)
+            {
+                return null;
+            }
+
+            var key = dic.Keys;
+            return key.Select(k => Convert.FromBase64String(k.Split('_').Last()));
+        }
+
+        public IEnumerable<IEnumerable<byte>> GetCoinbaseUnspentTransactions()
+        {
+            var dic = _db.Find(ReadOptions.Default, UNSPENT_TRANSACTION_CB);
+            if (dic == null)
+            {
+                return null;
+            }
+
+            var key = dic.Keys;
+            return key.Select(k => Convert.FromBase64String(k.Split('_').Last()));
+        }
+
+        public BaseTransaction GetUnspentTransaction(IEnumerable<byte> txId)
         {
             if (txId == null)
             {
@@ -197,7 +223,7 @@ namespace SimpleBlockChain.Core.Blocks
 
             var callback = new Func<bool, BaseTransaction>((isCoinBased) =>
             {
-                var k = isCoinBased ? UNSPENT_TRANSACTION_CB : UNSPENT_TRANSACTION;
+                var k = isCoinBased ? UNSPENT_TRANSACTION_CB_ELT : UNSPENT_TRANSACTION_ELT;
                 string result;
                 if (!_db.TryGet(string.Format(k, Convert.ToBase64String(txId.ToArray())), ReadOptions.Default, out result))
                 {
@@ -207,11 +233,6 @@ namespace SimpleBlockChain.Core.Blocks
                 var payload = Convert.FromBase64String(result);
                 var kvp = BaseTransaction.Deserialize(payload, isCoinBased ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase);
                 if (kvp.Equals(default(KeyValuePair<BaseTransaction, int>)) && kvp.Key != null)
-                {
-                    return null;
-                }
-
-                if (kvp.Key.TransactionOut.Count() <= index)
                 {
                     return null;
                 }
@@ -226,6 +247,17 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             return res;
+        }
+
+        public BaseTransaction GetUnspentTransaction(IEnumerable<byte> txId, uint index)
+        {
+            var unspentTransaction = GetUnspentTransaction(txId);
+            if (unspentTransaction == null || unspentTransaction.TransactionOut.Count() <= index)
+            {
+                return null;
+            }
+
+            return unspentTransaction;
         }
 
         public bool ContainsBlock(IEnumerable<byte> hash)
@@ -257,7 +289,7 @@ namespace SimpleBlockChain.Core.Blocks
 
             var callback = new Func<bool, BaseTransaction>((isCoinBased) =>
             {
-                var k = isCoinBased ? UNSPENT_TRANSACTION_CB : UNSPENT_TRANSACTION;
+                var k = isCoinBased ? UNSPENT_TRANSACTION_CB_ELT : UNSPENT_TRANSACTION_ELT;
                 string result;
                 if (!_db.TryGet(string.Format(k, Convert.ToBase64String(txId.ToArray())), ReadOptions.Default, out result))
                 {
@@ -308,11 +340,11 @@ namespace SimpleBlockChain.Core.Blocks
                 var arr = transaction.Serialize().ToArray();
                 if (cb != null)
                 {
-                    batch.Put(string.Format(UNSPENT_TRANSACTION_CB, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(arr));
+                    batch.Put(string.Format(UNSPENT_TRANSACTION_CB_ELT, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(arr));
                 }
                 else
                 {
-                    batch.Put(string.Format(UNSPENT_TRANSACTION, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(arr));
+                    batch.Put(string.Format(UNSPENT_TRANSACTION_ELT, Convert.ToBase64String(currentTxId.ToArray())), Convert.ToBase64String(arr));
                 }
 
                 if (transaction.TransactionIn != null)
@@ -329,7 +361,7 @@ namespace SimpleBlockChain.Core.Blocks
                         var index = tr.Outpoint.Index;
                         var unspentTransaction = GetUnspentTransaction(txId, index); // Transaction should not be NULL.
                         var isNoneCoinBaseTransaction = unspentTransaction as NoneCoinbaseTransaction != null;
-                        batch.Delete(string.Format(isNoneCoinBaseTransaction ? UNSPENT_TRANSACTION : UNSPENT_TRANSACTION_CB, Convert.ToBase64String(txId)));
+                        batch.Delete(string.Format(isNoneCoinBaseTransaction ? UNSPENT_TRANSACTION_ELT : UNSPENT_TRANSACTION_CB_ELT, Convert.ToBase64String(txId)));
                         batch.Put(string.Format(isNoneCoinBaseTransaction ? SPENT_TRANSACTION : SPENT_TRANSACTION_CB, Convert.ToBase64String(txId)), Convert.ToBase64String(unspentTransaction.Serialize().ToArray()));
                     }
                 }

@@ -1,6 +1,7 @@
 ﻿using LevelDB;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 
 namespace SimpleBlockChain.UnitTests.LevelDb
 {
@@ -26,18 +27,12 @@ namespace SimpleBlockChain.UnitTests.LevelDb
             {
                 CreateIfMissing = true
             };
-            var database = DB.Open(databasePath, options);
-            database.Put(null, "key1", "value1");
-            database.Put(null, "key2", "value2");
-            database.Put(null, "key3", "value3");
-            database.Put(null, "key4", "value4");
+            var database = new DB(databasePath, options);
+            database.Put("key1", "key1");
+            database.Put("key2", "key2");
 
-            var value1 = database.Get(null, "key1");
-            var value2 = database.Get(null, "key2");
-            var value3 = database.Get(null, "key3");
-            var value4 = database.Get(null, "key4");
-
-            database.Delete(null, "key2");
+            var res = database.Find(ReadOptions.Default, "key");
+            database.Delete("key2");
 
             string s = "";
         }

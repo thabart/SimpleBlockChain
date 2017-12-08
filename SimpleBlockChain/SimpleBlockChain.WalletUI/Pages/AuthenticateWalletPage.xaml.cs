@@ -1,5 +1,6 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
 using SimpleBlockChain.Core.Repositories;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.WalletUI.Singletons;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;

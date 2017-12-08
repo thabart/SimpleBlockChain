@@ -59,6 +59,11 @@ namespace LevelDB
             Throw();
         }
 
+        public void Seek(Slice target)
+        {
+            LevelDBInterop.leveldb_iter_seek(Handle, target.buffer, (IntPtr)target.buffer.Length);
+        }
+
         /// <summary>
         /// Position at the first key in the source that at or past target
         /// The iterator is IsValid() after this call iff the source contains

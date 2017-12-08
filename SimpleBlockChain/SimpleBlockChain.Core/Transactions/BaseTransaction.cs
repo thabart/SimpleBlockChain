@@ -122,6 +122,22 @@ namespace SimpleBlockChain.Core.Transactions
 
         public abstract KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size);
 
+        public bool CanSpend()
+        {
+            if (TransactionOut == null || !TransactionOut.Any())
+            {
+                return false;
+            }
+
+            var interpreter = new Interpreter();
+            foreach(var txOut in TransactionOut)
+            {
+                
+            }
+
+            return true;
+        }
+
         public void Check()
         {
             // https://bitcoin.org/en/developer-guide#block-chain-overview
