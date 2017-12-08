@@ -21,7 +21,10 @@
         <Menu Grid.Row="0">
             <MenuItem Header="Network" >
                 <MenuItem Header="MainNet" IsCheckable="True" IsChecked="{Binding IsMainNetChecked}" Command="{Binding Path=MainNetCommand}"/>
-                <MenuItem Header="TestNet" IsCheckable="True" IsChecked="{Binding IsTestNextChecked}" Command="{Binding Path=TestNetCommand}" />
+                <MenuItem Header="TestNet" IsCheckable="True" IsChecked="{Binding IsTestNetChecked}" Command="{Binding Path=TestNetCommand}" />
+            </MenuItem>
+            <MenuItem Header="Actions">
+                <MenuItem Header="Refresh BLOCKCHAIN" Command="{Binding Path=RefreshBlockChainCommand}"></MenuItem>
             </MenuItem>
         </Menu>
         <!-- CONTENT -->

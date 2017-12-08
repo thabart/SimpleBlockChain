@@ -16,6 +16,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private bool _isConnected;
         private ICommand _mainNetCommand;
         private ICommand _testNetCommand;
+        private ICommand _refreshBlockChainCommand;
 
         public WalletPageViewModel()
         {
@@ -26,11 +27,13 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             SendMoney = new RelayCommand(p => SendMoneyExecute(), p => CanSendMoney());
             _mainNetCommand = new RelayCommand(p => ExecuteMainNet(), p => CanExecuteMainNet());
             _testNetCommand = new RelayCommand(p => ExecuteTestNet(), p => CanExecuteTestNet());
+            _refreshBlockChainCommand = new RelayCommand(p => ExecuteRefreshBlockChain(), p => CanExecuteRefreshBlockChain());
         }
 
         public ICommand SendMoney { get; private set; }
         public event EventHandler SendMoneyEvt;
         public event EventHandler<NetworkEventHandler> NetworkSwitchEvt;
+        public event EventHandler RefreshBlockChainEvt;
 
         public ICommand MainNetCommand
         {
@@ -40,6 +43,14 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public ICommand TestNetCommand
         {
             get { return _testNetCommand; }
+        }
+
+        public ICommand RefreshBlockChainCommand
+        {
+            get
+            {
+                return _refreshBlockChainCommand;
+            }
         }
 
         public bool IsMainNetChecked
@@ -154,6 +165,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public void ExecuteMainNet()
         {
             IsMainNetChecked = true;
+            IsTestNetChecked = false;
             if (NetworkSwitchEvt != null)
             {
                 NetworkSwitchEvt(this, new NetworkEventHandler(Networks.MainNet));
@@ -168,6 +180,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public void ExecuteTestNet()
         {
             IsTestNetChecked = true;
+            IsMainNetChecked = false;
             if (NetworkSwitchEvt != null)
             {
                 NetworkSwitchEvt(this, new NetworkEventHandler(Networks.TestNet));
@@ -175,6 +188,19 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
 
         private bool CanExecuteTestNet()
+        {
+            return true;
+        }
+
+        private void ExecuteRefreshBlockChain()
+        {
+            if (RefreshBlockChainEvt != null)
+            {
+                RefreshBlockChainEvt(this, EventArgs.Empty);
+            }
+        }
+
+        private bool CanExecuteRefreshBlockChain()
         {
             return true;
         }

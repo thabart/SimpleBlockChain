@@ -1,9 +1,12 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Nodes;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.WalletUI.Events;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
+using System.ComponentModel;
 using System.Net;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -11,14 +14,22 @@ namespace SimpleBlockChain.WalletUI.Pages
 {
     public partial class WalletPage : Page
     {
+        private const int REFRESH_INFORMATION_INTERVAL = 5000;
         private readonly WalletPageViewModel _viewModel;
         private NodeLauncher _nodeLauncher;
+        private Timer _timer;
+        private readonly AutoResetEvent _autoEvent = null;
+        private readonly BackgroundWorker _refreshUiBackgroundWorker;
 
         public WalletPage()
         {
+            _autoEvent = new AutoResetEvent(false);
+            _refreshUiBackgroundWorker = new BackgroundWorker();
+            _refreshUiBackgroundWorker.DoWork += RefreshUi;
             _viewModel = new WalletPageViewModel();
             _viewModel.SendMoneyEvt += SendMoney;
             _viewModel.NetworkSwitchEvt += NetworkSwitch;
+            _viewModel.RefreshBlockChainEvt += RefreshBlockChain;
             Loaded += Load;
             Unloaded += Unload;
             InitializeComponent();
@@ -45,6 +56,16 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         }
 
+        private void RefreshBlockChain(object sender, EventArgs e)
+        {
+            if (!_viewModel.IsConnected)
+            {
+                return;
+            }
+
+            _nodeLauncher.RefreshBlockChain();
+        }
+
         private void OpenNetwork(Networks network)
         {
             Disconnect();
@@ -59,12 +80,34 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void ConnectP2PNetwork(object sender, EventArgs e)
         {
+            _nodeLauncher.RefreshBlockChain();
+            _timer = new Timer(TimerElapsed, _autoEvent, REFRESH_INFORMATION_INTERVAL, REFRESH_INFORMATION_INTERVAL);
             _viewModel.IsConnected = true;
+        }
+
+        private void TimerElapsed(object sender)
+        {
+            if (!_refreshUiBackgroundWorker.IsBusy)
+            {
+                _refreshUiBackgroundWorker.RunWorkerAsync();
+            }
+        }
+
+        private void RefreshUi(object sender, DoWorkEventArgs e)
+        {
+            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            _viewModel.NbBlocks = blockChain.GetCurrentBlockHeight();
         }
 
         private void DisconnectP2PNetwork(object sender, EventArgs e)
         {
+            if (_timer != null)
+            {
+                _timer = null;
+            }
+
             _viewModel.IsConnected = false;
+            _viewModel.NbBlocks = 0;
         }
 
         private void Disconnect()
@@ -74,6 +117,14 @@ namespace SimpleBlockChain.WalletUI.Pages
                 _nodeLauncher.Dispose();
                 _nodeLauncher = null;
             }
+
+            if (_timer != null)
+            {
+                _timer = null;
+            }
+
+            _viewModel.IsConnected = false;
+            _viewModel.NbBlocks = 0;
         }
     }
 }

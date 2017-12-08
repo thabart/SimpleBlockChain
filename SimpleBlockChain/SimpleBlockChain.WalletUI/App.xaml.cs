@@ -47,10 +47,8 @@ namespace SimpleBlockChain.WalletUI
                         }
                     }
                 };
-                /*
                 var repo = serviceProvider.GetService<IWalletRepository>();
                 repo.Add(walletAggregate, "zvhab8rijwl7vwma".ToSecureString());
-                */
             }
 
             MainWindow mainWindow = ActivatorUtilities.CreateInstance<MainWindow>(serviceProvider);

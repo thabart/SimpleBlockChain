@@ -432,7 +432,8 @@ namespace SimpleBlockChain.Core.Connectors
         {
             return new Dictionary<Networks, IEnumerable<string>>
             {
-                { Networks.MainNet, new [] { Constants.DNS_IP_ADDRESS } }
+                { Networks.MainNet, new [] { Constants.DNS_IP_ADDRESS } },
+                { Networks.TestNet, new string[0] }
             };
         }
     }
