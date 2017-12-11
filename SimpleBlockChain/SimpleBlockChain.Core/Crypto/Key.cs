@@ -25,6 +25,12 @@ namespace SimpleBlockChain.Core.Crypto
             _publicKey = publicKey;
         }
 
+        public IEnumerable<byte> GetSignature()
+        {
+            var payload = System.Text.Encoding.UTF8.GetBytes(Constants.DEFAULT_SIGNATURE_CONTENT);
+            return Sign(payload);
+        }
+
         public static Key Genererate()
         {
             var secureRandom = new SecureRandom();

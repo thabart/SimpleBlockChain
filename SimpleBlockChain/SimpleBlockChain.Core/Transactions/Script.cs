@@ -96,6 +96,21 @@ namespace SimpleBlockChain.Core.Transactions
             return new Script(result);
         }
 
+        public bool ContainsPublicKeyHash(IEnumerable<byte> payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            if (ScriptRecords == null || ScriptRecords.Count() != 5 || ScriptRecords.ElementAt(2) != payload)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public static Script CreateCorrectScript()
         {
             var result = new List<ScriptRecord>();

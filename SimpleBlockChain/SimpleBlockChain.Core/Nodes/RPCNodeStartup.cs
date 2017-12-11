@@ -9,6 +9,7 @@ using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Repositories;
+using SimpleBlockChain.Core.Scripts;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -187,12 +188,24 @@ namespace SimpleBlockChain.Core.Nodes
                     {
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
                     }
-                case Constants.RpcOperations.ListUnspent:
+                case Constants.RpcOperations.ListUnspent: // https://bitcoin.org/en/developer-reference#listunspent
                     int confirmationScore = 1;
+                    var maxConfirmations = 9999999;
+                    IEnumerable<string> addrs = new List<string>();
                     if (parameters.Any())
                     {
                         if (int.TryParse(parameters.First().ToString(), out confirmationScore)) { }
+                        if (parameters.Count() >= 2 && int.TryParse(parameters.ElementAt(1), out maxConfirmations)) { }
+                        if (parameters.Count() >= 3)
+                        {
+                            var jArr = JArray.Parse(parameters.ElementAt(2));
+                            if (jArr != null)
+                            {
+                                addrs = jArr.Select(j => j.ToString());
+                            }
+                        }
                     }
+
 
                     var wallet = WalletStore.Instance().GetAuthenticatedWallet();
                     if (wallet == null)
@@ -200,33 +213,44 @@ namespace SimpleBlockChain.Core.Nodes
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_WALLET_NOT_FOUND, "No authenticated wallet");
                     }
 
-                    var addresses = wallet.Addresses;
-                    if (addresses != null)
+                    var walletAddrs = wallet.Addresses;
+                    var res = new JArray();
+                    var unspentTxIds = blockChain.GetUnspentTransactions();
+                    if (addrs == null || !addrs.Any())
                     {
-                        var unspentTxIds = blockChain.GetUnspentTransactions();
-                        if (unspentTxIds != null)
-                        {
-                            foreach(var unspentTxId in unspentTxIds)
-                            {
-                                var transaction = blockChain.GetUnspentTransaction(unspentTxId);
-                                if (transaction == null)
-                                {
-                                    continue;
-                                }
+                        addrs = wallet.Addresses.Select(a => a.Hash);
+                    }
 
-                                foreach(var addr in addresses)
+                    if (unspentTxIds != null)
+                    {
+                        foreach (var unspentTxId in unspentTxIds)
+                        {
+                            var transaction = blockChain.GetUnspentTransaction(unspentTxId);
+                            if (addrs.Any())
+                            {
+                                foreach (var hash in addrs)
                                 {
-                                    // transaction.Check
+                                    var txOut = transaction.GetTransactionOut(hash);
+                                    if (txOut != null)
+                                    {
+                                        var record = new JObject();
+                                        record.Add("txid", transaction.GetTxId().ToHexString());
+                                        record.Add("vout", transaction.TransactionOut.IndexOf(txOut));
+                                        record.Add("address", hash);
+                                        record.Add("scriptPubKey", txOut.Script.Serialize().ToHexString());
+                                        record.Add("amout", txOut.Value);
+                                        record.Add("confirmations", 0);
+                                        record.Add("spendable", wallet.Addresses.Select(a => a.Hash).Contains(hash));
+                                        record.Add("solvable", true);
+                                        res.Add(record);
+                                    }
                                 }
                             }
                         }
-
-                        foreach(var adr in addresses)
-                        {
-
-                        }
                     }
-                    break;
+
+                    response["result"] = res;
+                    return response;
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

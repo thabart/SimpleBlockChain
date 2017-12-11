@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
+using SimpleBlockChain.Core.Aggregates;
+using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
@@ -121,6 +123,73 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public abstract KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size);
+
+        public TransactionOut GetTransactionOut(WalletAggregateAddress walletAddr)
+        {
+            if (walletAddr == null)
+            {
+                throw new ArgumentNullException(nameof(walletAddr));
+            }
+
+            if (walletAddr.Key == null)
+            {
+                throw new ArgumentNullException(nameof(walletAddr.Key));
+            }
+
+            if (TransactionOut == null || !TransactionOut.Any())
+            {
+                return null;
+            }
+
+            var interpreter = new Interpreter();
+            var scriptBuilder = new ScriptBuilder();
+            var secondScript = scriptBuilder.New()
+                .AddToStack(walletAddr.Key.GetSignature())
+                .AddToStack(walletAddr.Key.GetPublicKey())
+                .Build();
+            foreach(var transactionOut in TransactionOut)
+            {
+                if (interpreter.Check(transactionOut.Script, secondScript))
+                {
+                    return transactionOut;
+                }
+            }
+
+            return null;
+        }
+
+        public TransactionOut GetTransactionOut(string encodedBcAddr)
+        {
+            if (string.IsNullOrWhiteSpace(encodedBcAddr))
+            {
+                throw new ArgumentNullException(nameof(encodedBcAddr));
+            }
+
+            var bcAddr = BlockChainAddress.Deserialize(encodedBcAddr);
+            var publicKeyHash = bcAddr.PublicKeyHash;
+            return GetTransactionOut(publicKeyHash);
+        }
+
+        public TransactionOut GetTransactionOut(IEnumerable<byte> publicKeyHash)
+        {
+            if (publicKeyHash == null)
+            {
+                throw new ArgumentNullException(nameof(publicKeyHash));
+            }
+
+
+            foreach (var transactionOut in TransactionOut)
+            {
+                var script = transactionOut.Script;
+                if (script.ContainsPublicKeyHash(publicKeyHash))
+                {
+                    return transactionOut;
+                }
+            }
+
+            return null;
+
+        }
 
         public bool CanSpend()
         {
