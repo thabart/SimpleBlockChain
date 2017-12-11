@@ -4,7 +4,10 @@ using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Rpc.Parameters;
+using SimpleBlockChain.Core.Rpc.Responses;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -75,11 +78,12 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             var httpClient = _httpClientFactory.BuildClient();
+            var parameters = new JArray();
+            parameters.Add(block.Serialize().ToHexString());
             var jObj = new JObject();
             jObj.Add("id", Guid.NewGuid().ToString());
             jObj.Add("method", Constants.RpcOperations.Submitblock);
-            var parameters = new JArray();
-            parameters.Add(block.Serialize().ToHexString());
+            jObj.Add("params", parameters);
             var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
             var request = new HttpRequestMessage
             {
@@ -98,6 +102,100 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             return true;
+        }
+
+        public async Task<IEnumerable<UnspentTransaction>> GetUnspentTransactions(GetUnspentTransactionsParameter parameter)
+        {
+            if (parameter == null)
+            {
+                throw new ArgumentNullException(nameof(parameter));
+            }
+
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jAddr = new JArray();
+            if (parameter.Addrs != null)
+            {
+                foreach (var addr in parameter.Addrs)
+                {
+                    jAddr.Add(addr);
+                }
+            }
+
+            var parameters = new JArray();
+            parameters.Add(parameter.ConfirmationScore);
+            parameters.Add(parameter.MaxConfirmations);
+            parameters.Add(jAddr);
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.ListUnspent);
+            jObj.Add("params", parameters);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            JToken resultToken = null;
+            if (!jsonObj.TryGetValue("result", out resultToken) && !(resultToken is JArray))
+            {
+                throw new RpcException(ErrorCodes.NoResult);
+            }
+
+            var arrResult = resultToken as JArray;
+            var result = new List<UnspentTransaction>();
+            foreach(var res in arrResult)
+            {
+                var o = res as JObject;
+                if (o == null)
+                {
+                    continue;
+                }
+
+                int amount = 0,
+                    vout = 0;
+                var spendable = false;
+                JToken amountToken,
+                    voutToken,
+                    spendableToken;
+                if (o.TryGetValue("amount", out amountToken))
+                {
+                    if (int.TryParse(amountToken.ToString(), out amount)) { }
+                }
+
+                if (o.TryGetValue("vout", out voutToken))
+                {
+                    if (int.TryParse(voutToken.ToString(), out vout)) { }
+                }
+
+                if (o.TryGetValue("spendable", out spendableToken))
+                {
+                    if (bool.TryParse(spendableToken.ToString(), out spendable)) { }
+                }
+
+                result.Add(new UnspentTransaction
+                {
+                    Address = o.Value<string>("address"),
+                    Amount = amount,
+                    ScriptPubKey = o.Value<string>("scriptPubKey"),
+                    Spendable = spendable,
+                    TxId = o.Value<string>("txid"),
+                    Vout = vout
+                });
+            }
+
+            return result;
         }
 
         public static bool TryGetError(JObject jObj, out string errorCode)

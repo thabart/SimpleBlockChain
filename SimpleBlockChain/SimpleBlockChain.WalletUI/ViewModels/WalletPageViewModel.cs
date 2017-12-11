@@ -14,6 +14,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private bool _isTestNetChecked;
         private int _nbBlocks;
         private bool _isConnected;
+        private int _amount;
         private ICommand _mainNetCommand;
         private ICommand _testNetCommand;
         private ICommand _refreshBlockChainCommand;
@@ -24,6 +25,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             _isTestNetChecked = false;
             _isConnected = false;
             _nbBlocks = 0;
+            _amount = 0;
             SendMoney = new RelayCommand(p => SendMoneyExecute(), p => CanSendMoney());
             _mainNetCommand = new RelayCommand(p => ExecuteMainNet(), p => CanExecuteMainNet());
             _testNetCommand = new RelayCommand(p => ExecuteTestNet(), p => CanExecuteTestNet());
@@ -50,6 +52,22 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             get
             {
                 return _refreshBlockChainCommand;
+            }
+        }
+
+        public int Amount
+        {
+            get
+            {
+                return _amount;
+            }
+            set
+            {
+                if (_amount != value)
+                {
+                    _amount = value;
+                    NotifyPropertyChanged(nameof(Amount));
+                }
             }
         }
 

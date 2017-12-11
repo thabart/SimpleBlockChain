@@ -44,7 +44,7 @@ namespace SimpleBlockChain.WalletUI
                     {
                         new WalletAggregateAddress
                         {
-                            Hash = "82c48a4388bbf1b85dca2b6f0793a8ff7774a8a7",
+                            Hash = "12M1Wng2vRCT7z3uZcjDYb5i9bJDx4ZEKyVMhEq8",
                             Network = Core.Networks.MainNet,
                             Key = Key.Deserialize(new BigInteger("66661394595692466950200829442443674598224300882267065208709422638481412972116609477112206002430829808784107536250360432119209033266013484787698545014625057"), new BigInteger("43102461949956883352376427470284148089747996528740865531180015053863743793176"))
                         }

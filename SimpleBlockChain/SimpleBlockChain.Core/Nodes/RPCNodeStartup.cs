@@ -238,7 +238,7 @@ namespace SimpleBlockChain.Core.Nodes
                                         record.Add("vout", transaction.TransactionOut.IndexOf(txOut));
                                         record.Add("address", hash);
                                         record.Add("scriptPubKey", txOut.Script.Serialize().ToHexString());
-                                        record.Add("amout", txOut.Value);
+                                        record.Add("amount", txOut.Value);
                                         record.Add("confirmations", 0);
                                         record.Add("spendable", wallet.Addresses.Select(a => a.Hash).Contains(hash));
                                         record.Add("solvable", true);

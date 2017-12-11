@@ -28,5 +28,6 @@
         public const string NotValidJson = "{0}_not_json";
         public const string NotCorrectNetwork = "not_correct_network";
         public const string NotCorrectType = "not_correct_type";
+        public const string NoResult = "no_result";
     }
 }

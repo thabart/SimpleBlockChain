@@ -65,7 +65,7 @@
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0">Your account</Label>
                 <StackPanel VerticalAlignment="Center" Grid.Column="1">
-                    <TextBlock FontSize="30">5 BTCS</TextBlock>
+                    <TextBlock FontSize="30" Text="{Binding Path=Amount, StringFormat={} {0} PTCS}"></TextBlock>
                 </StackPanel>
             </Grid>
             <!-- Transaction history -->

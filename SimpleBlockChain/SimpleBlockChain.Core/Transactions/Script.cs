@@ -103,7 +103,7 @@ namespace SimpleBlockChain.Core.Transactions
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (ScriptRecords == null || ScriptRecords.Count() != 5 || ScriptRecords.ElementAt(2) != payload)
+            if (ScriptRecords == null || ScriptRecords.Count() != 5 || ScriptRecords.ElementAt(2).StackRecord.SequenceEqual(payload))
             {
                 return false;
             }

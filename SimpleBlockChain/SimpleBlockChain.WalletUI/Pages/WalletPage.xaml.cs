@@ -1,11 +1,14 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Nodes;
+using SimpleBlockChain.Core.Rpc;
+using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.WalletUI.Events;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows;
@@ -98,8 +101,46 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void RefreshUi(object sender, DoWorkEventArgs e)
         {
+            RefreshNbBlocks();
+            RefreshMoney();
+        }
+
+        private void RefreshNbBlocks()
+        {
             var blockChain = BlockChainStore.Instance().GetBlockChain();
             _viewModel.NbBlocks = blockChain.GetCurrentBlockHeight();
+        }
+
+        private void RefreshMoney()
+        {
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                return;
+            }
+
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.GetUnspentTransactions(new GetUnspentTransactionsParameter()).ContinueWith((r) =>
+            {
+                try
+                {
+                    int result = 0;
+                    var unspentTransactions = r.Result.Where(t => t.Spendable);
+                    if (unspentTransactions != null)
+                    {
+                        foreach(var unspentTransaction in unspentTransactions)
+                        {
+                            result += unspentTransaction.Amount;
+                        }
+                    }
+
+                    _viewModel.Amount = result;
+                }
+                catch (AggregateException ex)
+                {
+
+                }
+            });
         }
 
         private void DisconnectP2PNetwork(object sender, EventArgs e)
