@@ -208,9 +208,8 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public void Check()
-        {
-            // https://bitcoin.org/en/developer-guide#block-chain-overview
-            var isCoinBaseTransaction = this is CoinbaseTransaction;
+        {            
+            var isCoinBaseTransaction = this is CoinbaseTransaction; // https://bitcoin.org/en/developer-guide#block-chain-overview
             if (!isCoinBaseTransaction && (TransactionIn == null || !TransactionIn.Any()))
             {
                 throw new ValidationException(ErrorCodes.NoTransactionIn);
@@ -219,7 +218,6 @@ namespace SimpleBlockChain.Core.Transactions
             var blockChain = BlockChainStore.Instance().GetBlockChain();
             if (!isCoinBaseTransaction)
             {
-                TransactionOut consumedTransaction = null;
                 long totalOutput = 0;
                 foreach (var txIn in TransactionIn)
                 {
