@@ -6,6 +6,7 @@ using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Rpc.Responses;
+using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -13,7 +14,15 @@ using System.Threading.Tasks;
 
 namespace SimpleBlockChain.Core.Rpc
 {
-    public class RpcClient
+    public interface IRpcClient
+    {
+        Task<string> GetRawMemPool();
+        Task<BlockTemplate> GetBlockTemplate();
+        Task<bool> SubmitBlock(Block block);
+        Task<bool> SendRawTransaction(BaseTransaction transaction);
+    }
+
+    public class RpcClient : IRpcClient
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private const string ContentType = "application/json-rpc";
@@ -92,6 +101,40 @@ namespace SimpleBlockChain.Core.Rpc
                 RequestUri = GetUri()
             };
             
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            return true;
+        }
+
+        public async Task<bool> SendRawTransaction(BaseTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var parameters = new JArray();
+            parameters.Add(transaction.Serialize().ToHexString());
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.SendRawTransaction);
+            jObj.Add("params", parameters);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
             var response = await httpClient.SendAsync(request).ConfigureAwait(false);
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             string errorCode = null;

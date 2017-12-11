@@ -34,6 +34,25 @@ namespace SimpleBlockChain.Core.Builders
             }
 
             var txId = transaction.GetTxId();
+            return Spend(txId, index, signatureScript, sequence);
+        }
+
+        public NoneCoinbaseTransactionBuilder Spend(IEnumerable<byte> txId, UInt32 index, IEnumerable<byte> signatureScript, uint sequence = 0xffffffff)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentNullException(nameof(txId));
+            }
+
+            if (index < 0)
+            {
+                // TODO : THROW
+            }
+
+            if (signatureScript == null)
+            {
+                throw new ArgumentNullException(nameof(signatureScript));
+            }
             var outpoint = new Outpoint(txId, index);
             var transactionIn = new TransactionInNoneCoinbase(outpoint, signatureScript, sequence);
             Transaction.TransactionIn.Add(transactionIn);

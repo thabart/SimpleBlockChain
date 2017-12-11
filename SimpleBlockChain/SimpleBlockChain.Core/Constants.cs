@@ -63,6 +63,7 @@ namespace SimpleBlockChain.Core
             public const string Submitblock = "submitblock";
             public const string Getrawmempool = "getrawmempool";
             public const string ListUnspent = "listunspent";
+            public const string SendRawTransaction = "sendrawtransaction";
         }
     }
 }

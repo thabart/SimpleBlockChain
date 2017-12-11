@@ -1,9 +1,12 @@
 ﻿using SimpleBlockChain.Core;
+using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
+using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.WalletUI.Events;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
@@ -25,10 +28,15 @@ namespace SimpleBlockChain.WalletUI.Pages
         private readonly AutoResetEvent _autoEvent = null;
         private readonly BackgroundWorker _refreshUiBackgroundWorker;
         private readonly INodeLauncherFactory _nodeLauncherFactory;
+        private readonly ITransactionBuilder _transactionBuilder;
+        private readonly IScriptBuilder _scriptBuilder;
+        private object _lock = new object();
 
-        public WalletPage(INodeLauncherFactory nodeLauncherFactory)
+        public WalletPage(INodeLauncherFactory nodeLauncherFactory, ITransactionBuilder transactionBuilder, IScriptBuilder scriptBuilder)
         {
             _nodeLauncherFactory = nodeLauncherFactory;
+            _transactionBuilder = transactionBuilder;
+            _scriptBuilder = scriptBuilder;
             _autoEvent = new AutoResetEvent(false);
             _refreshUiBackgroundWorker = new BackgroundWorker();
             _refreshUiBackgroundWorker.DoWork += RefreshUi;
@@ -59,7 +67,73 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void SendMoney(object sender, EventArgs e)
         {
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                return;
+            }
 
+            var value = _viewModel.SendValue;
+            var addr = _viewModel.SendAddress;
+            var selectedTransaction = _viewModel.SelectedTransaction;
+            if (selectedTransaction == null)
+            {
+                return;
+            }
+
+            if (value > selectedTransaction.Amount)
+            {
+                return;
+            }
+
+            var walletAddr = authenticatedWallet.Addresses.FirstOrDefault(a => a.Hash == selectedTransaction.Hash);
+            if (walletAddr == null)
+            {
+                return;
+            }
+
+            BlockChainAddress bcAddr = null;
+            try
+            {
+                bcAddr = BlockChainAddress.Deserialize(addr);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            if (bcAddr == null)
+            {
+                return;
+            }
+
+            var script = _scriptBuilder.New()
+                .AddToStack(walletAddr.Key.GetSignature())
+                .AddToStack(walletAddr.Key.GetPublicKey())
+                .Build();
+            var receiverScript = _scriptBuilder.New()
+                .AddOperation(OpCodes.OP_DUP)
+                .AddOperation(OpCodes.OP_HASH160)
+                .AddToStack(bcAddr.PublicKeyHash)
+                .AddOperation(OpCodes.OP_EQUALVERIFY)
+                .AddOperation(OpCodes.OP_CHECKSIG)
+                .Build();
+            var tx = _transactionBuilder.NewNoneCoinbaseTransaction()
+                .Spend(selectedTransaction.TxId.FromHexString(), (uint)selectedTransaction.Vout, script.Serialize())
+                .AddOutput((long)value, receiverScript)
+                .Build();
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.SendRawTransaction(tx).ContinueWith((r) =>
+            {
+                try
+                {
+                    var res = r.Result;
+                }
+                catch (AggregateException ex)
+                {
+
+                }
+            });
         }
 
         private void RefreshBlockChain(object sender, EventArgs e)
@@ -122,23 +196,46 @@ namespace SimpleBlockChain.WalletUI.Pages
             var rpcClient = new RpcClient(authenticatedWallet.Network);
             rpcClient.GetUnspentTransactions(new GetUnspentTransactionsParameter()).ContinueWith((r) =>
             {
-                try
+                lock(_lock)
                 {
-                    int result = 0;
-                    var unspentTransactions = r.Result.Where(t => t.Spendable);
-                    if (unspentTransactions != null)
+                    try
                     {
-                        foreach(var unspentTransaction in unspentTransactions)
+                        var unspentTransactions = r.Result.Where(t => t.Spendable);
+                        if (unspentTransactions != null)
                         {
-                            result += unspentTransaction.Amount;
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                var selectedTransaction = _viewModel.SelectedTransaction;
+                                var transactionsToUpdate = _viewModel.Transactions.Where(tvm => unspentTransactions.Any(utxo => tvm.TxId == utxo.TxId && tvm.Vout == utxo.Vout));
+                                var transactionsToRemove = _viewModel.Transactions.Where(tvm => unspentTransactions.All(utxo => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout));
+                                foreach(var txUpdate in transactionsToUpdate)
+                                {
+                                    var tr = unspentTransactions.First(u => u.TxId == txUpdate.TxId && u.Vout == txUpdate.Vout);
+                                    txUpdate.Amount = tr.Amount;
+                                    txUpdate.DisplayName = string.Format("{0} : {1}", tr.Amount, tr.TxId);
+                                }
+
+                                foreach(var txRemove in transactionsToRemove)
+                                {
+                                    _viewModel.Transactions.Remove(txRemove);
+                                }
+
+                                var transactionsToAdd = unspentTransactions.Where(utxo => _viewModel.Transactions.All(tvm => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout));
+                                foreach (var transactionToAdd in transactionsToAdd)
+                                {
+                                    var txVm = new TransactionViewModel(transactionToAdd.TxId, transactionToAdd.Vout, transactionToAdd.Amount, transactionToAdd.Address);
+                                    _viewModel.Transactions.Add(txVm);
+                                }
+
+                                _viewModel.Amount = unspentTransactions.Sum(t => t.Amount);
+                            });
                         }
+
                     }
-
-                    _viewModel.Amount = result;
-                }
-                catch (AggregateException ex)
-                {
-
+                    catch (AggregateException ex)
+                    {
+                        // TODO : Display loading message.
+                    }
                 }
             });
         }

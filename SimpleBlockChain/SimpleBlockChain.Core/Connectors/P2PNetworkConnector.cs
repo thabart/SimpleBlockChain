@@ -37,6 +37,7 @@ namespace SimpleBlockChain.Core.Connectors
             var instance = PeerEventStore.Instance();
             instance.NewPeerEvt += ListenPeer;
             P2PConnectorEventStore.Instance().NewBlockEvt += BroadcastNewBlock;
+            P2PConnectorEventStore.Instance().NewTransactionEvt += BroadcastNewTransaction;
         }
 
         public bool IsRunning { get; private set; }
@@ -95,6 +96,9 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 activePeer.Dispose();
             }
+
+            P2PConnectorEventStore.Instance().NewBlockEvt -= BroadcastNewBlock;
+            P2PConnectorEventStore.Instance().NewTransactionEvt -= BroadcastNewTransaction;
         }
 
         public void Stop()
@@ -373,6 +377,21 @@ namespace SimpleBlockChain.Core.Connectors
 
             var blockMessage = new BlockMessage(e.Data, _network);
             Broadcast(blockMessage);
+        }
+
+        private void BroadcastNewTransaction(object sender, TransactionEventArgs e)
+        {
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            if (e.Data == null)
+            {
+                throw new ArgumentNullException(nameof(e.Data));
+            }
+
+            Broadcast(e.Data);
         }
 
         private void RemovePeer(object sender, IpAddressEventArgs ipAdr)

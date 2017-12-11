@@ -2,10 +2,29 @@
 using SimpleBlockChain.WalletUI.Commands;
 using SimpleBlockChain.WalletUI.Events;
 using System;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace SimpleBlockChain.WalletUI.ViewModels
 {
+    public class TransactionViewModel
+    {
+        public TransactionViewModel(string txId, int vout, int amount, string hash)
+        {
+            TxId = txId;
+            Vout = vout;
+            Amount = amount;
+            Hash = hash;
+            DisplayName = string.Format("{0} : {1}", amount, txId);
+        }
+        
+        public string DisplayName { get; set; }
+        public string TxId { get; private set; }
+        public int Amount { get; set; }
+        public int Vout { get; private set; }
+        public string Hash { get; private set; }
+    }
+
     public class WalletPageViewModel : BaseViewModel
     {
         private double _sendValue;
@@ -18,6 +37,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private ICommand _mainNetCommand;
         private ICommand _testNetCommand;
         private ICommand _refreshBlockChainCommand;
+        private ICommand _sendMoneyCommand;
 
         public WalletPageViewModel()
         {
@@ -26,7 +46,8 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             _isConnected = false;
             _nbBlocks = 0;
             _amount = 0;
-            SendMoney = new RelayCommand(p => SendMoneyExecute(), p => CanSendMoney());
+            Transactions = new ObservableCollection<TransactionViewModel>();
+            _sendMoneyCommand = new RelayCommand(p => SendMoneyExecute(), p => CanSendMoney());
             _mainNetCommand = new RelayCommand(p => ExecuteMainNet(), p => CanExecuteMainNet());
             _testNetCommand = new RelayCommand(p => ExecuteTestNet(), p => CanExecuteTestNet());
             _refreshBlockChainCommand = new RelayCommand(p => ExecuteRefreshBlockChain(), p => CanExecuteRefreshBlockChain());
@@ -54,6 +75,18 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 return _refreshBlockChainCommand;
             }
         }
+
+        public ICommand SendMoneyCommand
+        {
+            get
+            {
+                return _sendMoneyCommand;
+            }
+        }
+
+        public ObservableCollection<TransactionViewModel> Transactions { get; private set; }
+
+        public TransactionViewModel SelectedTransaction { get; set; }
 
         public int Amount
         {

@@ -4,7 +4,15 @@ using System.Collections.Generic;
 
 namespace SimpleBlockChain.Core.Builders
 {
-    public class ScriptBuilder
+    public interface IScriptBuilder
+    {
+        ScriptBuilder New();
+        ScriptBuilder AddToStack(IEnumerable<byte> payload);
+        ScriptBuilder AddOperation(OpCodes opCode);
+        Script Build();
+    }
+
+    public class ScriptBuilder : IScriptBuilder
     {
         private IList<ScriptRecord> _scriptRecords;
 

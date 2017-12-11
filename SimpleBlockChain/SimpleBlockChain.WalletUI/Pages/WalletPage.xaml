@@ -43,6 +43,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -50,12 +51,16 @@
                 </Grid.ColumnDefinitions>
                 <!-- Amount of money -->
                 <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Amount of money</Label>
-                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0"></TextBox>
+                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SendValue, Mode=TwoWay}"></TextBox>
                 <!-- Address -->
                 <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Address</Label>
-                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1"></TextBox>
+                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=SendAddress, Mode=TwoWay}"></TextBox>
+                <!-- Transactions -->
+                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="2">Transaction</Label>
+                <ComboBox Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Path=Transactions}" DisplayMemberPath="DisplayName" SelectedItem="{Binding Path=SelectedTransaction, Mode=TwoWay}">
+                </ComboBox>
                 <!-- Submit button -->
-                <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">Send</Button>
+                <Button Margin="{StaticResource ControlMargin}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=SendMoneyCommand}">Send</Button>
             </Grid>
             <!-- Display available money -->
             <Grid Grid.Column="0" Grid.Row="1">

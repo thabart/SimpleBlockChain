@@ -1,9 +1,10 @@
 ﻿using SimpleBlockChain.Core.Blocks;
+using SimpleBlockChain.Core.Transactions;
 using System;
 
 namespace SimpleBlockChain.Core.Evts
 {
-    public class P2PConnectorEventStore
+    internal class P2PConnectorEventStore
     {
         private static P2PConnectorEventStore _instance;
 
@@ -30,6 +31,20 @@ namespace SimpleBlockChain.Core.Evts
             }
         }
 
+        public void Broadcast(BaseTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            if (NewTransactionEvt != null)
+            {
+                NewTransactionEvt(this, new TransactionEventArgs(transaction));
+            }
+        }
+
         public event EventHandler<BlockEventArgs> NewBlockEvt;
+        public event EventHandler<TransactionEventArgs> NewTransactionEvt;
     }
 }

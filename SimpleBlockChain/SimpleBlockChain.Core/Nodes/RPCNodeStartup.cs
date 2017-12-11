@@ -251,6 +251,42 @@ namespace SimpleBlockChain.Core.Nodes
 
                     response["result"] = res;
                     return response;
+                case Constants.RpcOperations.SendRawTransaction: // https://bitcoin.org/en/developer-reference#sendrawtransaction
+                    if (parameters == null || !parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The transaction is missing");
+                    }
+
+                    var txPayload = parameters.First().FromHexString();
+                    var allowHighFees = false;
+                    TransactionTypes transactionType = TransactionTypes.NoneCoinbase;
+                    if (parameters.Count() >= 2)
+                    {
+                        if (bool.TryParse(parameters.ElementAt(1), out allowHighFees)) { }
+                    }
+
+                    if (parameters.Count() >= 3)
+                    {
+                        if (parameters.ElementAt(2).ToLower() == "coinbase")
+                        {
+                            transactionType = TransactionTypes.Coinbase;
+                        }
+                    }
+
+                    var kvp = BaseTransaction.Deserialize(txPayload, transactionType);
+                    try
+                    {
+                        var tx = kvp.Key;
+                        tx.Check();
+                        MemoryPool.Instance().AddTransaction(tx);
+                        P2PConnectorEventStore.Instance().Broadcast(tx);
+                        response["result"] = tx.GetTxId().ToHexString();
+                        return response;
+                    }
+                    catch (ValidationException ex)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
+                    }
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

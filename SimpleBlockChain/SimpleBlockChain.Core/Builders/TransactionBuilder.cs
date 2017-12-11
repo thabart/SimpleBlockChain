@@ -3,7 +3,19 @@ using System;
 
 namespace SimpleBlockChain.Core.Builders
 {
-    public class TransactionBuilder
+    public interface ITransactionBuilder
+    {
+        NoneCoinbaseTransactionBuilder NewNoneCoinbaseTransaction();
+        NoneCoinbaseTransactionBuilder NewNoneCoinbaseTransaction(uint version, uint lockTime);
+        CoinbaseTransactionBuilder NewCoinbaseTransaction();
+        CoinbaseTransactionBuilder NewCoinbaseTransaction(uint version, uint lockTime);
+        TransactionBuilder AddOutput(long value, Script script);
+        TransactionBuilder SetTime(UInt32 value);
+        TransactionBuilder SetBlockNumber(UInt32 value);
+        BaseTransaction Build();
+    }
+
+    public class TransactionBuilder : ITransactionBuilder
     {
         protected BaseTransaction Transaction;
 
