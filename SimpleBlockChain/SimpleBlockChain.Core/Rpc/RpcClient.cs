@@ -20,6 +20,7 @@ namespace SimpleBlockChain.Core.Rpc
         Task<BlockTemplate> GetBlockTemplate();
         Task<bool> SubmitBlock(Block block);
         Task<bool> SendRawTransaction(BaseTransaction transaction);
+        Task<long> GetUnconfirmedBalance();
     }
 
     public class RpcClient : IRpcClient
@@ -239,6 +240,33 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             return result;
+        }
+
+        public async Task<long> GetUnconfirmedBalance()
+        {
+            var httpClient = _httpClientFactory.BuildClient();
+            var parameters = new JArray();
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.GetUnconfirmedBalance);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            return long.Parse(jsonObj.Value<string>("result"));
         }
 
         public static bool TryGetError(JObject jObj, out string errorCode)

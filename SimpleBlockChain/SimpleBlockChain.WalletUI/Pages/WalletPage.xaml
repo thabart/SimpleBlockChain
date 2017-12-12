@@ -68,10 +68,16 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Label Grid.Column="0">Your account</Label>
                 <StackPanel VerticalAlignment="Center" Grid.Column="1">
                     <TextBlock FontSize="30" Text="{Binding Path=Amount, StringFormat={} {0} PTCS}"></TextBlock>
                 </StackPanel>
+                <Label Grid.Row="1" Grid.Column="0">Balance</Label>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=Balance, StringFormat={} {0} PTCS}"></TextBlock>
             </Grid>
             <!-- Transaction history -->
             <Grid Grid.Column="1" Grid.RowSpan="2">

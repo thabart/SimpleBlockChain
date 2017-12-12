@@ -109,6 +109,7 @@ namespace SimpleBlockChain.Core.Nodes
                         
             var transactions = MemoryPool.Instance().GetTransactions();
             var blockChain = BlockChainStore.Instance().GetBlockChain();
+            var wallet = WalletStore.Instance().GetAuthenticatedWallet();
             JObject response = CreateResponse(id);
             switch (method)
             {
@@ -146,7 +147,7 @@ namespace SimpleBlockChain.Core.Nodes
                         .Build();
                     var result = new JObject();
                     var jTransactions = new JArray();
-                    foreach(var transaction in transactions)
+                    foreach (var transaction in transactions)
                     {
                         jTransactions.Add(transaction.Serialize().ToHexString());
                     }
@@ -183,7 +184,7 @@ namespace SimpleBlockChain.Core.Nodes
                         response["result"] = null;
                         return response;
                     }
-                    catch(ValidationException ex)
+                    catch (ValidationException ex)
                     {
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
                     }
@@ -206,13 +207,11 @@ namespace SimpleBlockChain.Core.Nodes
                     }
 
 
-                    var wallet = WalletStore.Instance().GetAuthenticatedWallet();
                     if (wallet == null)
                     {
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_WALLET_NOT_FOUND, "No authenticated wallet");
                     }
 
-                    var walletAddrs = wallet.Addresses;
                     var res = new JArray();
                     var unspentTxIds = blockChain.GetUnspentTransactions();
                     if (addrs == null || !addrs.Any())
@@ -286,9 +285,48 @@ namespace SimpleBlockChain.Core.Nodes
                     {
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
                     }
+                /*
+                case Constants.RpcOperations.GetMempoolEntry: // https://bitcoin.org/en/developer-reference#getmempoolentry
+                    if (parameters == null || !parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The address is missing");
+                    }
+
+                    var address = parameters.First();
+                    var memTransactions = MemoryPool.Instance().GetTransactions();
+
+                    break;
+                */
+                case Constants.RpcOperations.GetUnconfirmedBalance: // https://bitcoin.org/en/developer-reference#getunconfirmedbalance
+                    if (wallet == null)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_WALLET_NOT_FOUND, "No authenticated wallet");
+                    }
+
+                    long unconfirmedBalance = 0;
+                    if (wallet.Addresses != null)
+                    {
+                        foreach(var adr in wallet.Addresses)
+                        {
+                            foreach(var memTx in transactions)
+                            {
+                                var balance = memTx.CalculateBalance(adr.Hash);
+                                unconfirmedBalance += balance;
+                            }
+                        }
+                    }
+
+                    response["result"] = unconfirmedBalance;
+                    return response;
+
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");
+        }
+
+        private static JObject SerializeTransaction()
+        {
+            return null;
         }
 
         private static JObject CreateErrorResponse(string id, int code, string message, JObject data = null)

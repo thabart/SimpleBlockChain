@@ -13,6 +13,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,6 +22,7 @@ namespace SimpleBlockChain.WalletUI.Pages
 {
     public partial class WalletPage : Page
     {
+        private const int DEFAULT_TX_SIZE = 500; // TODO : Correctly set the transaction FEE.
         private const int REFRESH_INFORMATION_INTERVAL = 5000;
         private readonly WalletPageViewModel _viewModel;
         private NodeLauncher _nodeLauncher;
@@ -65,6 +67,11 @@ namespace SimpleBlockChain.WalletUI.Pages
             OpenNetwork(e.GetNework());
         }
 
+        private void CreateNewAddress()
+        {
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+        }
+
         private void SendMoney(object sender, EventArgs e)
         {
             var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
@@ -73,7 +80,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 return;
             }
 
-            var value = _viewModel.SendValue;
+            var receiverValue = _viewModel.SendValue;
             var addr = _viewModel.SendAddress;
             var selectedTransaction = _viewModel.SelectedTransaction;
             if (selectedTransaction == null)
@@ -81,11 +88,13 @@ namespace SimpleBlockChain.WalletUI.Pages
                 return;
             }
 
-            if (value > selectedTransaction.Amount)
+            if (receiverValue > selectedTransaction.Amount)
             {
                 return;
             }
 
+            var txFee = (DEFAULT_TX_SIZE / 1000) * Constants.DEFAULT_MIN_TX_FEE;
+            var senderValue = selectedTransaction.Amount - receiverValue - txFee;
             var walletAddr = authenticatedWallet.Addresses.FirstOrDefault(a => a.Hash == selectedTransaction.Hash);
             if (walletAddr == null)
             {
@@ -107,9 +116,18 @@ namespace SimpleBlockChain.WalletUI.Pages
                 return;
             }
 
+            var key = walletAddr.Key;
+            var kh = new BigInteger(key.GetPublicKeyHashed());
             var script = _scriptBuilder.New()
-                .AddToStack(walletAddr.Key.GetSignature())
-                .AddToStack(walletAddr.Key.GetPublicKey())
+                .AddToStack(key.GetSignature())
+                .AddToStack(key.GetPublicKey())
+                .Build();
+            var senderSript = _scriptBuilder.New()
+                .AddOperation(OpCodes.OP_DUP)
+                .AddOperation(OpCodes.OP_HASH160)
+                .AddToStack(key.GetPublicKeyHashed())
+                .AddOperation(OpCodes.OP_EQUALVERIFY)
+                .AddOperation(OpCodes.OP_CHECKSIG)
                 .Build();
             var receiverScript = _scriptBuilder.New()
                 .AddOperation(OpCodes.OP_DUP)
@@ -120,8 +138,10 @@ namespace SimpleBlockChain.WalletUI.Pages
                 .Build();
             var tx = _transactionBuilder.NewNoneCoinbaseTransaction()
                 .Spend(selectedTransaction.TxId.FromHexString(), (uint)selectedTransaction.Vout, script.Serialize())
-                .AddOutput((long)value, receiverScript)
+                .AddOutput((long)receiverValue, receiverScript)
+                .AddOutput((long)senderValue, senderSript)
                 .Build();
+            var s = tx.Serialize().Count();
             var rpcClient = new RpcClient(authenticatedWallet.Network);
             rpcClient.SendRawTransaction(tx).ContinueWith((r) =>
             {
@@ -177,6 +197,7 @@ namespace SimpleBlockChain.WalletUI.Pages
         {
             RefreshNbBlocks();
             RefreshMoney();
+            RefreshBalance();
         }
 
         private void RefreshNbBlocks()
@@ -206,8 +227,8 @@ namespace SimpleBlockChain.WalletUI.Pages
                             Application.Current.Dispatcher.Invoke(() =>
                             {
                                 var selectedTransaction = _viewModel.SelectedTransaction;
-                                var transactionsToUpdate = _viewModel.Transactions.Where(tvm => unspentTransactions.Any(utxo => tvm.TxId == utxo.TxId && tvm.Vout == utxo.Vout));
-                                var transactionsToRemove = _viewModel.Transactions.Where(tvm => unspentTransactions.All(utxo => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout));
+                                var transactionsToUpdate = _viewModel.Transactions.Where(tvm => unspentTransactions.Any(utxo => tvm.TxId == utxo.TxId && tvm.Vout == utxo.Vout)).ToList();
+                                var transactionsToRemove = _viewModel.Transactions.Where(tvm => unspentTransactions.All(utxo => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout)).ToList();
                                 foreach(var txUpdate in transactionsToUpdate)
                                 {
                                     var tr = unspentTransactions.First(u => u.TxId == txUpdate.TxId && u.Vout == txUpdate.Vout);
@@ -240,6 +261,32 @@ namespace SimpleBlockChain.WalletUI.Pages
             });
         }
 
+        private void RefreshBalance()
+        {
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                return;
+            }
+
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.GetUnconfirmedBalance().ContinueWith((r) =>
+            {
+                try
+                {
+                    var balance = (int)r.Result;
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _viewModel.Balance = balance;
+                    });
+                }
+                catch (AggregateException ex)
+                {
+
+                }
+            });
+        }
+
         private void DisconnectP2PNetwork(object sender, EventArgs e)
         {
             if (_timer != null)
@@ -261,6 +308,7 @@ namespace SimpleBlockChain.WalletUI.Pages
 
             if (_timer != null)
             {
+                _timer.Dispose(_autoEvent);
                 _timer = null;
             }
 

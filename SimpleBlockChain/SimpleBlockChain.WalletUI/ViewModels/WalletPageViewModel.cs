@@ -23,6 +23,22 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public int Amount { get; set; }
         public int Vout { get; private set; }
         public string Hash { get; private set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            var trVm = obj as TransactionViewModel;
+            if (trVm == null)
+            {
+                return false;
+            }
+
+            return Vout == trVm.Vout && TxId == trVm.TxId;
+        }
     }
 
     public class WalletPageViewModel : BaseViewModel
@@ -34,6 +50,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private int _nbBlocks;
         private bool _isConnected;
         private int _amount;
+        public int _balance;
         private ICommand _mainNetCommand;
         private ICommand _testNetCommand;
         private ICommand _refreshBlockChainCommand;
@@ -100,6 +117,22 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 {
                     _amount = value;
                     NotifyPropertyChanged(nameof(Amount));
+                }
+            }
+        }
+
+        public int Balance
+        {
+            get
+            {
+                return _balance;
+            }
+            set
+            {
+                if (_balance != value)
+                {
+                    _balance = value;
+                    NotifyPropertyChanged(nameof(Balance));
                 }
             }
         }

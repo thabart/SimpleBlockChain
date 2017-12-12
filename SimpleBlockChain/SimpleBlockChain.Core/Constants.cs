@@ -15,6 +15,7 @@ namespace SimpleBlockChain.Core
         public const uint DEFAULT_GENESIS_TRANSACTION_VERSION = 1;
         public const uint DEFAULT_GENESIS_TRANSACTION_LOCKTIME = 0;
         public const double DEFAULT_MIN_TX_FEE = 0.00001;
+        public const double DEFAULT_MIN_TX_REWARD = 0.00001;
         public const int DEFAULT_NB_BLOCKS_PAST = 5;
         public const int DEFAULT_MAX_GET_INVENTORIES = 500;
         public const int MIN_NB_TRANSACTIONS_BLOCK = 1;
@@ -64,6 +65,8 @@ namespace SimpleBlockChain.Core
             public const string Getrawmempool = "getrawmempool";
             public const string ListUnspent = "listunspent";
             public const string SendRawTransaction = "sendrawtransaction";
+            // public const string GetMempoolEntry = "getmempoolentry";
+            public const string GetUnconfirmedBalance = "getunconfirmedbalance";
         }
     }
 }

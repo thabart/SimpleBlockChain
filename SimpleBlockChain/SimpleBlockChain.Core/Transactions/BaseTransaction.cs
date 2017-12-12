@@ -83,10 +83,10 @@ namespace SimpleBlockChain.Core.Transactions
 
         public long GetFee()
         {
-            var outputValue = TransactionOut.Sum(t => t.Value);
+            var outputValue = TransactionOut.Sum(t => t.Value); // TRANSACTION FEE + REWARD.
             var inputValue = TransactionIn.Sum(t => t.GetValue());
             var leftValue = outputValue - inputValue;
-            var result = (Serialize().Count() / 1000) * Constants.DEFAULT_MIN_TX_FEE;
+            var result = ((Serialize().Count() / 1000) * Constants.DEFAULT_MIN_TX_REWARD) + leftValue;
             return (long)result;
         }
 
@@ -123,6 +123,69 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public abstract KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size);
+
+        public TransactionOut GetTransactionIn(string encodedBcAddr)
+        {
+            if (string.IsNullOrWhiteSpace(encodedBcAddr))
+            {
+                throw new ArgumentNullException(nameof(encodedBcAddr));
+            }
+
+            var bcAddr = BlockChainAddress.Deserialize(encodedBcAddr);
+            var publicKeyHash = bcAddr.PublicKeyHash;
+            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            foreach (var txIn in TransactionIn)
+            {
+                var nCbtxIn = txIn as TransactionInNoneCoinbase;
+                if (nCbtxIn == null || nCbtxIn.Outpoint == null)
+                {
+                    continue;
+                }
+
+                var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
+                if (previousTx == null || previousTx.TransactionOut == null)
+                {
+                    continue;
+                }
+
+                var previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
+                if (previousTxOut == null || previousTxOut.Script == null || !previousTxOut.Script.ContainsPublicKeyHash(publicKeyHash))
+                {
+                    continue;
+                }
+
+                return previousTxOut;
+            }
+
+            return null;
+        }
+
+        public long CalculateBalance(string encodedBcAddr)
+        {
+            if (string.IsNullOrWhiteSpace(encodedBcAddr))
+            {
+                throw new ArgumentNullException(nameof(encodedBcAddr));
+            }
+
+            var txIn = GetTransactionIn(encodedBcAddr);
+            var txOut = GetTransactionOut(encodedBcAddr);
+            if (txIn != null)
+            {
+                if (txOut == null)
+                {
+                    return 0;
+                }
+
+                return -(txIn.Value - txOut.Value);
+            }            
+
+            if (txOut == null)
+            {
+                return 0;
+            }
+
+            return txOut.Value;
+        }
 
         public TransactionOut GetTransactionOut(WalletAggregateAddress walletAddr)
         {
@@ -191,20 +254,9 @@ namespace SimpleBlockChain.Core.Transactions
 
         }
 
-        public bool CanSpend()
+        public bool CanSpend(string adrHash)
         {
-            if (TransactionOut == null || !TransactionOut.Any())
-            {
-                return false;
-            }
-
-            var interpreter = new Interpreter();
-            foreach(var txOut in TransactionOut)
-            {
-                
-            }
-
-            return true;
+            return GetTransactionOut(adrHash) != null;
         }
 
         public void Check()
@@ -240,7 +292,6 @@ namespace SimpleBlockChain.Core.Transactions
                     }
 
                     totalOutput += previousTxOut.Value;
-                    // SUM TXOUT <= SUM TXIN.
                 }
 
                 var sumOutput = TransactionOut.Sum(t => t.Value);
