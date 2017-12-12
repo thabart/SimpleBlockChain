@@ -22,6 +22,7 @@
         public const string NotEnoughDifficult = "not_enough_difficult";
         public const string BadPassword = "bad_password";
         public const string AlreadyExists = "already_exists";
+        public const string DoesntExist = "doesnt_exist";
         public const string CannotExtractKey = "cannot_extract_key";
         public const string CannotExtractAddress = "cannot_extract_address";
         public const string ParameterMissing = "{0}_missing";

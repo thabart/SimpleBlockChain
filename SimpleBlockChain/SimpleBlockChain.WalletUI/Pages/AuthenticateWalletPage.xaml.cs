@@ -39,6 +39,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 {
                     var result = r.Result;
                     WalletStore.Instance().SetAuthenticatedWallet(r.Result);
+                    WalletStore.Instance().SetPassword(_viewModel.Password);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         NavigationService.Navigate(_walletPage);

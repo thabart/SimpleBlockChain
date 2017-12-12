@@ -1,5 +1,7 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Blocks;
+using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
@@ -8,7 +10,6 @@ using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 
 namespace SimpleBlockChain.MiningSoft
@@ -18,11 +19,13 @@ namespace SimpleBlockChain.MiningSoft
         private readonly AutoResetEvent _autoEvent = null;
         private readonly RpcClient _rpcClient;
         private readonly Semaphore _pool;
+        private readonly Networks _network;
         public const int DEFAULT_MINE_INTERVAL = 10000;
         private Timer _timer;
 
         public MineService(Networks network)
         {
+            _network = network;
             _autoEvent = new AutoResetEvent(false);
             _rpcClient = new RpcClient(network);
             _pool = new Semaphore(0, 1);
@@ -50,14 +53,12 @@ namespace SimpleBlockChain.MiningSoft
             try
             {
                 var blockTemplate = _rpcClient.GetBlockTemplate().Result;
-                var block = CalculateHeader(blockTemplate, 0, 0);
+                var block = CalculateHeader(blockTemplate, 0, 0, _network);
                 if (block == null)
                 {
                     Mine(null);
                 }
                 var b = _rpcClient.SubmitBlock(block).Result;
-                // SUBMIT THE BLOCK.
-
                 _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
             }
             catch(RpcException rpcException)
@@ -66,7 +67,7 @@ namespace SimpleBlockChain.MiningSoft
             }
         }
 
-        private static Block CalculateHeader(BlockTemplate blockTemplate, uint nonce, uint extraNonce)
+        private static Block CalculateHeader(BlockTemplate blockTemplate, uint nonce, uint extraNonce, Networks network)
         {
             var transactions = new List<BaseTransaction>();
             var coinBaseInTrans = blockTemplate.CoinBaseTx.TransactionIn[0] as TransactionInCoinbase;
@@ -78,6 +79,11 @@ namespace SimpleBlockChain.MiningSoft
             var serialized = block.GetHashHeader();
             if (TargetHelper.IsValid(serialized, blockTemplate.Target))
             {
+                var txOut = blockTemplate.CoinBaseTx.TransactionOut;
+                var firstTxOut = txOut.First();
+                var adr = GenerateAdr(network);
+                var minerScript = Script.CreateP2PKHScript(adr.PublicKeyHash);
+                firstTxOut.Script = minerScript;
                 return block;
             }
 
@@ -95,12 +101,18 @@ namespace SimpleBlockChain.MiningSoft
 
             Thread.Sleep(100);
             nonce++;
-            return CalculateHeader(blockTemplate, nonce, extraNonce);
+            return CalculateHeader(blockTemplate, nonce, extraNonce, network);
         }
 
         public void Dispose()
         {
             Stop();
+        }
+
+        private static BlockChainAddress GenerateAdr(Networks network)
+        {
+            var key = Key.Genererate();
+            return new BlockChainAddress(ScriptTypes.P2PKH, network, key);
         }
     }
 }

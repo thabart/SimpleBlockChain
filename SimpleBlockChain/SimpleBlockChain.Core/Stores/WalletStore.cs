@@ -1,11 +1,13 @@
 ﻿using SimpleBlockChain.Core.Aggregates;
 using System;
+using System.Security;
 
 namespace SimpleBlockChain.Core.Stores
 {
     public class WalletStore
     {
         private WalletAggregate _authenticatedWallet;
+        private SecureString _password;
         private static WalletStore _instance;
 
         public static WalletStore Instance()
@@ -28,9 +30,24 @@ namespace SimpleBlockChain.Core.Stores
             _authenticatedWallet = wallet;
         }
 
+        public void SetPassword(SecureString password)
+        {
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
+            _password = password;
+        }
+
         public WalletAggregate GetAuthenticatedWallet()
         {
             return _authenticatedWallet;
+        }
+
+        public SecureString GetPassword()
+        {
+            return _password;
         }
     }
 }

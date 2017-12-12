@@ -6,6 +6,6 @@ namespace SimpleBlockChain.Core.Aggregates
     {
         public string Name { get; set; }
         public Networks Network { get; set; }
-        public IEnumerable<WalletAggregateAddress> Addresses { get; set; }
+        public ICollection<WalletAggregateAddress> Addresses { get; set; }
     }
 }

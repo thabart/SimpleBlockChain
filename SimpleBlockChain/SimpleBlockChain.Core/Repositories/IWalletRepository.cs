@@ -10,5 +10,6 @@ namespace SimpleBlockChain.Core.Repositories
         Task<bool> Add(WalletAggregate wallet, SecureString password);
         Task<IEnumerable<string>> GetAll();
         Task<WalletAggregate> Get(string name, SecureString password);
+        Task<bool> Update(WalletAggregate wallet, SecureString password);
     }
 }

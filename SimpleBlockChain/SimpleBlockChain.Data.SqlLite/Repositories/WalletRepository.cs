@@ -75,6 +75,30 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
             return await _currentDbContext.Wallets.Select(w => w.Name).ToListAsync().ConfigureAwait(false);
         }
 
+        public async Task<bool> Update(WalletAggregate wallet, SecureString password)
+        {
+            if (wallet == null)
+            {
+                throw new ArgumentNullException(nameof(wallet));
+            }
+
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            
+            var record = await _currentDbContext.Wallets.FirstOrDefaultAsync(w => w.Name == wallet.Name).ConfigureAwait(false);
+            if (record == null)
+            {
+                throw new DataWalletException(ErrorCodes.DoesntExist);
+            }
+
+            var walletJson = ToJson(wallet);
+            record.SerializedContent = Protect(walletJson, password);
+            await _currentDbContext.SaveChangesAsync().ConfigureAwait(false);
+            return true;
+        }
+
         private static WalletAggregate GetJson(JObject jObj)
         {
             if (jObj == null)

@@ -8,7 +8,7 @@ namespace SimpleBlockChain.Core.Transactions
     public class TransactionOut
     {
         public long Value { get; private set; }
-        public Script Script { get; private set; }
+        public Script Script { get; set; }
 
         public TransactionOut(long value, Script script)
         {
