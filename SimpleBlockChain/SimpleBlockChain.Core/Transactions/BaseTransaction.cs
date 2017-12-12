@@ -85,8 +85,8 @@ namespace SimpleBlockChain.Core.Transactions
         {
             var outputValue = TransactionOut.Sum(t => t.Value); // TRANSACTION FEE + REWARD.
             var inputValue = TransactionIn.Sum(t => t.GetValue());
-            var leftValue = outputValue - inputValue;
-            var result = ((Serialize().Count() / 1000) * Constants.DEFAULT_MIN_TX_REWARD) + leftValue;
+            var leftValue = inputValue - outputValue;
+            var result = ((double)(Serialize().Count() / (double)1000) * Constants.DEFAULT_MIN_TX_REWARD) + leftValue;
             return (long)result;
         }
 

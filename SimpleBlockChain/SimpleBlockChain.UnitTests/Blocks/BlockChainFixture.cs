@@ -8,6 +8,7 @@ using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace SimpleBlockChain.UnitTests.Blocks
@@ -24,6 +25,14 @@ namespace SimpleBlockChain.UnitTests.Blocks
             var blockChain = new BlockChain();
             var block = blockChain.GetCurrentBlock();
             Assert.IsNotNull(block);
+        }
+
+        [TestMethod]
+        public void WhenSerializeBlock()
+        {
+            var txFee = ((double)500 / (double)1000) * (double)Constants.DEFAULT_MIN_TX_FEE;
+            var s = 50 - (double)5 - txFee;
+            string s2 = "";
         }
 
         [TestMethod]

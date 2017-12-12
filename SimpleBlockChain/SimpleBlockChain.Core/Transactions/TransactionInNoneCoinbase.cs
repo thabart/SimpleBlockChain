@@ -72,7 +72,7 @@ namespace SimpleBlockChain.Core.Transactions
 
             var blockChain = BlockChainStore.Instance().GetBlockChain();
             var transaction = blockChain.GetTransaction(Outpoint.Hash);
-            if (transaction == null || transaction.TransactionOut.Count() >= Outpoint.Index)
+            if (transaction == null || transaction.TransactionOut.Count() <= Outpoint.Index)
             {
                 return 0;
             }

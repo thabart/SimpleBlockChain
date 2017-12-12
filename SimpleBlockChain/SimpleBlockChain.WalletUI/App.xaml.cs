@@ -66,6 +66,7 @@ namespace SimpleBlockChain.WalletUI
                 
                 var repo = serviceProvider.GetService<IWalletRepository>();
                 repo.Add(clientWalletAggregate, "password".ToSecureString());
+                repo.Add(genesisWalletAggregate, "zvhab8rijwl7vwma".ToSecureString());
             }
 
             MainWindow mainWindow = ActivatorUtilities.CreateInstance<MainWindow>(serviceProvider);

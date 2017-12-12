@@ -59,7 +59,7 @@ namespace SimpleBlockChain.Core.Rpc
                     var transactions = new List<BaseTransaction>();
                     foreach(var transactionObj in transactionsArr)
                     {
-                        transactions.Add(BaseTransaction.Deserialize(transactionObj.ToString().FromHexString(), TransactionTypes.Coinbase).Key);
+                        transactions.Add(BaseTransaction.Deserialize(transactionObj.ToString().FromHexString(), TransactionTypes.NoneCoinbase).Key);
                     }
 
                     result.Transactions = transactions;

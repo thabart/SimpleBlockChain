@@ -9,7 +9,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 {
     public class TransactionViewModel
     {
-        public TransactionViewModel(string txId, int vout, int amount, string hash)
+        public TransactionViewModel(string txId, int vout, double amount, string hash)
         {
             TxId = txId;
             Vout = vout;
@@ -20,7 +20,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         
         public string DisplayName { get; set; }
         public string TxId { get; private set; }
-        public int Amount { get; set; }
+        public double Amount { get; set; }
         public int Vout { get; private set; }
         public string Hash { get; private set; }
 

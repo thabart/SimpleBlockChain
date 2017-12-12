@@ -25,7 +25,7 @@ namespace SimpleBlockChain.WalletUI.Pages
 {
     public partial class WalletPage : Page
     {
-        private const int DEFAULT_TX_SIZE = 500; // TODO : Correctly set the transaction FEE.
+        private const double DEFAULT_TX_SIZE = 500; // TODO : Correctly set the transaction FEE.
         private const int REFRESH_INFORMATION_INTERVAL = 5000;
         private readonly WalletPageViewModel _viewModel;
         private NodeLauncher _nodeLauncher;
@@ -115,7 +115,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 return;
             }
 
-            var txFee = (DEFAULT_TX_SIZE / 1000) * Constants.DEFAULT_MIN_TX_FEE;
+            double txFee = (DEFAULT_TX_SIZE / (double)1000) * Constants.DEFAULT_MIN_TX_FEE;
             var senderValue = selectedTransaction.Amount - receiverValue - txFee;
             var walletAddr = authenticatedWallet.Addresses.FirstOrDefault(a => a.Hash == selectedTransaction.Hash);
             if (walletAddr == null)
@@ -141,17 +141,17 @@ namespace SimpleBlockChain.WalletUI.Pages
             var newKey = CreateNewAddress();
             var kh = new BigInteger(newKey.GetPublicKeyHashed());
             var script = _scriptBuilder.New()
-                .AddToStack(newKey.GetSignature())
-                .AddToStack(newKey.GetPublicKey())
+                .AddToStack(walletAddr.Key.GetSignature())
+                .AddToStack(walletAddr.Key.GetPublicKey())
                 .Build();
-            var senderSript = _scriptBuilder.New()
+            var senderSript = _scriptBuilder.New() // SEND MONEY TO MY WALLET.
                 .AddOperation(OpCodes.OP_DUP)
                 .AddOperation(OpCodes.OP_HASH160)
                 .AddToStack(newKey.GetPublicKeyHashed())
                 .AddOperation(OpCodes.OP_EQUALVERIFY)
                 .AddOperation(OpCodes.OP_CHECKSIG)
                 .Build();
-            var receiverScript = _scriptBuilder.New()
+            var receiverScript = _scriptBuilder.New() // SEND MONEY TO THE SELLER.
                 .AddOperation(OpCodes.OP_DUP)
                 .AddOperation(OpCodes.OP_HASH160)
                 .AddToStack(bcAddr.PublicKeyHash)
