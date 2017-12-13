@@ -315,22 +315,19 @@
     <Compile Include="Events\BlockEventArgs.cs" />
     <Compile Include="Events\FlyoutEventArgs.cs" />
     <Compile Include="Events\NetworkEventHandler.cs" />
-    <Compile Include="Flyouts\BlockFlyout.xaml.cs">
-      <DependentUpon>BlockFlyout.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainWin.xaml.cs">
       <DependentUpon>MainWin.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\BlockFlyoutPage.xaml.cs">
+      <DependentUpon>BlockFlyoutPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Stores\MainWindowStore.cs" />
     <Compile Include="ViewModels\AuthenticateWalletViewModel.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\CreateWalletViewModel.cs" />
+    <Compile Include="ViewModels\BlockFlyoutViewModel.cs" />
     <Compile Include="ViewModels\HomePageViewModel.cs" />
     <Compile Include="ViewModels\WalletPageViewModel.cs" />
-    <Page Include="Flyouts\BlockFlyout.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWin.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -346,6 +343,10 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Page Include="Pages\AuthenticateWalletPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\BlockFlyoutPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -404,9 +405,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <Content Include="wallets\genesis.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -429,7 +427,9 @@
       <Name>SimpleBlockChain.Interop</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Flyouts\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -11,7 +11,6 @@ using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.WalletUI.Events;
-using SimpleBlockChain.WalletUI.Flyouts;
 using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
@@ -94,7 +93,8 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void DisplayBlock(object sender, BlockEventArgs e)
         {
-            var flyout = new BlockFlyout();
+            var walletStore = WalletStore.Instance();
+            var flyout = new BlockFlyoutPage(e.Data, walletStore.GetAuthenticatedWallet().Network);
             MainWindowStore.Instance().DisplayFlyout(flyout);
         }
 

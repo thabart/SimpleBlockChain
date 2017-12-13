@@ -1,6 +1,7 @@
 ﻿using MahApps.Metro.Controls;
 using SimpleBlockChain.WalletUI.Events;
 using System;
+using System.Windows.Controls;
 
 namespace SimpleBlockChain.WalletUI.Stores
 {
@@ -20,7 +21,7 @@ namespace SimpleBlockChain.WalletUI.Stores
 
         public event EventHandler<FlyoutEventArgs> DisplayFlyoutEvt;
 
-        public void DisplayFlyout(Flyout flyout)
+        public void DisplayFlyout(Page flyout)
         {
             if (flyout == null)
             {
