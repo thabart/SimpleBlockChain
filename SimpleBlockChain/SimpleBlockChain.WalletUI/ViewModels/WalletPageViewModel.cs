@@ -41,6 +41,13 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
     }
 
+    public class BlockViewModel
+    {
+        public string Hash { get; set; }
+        public string PreviousHash { get; set; }
+        public long Fees { get; set; }
+    }
+
     public class WalletPageViewModel : BaseViewModel
     {
         private double _sendValue;
@@ -55,6 +62,8 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private ICommand _testNetCommand;
         private ICommand _refreshBlockChainCommand;
         private ICommand _sendMoneyCommand;
+        private ICommand _previousPageCommand;
+        private ICommand _nextPageCommand;
 
         public WalletPageViewModel()
         {
@@ -64,16 +73,21 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             _nbBlocks = 0;
             _amount = 0;
             Transactions = new ObservableCollection<TransactionViewModel>();
+            Blocks = new ObservableCollection<BlockViewModel>();
             _sendMoneyCommand = new RelayCommand(p => SendMoneyExecute(), p => CanSendMoney());
             _mainNetCommand = new RelayCommand(p => ExecuteMainNet(), p => CanExecuteMainNet());
             _testNetCommand = new RelayCommand(p => ExecuteTestNet(), p => CanExecuteTestNet());
             _refreshBlockChainCommand = new RelayCommand(p => ExecuteRefreshBlockChain(), p => CanExecuteRefreshBlockChain());
+            _previousPageCommand = new RelayCommand(p => ExecutePreviousPage(), p => CanExecutePreviousPage());
+            _nextPageCommand = new RelayCommand(p => ExecuteNextPage(), p => CanExecuteNextPage());
         }
 
         public ICommand SendMoney { get; private set; }
         public event EventHandler SendMoneyEvt;
         public event EventHandler<NetworkEventHandler> NetworkSwitchEvt;
         public event EventHandler RefreshBlockChainEvt;
+        public event EventHandler PreviousPageEvt;
+        public event EventHandler NextPageEvt;
 
         public ICommand MainNetCommand
         {
@@ -101,7 +115,24 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             }
         }
 
+        public ICommand PreviousPageCommand
+        {
+            get
+            {
+                return _previousPageCommand;
+            }
+        }
+
+        public ICommand NextPageCommand
+        {
+            get
+            {
+                return _nextPageCommand;
+            }
+        }
+
         public ObservableCollection<TransactionViewModel> Transactions { get; private set; }
+        public ObservableCollection<BlockViewModel> Blocks { get; private set; }
 
         public TransactionViewModel SelectedTransaction { get; set; }
 
@@ -285,6 +316,32 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
 
         private bool CanExecuteRefreshBlockChain()
+        {
+            return true;
+        }
+
+        private void ExecutePreviousPage()
+        {
+            if (PreviousPageEvt != null)
+            {
+                PreviousPageEvt(this, EventArgs.Empty);
+            }
+        }
+
+        private bool CanExecutePreviousPage()
+        {
+            return true;
+        }
+
+        private void ExecuteNextPage()
+        {
+            if (NextPageEvt != null)
+            {
+                NextPageEvt(this, EventArgs.Empty);
+            }
+        }
+
+        private bool CanExecuteNextPage()
         {
             return true;
         }

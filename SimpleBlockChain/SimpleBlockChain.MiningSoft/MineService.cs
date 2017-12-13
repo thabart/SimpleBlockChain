@@ -54,13 +54,20 @@ namespace SimpleBlockChain.MiningSoft
             try
             {
                 var blockTemplate = _rpcClient.GetBlockTemplate().Result;
-                var block = CalculateHeader(blockTemplate, 0, 0, _network);
-                if (block == null)
+                if (blockTemplate == null)
                 {
-                    Mine(null);
+                    _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
                 }
-                var b = _rpcClient.SubmitBlock(block).Result;
-                _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
+                else
+                {
+                    var block = CalculateHeader(blockTemplate, 0, 0, _network);
+                    if (block == null)
+                    {
+                        Mine(null);
+                    }
+                    var b = _rpcClient.SubmitBlock(block).Result;
+                    _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
+                }
             }
             catch(RpcException rpcException)
             {

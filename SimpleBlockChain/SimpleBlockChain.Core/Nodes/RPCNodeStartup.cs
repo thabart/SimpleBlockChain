@@ -118,23 +118,21 @@ namespace SimpleBlockChain.Core.Nodes
                     if (parameters.Any())
                     {
                         var parameter = parameters.First();
-                        int format = 0;
-                        if (int.TryParse(parameter, out format))
+                        int f = 0;
+                        if (int.TryParse(parameter, out f))
                         {
-                            verboseOutput = format == 0;
+                            verboseOutput = f == 0;
                         }
                     }
-
-                    /*
-                    if (verboseOutput)
-                    {
-                        // ADD VERBOSE OUTPUT : https://bitcoin.org/en/developer-reference#getrawmempool
-                    }
-                    */
-
                     response["result"] = new JArray(transactions.Select(t => t.GetTxId()));
                     return response;
                 case Constants.RpcOperations.Getblocktemplate: // https://bitcoin.org/en/developer-reference#getblocktemplate
+                    if (transactions == null || !transactions.Any())
+                    {
+                        response["result"] = null;
+                        return response;
+                    }
+
                     var currentBlock = blockChain.GetCurrentBlock();
                     var height = blockChain.GetCurrentBlockHeight();
                     var previousBlockHash = currentBlock.GetHashHeader().ToHexString();
@@ -323,7 +321,66 @@ namespace SimpleBlockChain.Core.Nodes
 
                     response["result"] = unconfirmedBalance;
                     return response;
+                case Constants.RpcOperations.GetBlockCount: // https://bitcoin.org/en/developer-reference#getblockcount
+                    response["result"] = blockChain.GetCurrentBlockHeight() + 1;
+                    return response;
+                case Constants.RpcOperations.GetBlockHash: // https://bitcoin.org/en/developer-reference#getblockhash
+                    if (parameters == null || !parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "Block height must be specified");
+                    }
 
+                    var str = parameters.First();
+                    var blockHeight = 0;
+                    if (!int.TryParse(str, out blockHeight))
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "Block height is not a number");
+                    }
+                    
+                    var requestedBlock = blockChain.GetBlock(blockHeight);
+                    if (requestedBlock == null)
+                    {
+                        response["result"] = null;
+                    }
+                    else
+                    {
+                        response["result"] = requestedBlock.GetHashHeader().ToHexString();
+                    }
+
+                    return response;
+                case Constants.RpcOperations.GetBlock: // https://bitcoin.org/en/developer-reference#getblock
+                    if (parameters == null || !parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The block header hash is not specified");
+                    }
+
+                    var blockHeaderHash = parameters.First();
+                    var format = 0;
+                    if (parameters.Count() >= 2)
+                    {
+                        if (int.TryParse(parameters.ElementAt(1), out format)) { }
+                        if (format != 0 || format != 1) { format = 0; }
+                    }
+
+                    IEnumerable<byte> blockHeader = null;
+                    try
+                    {
+                        blockHeader = blockHeaderHash.FromHexString();
+                    }
+                    catch (Exception)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "Cannot deserialize block header hash into byte array");
+                    }
+
+                    var recordBlock = blockChain.GetBlock(blockHeader);
+                    if (recordBlock == null)
+                    {
+                        response["result"] = null;
+                        return response;
+                    }
+
+                    response["result"] = recordBlock.Serialize().ToHexString();
+                    return response;
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

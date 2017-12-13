@@ -81,7 +81,25 @@
             </Grid>
             <!-- Transaction history -->
             <Grid Grid.Column="1" Grid.RowSpan="2">
-
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ListView Grid.Row="0" ItemsSource="{Binding Path=Blocks}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="HASH" DisplayMemberBinding="{Binding Path=Hash}" />
+                                <GridViewColumn Header="PREVIOUS HASH" DisplayMemberBinding="{Binding Path=PreviousHash}" />
+                                <GridViewColumn Header="FEES" DisplayMemberBinding="{Binding Path=Fees}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <Button>Previous</Button>
+                        <Button>Next</Button>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Grid>
         <!-- FOOTER -->

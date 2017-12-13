@@ -21,6 +21,9 @@ namespace SimpleBlockChain.Core.Rpc
         Task<bool> SubmitBlock(Block block);
         Task<bool> SendRawTransaction(BaseTransaction transaction);
         Task<long> GetUnconfirmedBalance();
+        Task<Block> GetBlock(IEnumerable<byte> hash);
+        Task<int> GetBlockCount();
+        Task<IEnumerable<byte>> GetBlockHash(int height);
     }
 
     public class RpcClient : IRpcClient
@@ -77,6 +80,11 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             var resultObj = jsonObj.GetValue("result") as JObject;
+            if (resultObj == null)
+            {
+                return null;
+            }
+
             return BlockTemplate.Deserialize(resultObj);
         }
 
@@ -267,6 +275,115 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             return long.Parse(jsonObj.Value<string>("result"));
+        }
+
+        public async Task<Block> GetBlock(IEnumerable<byte> hash)
+        {
+            if (hash == null)
+            {
+                throw new ArgumentNullException(nameof(hash));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(hash.ToHexString());
+            jParams.Add(0);
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.GetBlock);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.Value<string>("result");
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            var payload = r.FromHexString();
+            return Block.Deserialize(payload);
+        }
+
+        public async Task<int> GetBlockCount()
+        {
+            var httpClient = _httpClientFactory.BuildClient();
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.GetBlockCount);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            return int.Parse(jsonObj.Value<string>("result"));
+        }
+
+        public async Task<IEnumerable<byte>> GetBlockHash(int height)
+        {
+            if (height < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(height));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(height);
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.GetBlockHash);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.Value<string>("result");
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            var payload = r.FromHexString();
+            return payload;
         }
 
         public static bool TryGetError(JObject jObj, out string errorCode)

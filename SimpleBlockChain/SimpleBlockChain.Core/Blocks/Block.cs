@@ -95,6 +95,28 @@ namespace SimpleBlockChain.Core.Blocks
             }
         }
 
+        public long GetTotalFees()
+        {
+            if (Transactions == null || !Transactions.Any())
+            {
+                return 0;
+            }
+
+            long result = 0;
+            foreach(var tx in Transactions)
+            {
+                var cbTx = tx as CoinbaseTransaction;
+                if (cbTx == null)
+                {
+                    continue;
+                }
+
+                result += cbTx.TransactionOut.First().Value;
+            }
+
+            return result;
+        }
+
         // Read the target nbits : https://bitcoin.org/en/developer-reference#target-nbits
 
         public static Block BuildGenesisBlock()

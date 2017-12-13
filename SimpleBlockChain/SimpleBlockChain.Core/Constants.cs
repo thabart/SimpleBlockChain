@@ -67,6 +67,9 @@ namespace SimpleBlockChain.Core
             public const string SendRawTransaction = "sendrawtransaction";
             // public const string GetMempoolEntry = "getmempoolentry";
             public const string GetUnconfirmedBalance = "getunconfirmedbalance";
+            public const string GetBlockCount = "getblockcount";
+            public const string GetBlockHash = "getblockhash";
+            public const string GetBlock = "getblock";
         }
     }
 }

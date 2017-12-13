@@ -174,6 +174,7 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             block.Check();
+            _currentBlockHeight++;
             Persist(block);
             return this;
         }
@@ -322,7 +323,6 @@ namespace SimpleBlockChain.Core.Blocks
 
         private void Persist(Block block)
         {
-            _currentBlockHeight++;
             _currentBlockHash = block.GetHashHeader();
             if (block == null)
             {

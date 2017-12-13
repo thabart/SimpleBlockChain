@@ -25,9 +25,11 @@ namespace SimpleBlockChain.WalletUI.Pages
 {
     public partial class WalletPage : Page
     {
+        private const int BLOCKS_PER_PAGE = 5;
         private const double DEFAULT_TX_SIZE = 500; // TODO : Correctly set the transaction FEE.
+        private int _currentPage = 0;
         private const int REFRESH_INFORMATION_INTERVAL = 5000;
-        private readonly WalletPageViewModel _viewModel;
+        private WalletPageViewModel _viewModel;
         private NodeLauncher _nodeLauncher;
         private Timer _timer;
         private readonly AutoResetEvent _autoEvent = null;
@@ -37,9 +39,11 @@ namespace SimpleBlockChain.WalletUI.Pages
         private readonly IScriptBuilder _scriptBuilder;
         private readonly IWalletRepository _walletRepository;
         private object _lock = new object();
+        private bool _isBlocksInitialized = false;
 
         public WalletPage(INodeLauncherFactory nodeLauncherFactory, ITransactionBuilder transactionBuilder, IScriptBuilder scriptBuilder, IWalletRepository walletRepository)
         {
+            _currentPage = 0;
             _nodeLauncherFactory = nodeLauncherFactory;
             _transactionBuilder = transactionBuilder;
             _scriptBuilder = scriptBuilder;
@@ -47,24 +51,37 @@ namespace SimpleBlockChain.WalletUI.Pages
             _autoEvent = new AutoResetEvent(false);
             _refreshUiBackgroundWorker = new BackgroundWorker();
             _refreshUiBackgroundWorker.DoWork += RefreshUi;
+            RegisterEvts();
+            InitializeComponent();
+        }
+
+        private void RegisterEvts()
+        {
+            Loaded += Load;
+            Unloaded += Unload;
+        }
+
+        private void Init()
+        {
+            _isBlocksInitialized = false;
             _viewModel = new WalletPageViewModel();
             _viewModel.SendMoneyEvt += SendMoney;
             _viewModel.NetworkSwitchEvt += NetworkSwitch;
             _viewModel.RefreshBlockChainEvt += RefreshBlockChain;
-            Loaded += Load;
-            Unloaded += Unload;
-            InitializeComponent();
+            _viewModel.NextPageEvt += NextPage;
+            _viewModel.PreviousPageEvt += PreviousPage;
             DataContext = _viewModel;
         }
 
         private void Load(object sender, RoutedEventArgs e)
         {
+            Init();
             OpenNetwork(Networks.MainNet);
         }
 
         private void Unload(object sender, RoutedEventArgs e)
         {
-            Disconnect();
+            Destroy();
         }
 
         private void NetworkSwitch(object sender, NetworkEventHandler e)
@@ -224,8 +241,33 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         private void RefreshNbBlocks()
         {
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
-            _viewModel.NbBlocks = blockChain.GetCurrentBlockHeight();
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                return;
+            }
+
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.GetBlockCount().ContinueWith((r) =>
+            {
+                try
+                {
+                    var  nb = r.Result;
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _viewModel.NbBlocks = nb;
+                        if (!_isBlocksInitialized)
+                        {
+                            RefreshBlocks();
+                            _isBlocksInitialized = true;
+                        }
+                    });
+                }
+                catch (AggregateException ex)
+                {
+
+                }
+            });
         }
 
         private void RefreshMoney()
@@ -309,6 +351,74 @@ namespace SimpleBlockChain.WalletUI.Pages
             });
         }
 
+        private void RefreshBlocks()
+        {
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                return;
+            }
+
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            var startIndex = _currentPage * BLOCKS_PER_PAGE;
+            var lastIndex = startIndex + (BLOCKS_PER_PAGE - 1);
+            if (lastIndex > (_viewModel.NbBlocks - 1))
+            {
+                lastIndex = _viewModel.NbBlocks - 1;
+            }
+
+            for (var  i = startIndex; i <= lastIndex; i++)
+            {
+                rpcClient.GetBlockHash(i).ContinueWith((r) =>
+                {
+                    try
+                    {
+                        var bHash = r.Result;
+                        if (bHash == null) { return; }
+                        rpcClient.GetBlock(bHash).ContinueWith((sr) =>
+                        {
+                            try
+                            {
+                                var b = sr.Result;
+                                if (b == null)
+                                {
+                                    return;
+                                }
+
+                                var blockHash = b.GetHashHeader().ToHexString();
+                                var previousHash = b.BlockHeader.PreviousBlockHeader.ToHexString();
+                                var nbTransactions = b.Transactions.Count();
+                                var fees = b.GetTotalFees();
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    _viewModel.Blocks.Add(new BlockViewModel
+                                    {
+                                        Fees = fees,
+                                        Hash = blockHash,
+                                        PreviousHash = previousHash
+                                    });
+                                });
+                            }
+                            catch (AggregateException ex) { }
+                        });
+                    }
+                    catch(AggregateException ex) { }
+                });
+            }
+        }
+        
+        private void NextPage(object sender, EventArgs e)
+        {
+            _currentPage += 1;
+            RefreshBlocks();
+        }
+
+        private void PreviousPage(object sender, EventArgs e)
+        {
+            _currentPage -= 1;
+            RefreshBlocks();
+        }
+
         private void DisconnectP2PNetwork(object sender, EventArgs e)
         {
             if (_timer != null)
@@ -333,9 +443,17 @@ namespace SimpleBlockChain.WalletUI.Pages
                 _timer.Dispose(_autoEvent);
                 _timer = null;
             }
+        }
 
-            _viewModel.IsConnected = false;
-            _viewModel.NbBlocks = 0;
+        private void Destroy()
+        {
+            Disconnect();
+            _viewModel.SendMoneyEvt -= SendMoney;
+            _viewModel.NetworkSwitchEvt -= NetworkSwitch;
+            _viewModel.RefreshBlockChainEvt -= RefreshBlockChain;
+            _viewModel.NextPageEvt -= NextPage;
+            _viewModel.PreviousPageEvt -= PreviousPage;
+            _viewModel = null;
         }
     }
 }
