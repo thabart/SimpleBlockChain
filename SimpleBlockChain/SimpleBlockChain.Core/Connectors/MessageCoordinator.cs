@@ -108,6 +108,7 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 var msg = message as TransactionMessage;
                 AddTransaction(msg.Transaction);
+                MemoryPool.Instance().Remove(msg.Transaction);
                 p2pNetworkConnector.Broadcast(msg.Transaction, msg.MessageHeader.Ipv6);
                 return null;
             }
@@ -117,6 +118,10 @@ namespace SimpleBlockChain.Core.Connectors
                 var msg = message as BlockMessage;
                 var blockChain = BlockChainStore.Instance().GetBlockChain();
                 blockChain.AddBlock(msg.Block);
+                if (msg.Block.Transactions != null)
+                {
+                    MemoryPool.Instance().Remove(msg.Block.Transactions.Select(tx => tx.GetTxId()));
+                }
             }
 
             if (message.GetCommandName() == Constants.MessageNames.NotFound) //  SOME INVENTORIES ARE NOT FOUND.

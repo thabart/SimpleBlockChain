@@ -321,6 +321,22 @@ namespace SimpleBlockChain.Core.Transactions
             return CompareTo(baseTrans);
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            var d = obj as BaseTransaction;
+            if (d == null)
+            {
+                return false;
+            }
+
+            return GetTxId().SequenceEqual(d.GetTxId());
+        }
+
         public abstract int CompareTo(BaseTransaction obj);
 
         public JObject SerializeJson()

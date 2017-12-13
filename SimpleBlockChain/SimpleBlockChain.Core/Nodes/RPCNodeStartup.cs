@@ -106,7 +106,7 @@ namespace SimpleBlockChain.Core.Nodes
                     parameters = arr.Select(a => a.ToString());
                 }
             }
-                        
+                  
             var transactions = MemoryPool.Instance().GetTransactions();
             var blockChain = BlockChainStore.Instance().GetBlockChain();
             var wallet = WalletStore.Instance().GetAuthenticatedWallet();
@@ -181,6 +181,11 @@ namespace SimpleBlockChain.Core.Nodes
                         block.Check();
                         BlockChainStore.Instance().GetBlockChain().AddBlock(block);
                         P2PConnectorEventStore.Instance().Broadcast(block);
+                        if (block.Transactions != null)
+                        {
+                            MemoryPool.Instance().Remove(block.Transactions.Select(tx => tx.GetTxId()));
+                        }
+
                         response["result"] = null;
                         return response;
                     }

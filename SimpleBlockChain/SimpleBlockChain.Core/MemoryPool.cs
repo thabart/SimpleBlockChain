@@ -1,6 +1,7 @@
 ﻿using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SimpleBlockChain.Core
 {
@@ -37,6 +38,30 @@ namespace SimpleBlockChain.Core
         public IList<BaseTransaction> GetTransactions()
         {
             return _transactions;
+        }
+
+        public void Remove(BaseTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            Remove(new[] { transaction.GetTxId() });
+        }
+
+        public void Remove(IEnumerable<IEnumerable<byte>> txIds)
+        {
+            if (txIds == null)
+            {
+                throw new ArgumentNullException(nameof(txIds));
+            }
+
+            var removedTxs = _transactions.Where(t => txIds.Any(s => s.SequenceEqual(t.GetTxId()))).ToList();
+            foreach(var removedTx in removedTxs)
+            {
+                _transactions.Remove(removedTx);
+            }
         }
     }
 }
