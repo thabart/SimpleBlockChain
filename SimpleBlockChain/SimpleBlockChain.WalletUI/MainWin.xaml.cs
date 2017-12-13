@@ -1,18 +1,20 @@
 ﻿using MahApps.Metro.Controls;
+using SimpleBlockChain.WalletUI.Events;
 using SimpleBlockChain.WalletUI.Pages;
+using SimpleBlockChain.WalletUI.Stores;
 using System;
 using System.Collections;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Markup;
 using System.Windows.Navigation;
 
 namespace SimpleBlockChain.WalletUI
 {
-    public partial class MainWindow : MetroWindow
+    public partial class MainWin : MetroWindow
     {
         private readonly HomePage _homePage;
-        public MainWindow(HomePage homePage)
+
+        public MainWin(HomePage homePage)
         {
             _homePage = homePage;
             InitializeComponent();
@@ -31,6 +33,14 @@ namespace SimpleBlockChain.WalletUI
             frame.FragmentNavigation += PART_Frame_FragmentNavigation;
             PART_BackButton.Click += PART_BackButton_Click;
             PART_ForwardButton.Click += PART_ForwardButton_Click;
+            MainWindowStore.Instance().DisplayFlyoutEvt += DisplayFlyout;
+        }
+
+        private void DisplayFlyout(object sender, FlyoutEventArgs e)
+        {
+            flyoutsControl.Items.Clear();
+            flyoutsControl.Items.Add(e.Data);
+            e.Data.IsOpen = true;
         }
 
         public override void OnApplyTemplate()

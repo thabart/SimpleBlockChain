@@ -311,15 +311,29 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Behaviors\PasswordBoxBindingBehavior.cs" />
+    <Compile Include="Behaviors\SelectionBehavior.cs" />
+    <Compile Include="Events\BlockEventArgs.cs" />
+    <Compile Include="Events\FlyoutEventArgs.cs" />
     <Compile Include="Events\NetworkEventHandler.cs" />
+    <Compile Include="Flyouts\BlockFlyout.xaml.cs">
+      <DependentUpon>BlockFlyout.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MainWin.xaml.cs">
+      <DependentUpon>MainWin.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Stores\MainWindowStore.cs" />
     <Compile Include="ViewModels\AuthenticateWalletViewModel.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\CreateWalletViewModel.cs" />
     <Compile Include="ViewModels\HomePageViewModel.cs" />
     <Compile Include="ViewModels\WalletPageViewModel.cs" />
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Flyouts\BlockFlyout.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWin.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -330,10 +344,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
-    </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
     </Compile>
     <Page Include="Pages\AuthenticateWalletPage.xaml">
       <SubType>Designer</SubType>
@@ -419,9 +429,7 @@
       <Name>SimpleBlockChain.Interop</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Stores\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

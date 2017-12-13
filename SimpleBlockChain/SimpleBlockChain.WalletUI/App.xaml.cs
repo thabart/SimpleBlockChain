@@ -69,7 +69,7 @@ namespace SimpleBlockChain.WalletUI
                 repo.Add(genesisWalletAggregate, "zvhab8rijwl7vwma".ToSecureString());
             }
 
-            MainWindow mainWindow = ActivatorUtilities.CreateInstance<MainWindow>(serviceProvider);
+            MainWin mainWindow = ActivatorUtilities.CreateInstance<MainWin>(serviceProvider);
             mainWindow.Show();
         }
     }

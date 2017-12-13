@@ -3,7 +3,8 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.Pages"
+      xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.Pages"      
+      xmlns:behavior="clr-namespace:SimpleBlockChain.WalletUI.Behaviors"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
       Title="WalletPage">
@@ -86,7 +87,7 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ListView Grid.Row="0" ItemsSource="{Binding Path=Blocks}">
+                    <ListView Grid.Row="0" ItemsSource="{Binding Path=Blocks}" SelectedItem="{Binding Path=SelectedBlock}" behavior:SelectionBehavior.SelectionChanged="{Binding Path=SelectBlockCommand}">                        
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="HASH" DisplayMemberBinding="{Binding Path=Hash}" />

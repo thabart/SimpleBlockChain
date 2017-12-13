@@ -11,6 +11,8 @@ using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.WalletUI.Events;
+using SimpleBlockChain.WalletUI.Flyouts;
+using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.ComponentModel;
@@ -70,6 +72,7 @@ namespace SimpleBlockChain.WalletUI.Pages
             _viewModel.RefreshBlockChainEvt += RefreshBlockChain;
             _viewModel.NextPageEvt += NextPage;
             _viewModel.PreviousPageEvt += PreviousPage;
+            _viewModel.SelectBlockEvt += DisplayBlock;
             DataContext = _viewModel;
         }
 
@@ -87,6 +90,12 @@ namespace SimpleBlockChain.WalletUI.Pages
         private void NetworkSwitch(object sender, NetworkEventHandler e)
         {
             OpenNetwork(e.GetNework());
+        }
+
+        private void DisplayBlock(object sender, BlockEventArgs e)
+        {
+            var flyout = new BlockFlyout();
+            MainWindowStore.Instance().DisplayFlyout(flyout);
         }
 
         private Key CreateNewAddress()
@@ -453,6 +462,7 @@ namespace SimpleBlockChain.WalletUI.Pages
             _viewModel.RefreshBlockChainEvt -= RefreshBlockChain;
             _viewModel.NextPageEvt -= NextPage;
             _viewModel.PreviousPageEvt -= PreviousPage;
+            _viewModel.SelectBlockEvt -= DisplayBlock;
             _viewModel = null;
         }
     }

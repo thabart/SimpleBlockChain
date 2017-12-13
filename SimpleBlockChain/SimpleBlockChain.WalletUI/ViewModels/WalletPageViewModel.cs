@@ -64,6 +64,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private ICommand _sendMoneyCommand;
         private ICommand _previousPageCommand;
         private ICommand _nextPageCommand;
+        private ICommand _selectBlockCommand;
 
         public WalletPageViewModel()
         {
@@ -80,6 +81,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             _refreshBlockChainCommand = new RelayCommand(p => ExecuteRefreshBlockChain(), p => CanExecuteRefreshBlockChain());
             _previousPageCommand = new RelayCommand(p => ExecutePreviousPage(), p => CanExecutePreviousPage());
             _nextPageCommand = new RelayCommand(p => ExecuteNextPage(), p => CanExecuteNextPage());
+            _selectBlockCommand = new RelayCommand(p => ExecuteSelectBlock(), p => CanSelectBlock());
         }
 
         public ICommand SendMoney { get; private set; }
@@ -88,6 +90,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public event EventHandler RefreshBlockChainEvt;
         public event EventHandler PreviousPageEvt;
         public event EventHandler NextPageEvt;
+        public event EventHandler<BlockEventArgs> SelectBlockEvt;
 
         public ICommand MainNetCommand
         {
@@ -131,10 +134,19 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             }
         }
 
+        public ICommand SelectBlockCommand
+        {
+            get
+            {
+                return _selectBlockCommand;
+            }
+        }
+
         public ObservableCollection<TransactionViewModel> Transactions { get; private set; }
         public ObservableCollection<BlockViewModel> Blocks { get; private set; }
 
         public TransactionViewModel SelectedTransaction { get; set; }
+        public BlockViewModel SelectedBlock { get; set; }
 
         public int Amount
         {
@@ -342,6 +354,19 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
 
         private bool CanExecuteNextPage()
+        {
+            return true;
+        }
+
+        private void ExecuteSelectBlock()
+        {
+            if (SelectBlockEvt != null)
+            {
+                SelectBlockEvt(this, new BlockEventArgs(SelectedBlock.Hash));
+            }
+        }
+
+        private bool CanSelectBlock()
         {
             return true;
         }
