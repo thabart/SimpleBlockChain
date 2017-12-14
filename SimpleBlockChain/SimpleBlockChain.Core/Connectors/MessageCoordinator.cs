@@ -16,30 +16,30 @@ namespace SimpleBlockChain.Core.Connectors
 {
     public interface IMessageCoordinator
     {
-        Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector, Networks network);
+        Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector);
         Message Launch(PeerConnector peerConnector, Message message);
     }
 
     internal class MessageCoordinator : IMessageCoordinator
     {
-        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly IBlockChainStore _blockChainStore;
         private readonly IBlockValidator _blockValidator;
         private readonly ITransactionValidator _transactionValidator;
         private readonly MessageParser _messageParser;
         private readonly PeersRepository _peersStorage;
 
-        public MessageCoordinator(IBlockChainFactory blockChainFactory, IBlockValidator blockValidator, ITransactionValidator transactionValidator)
+        public MessageCoordinator(IBlockChainStore blockChainStore, IBlockValidator blockValidator, ITransactionValidator transactionValidator)
         {
-            _blockChainFactory = blockChainFactory;
+            _blockChainStore = blockChainStore;
             _blockValidator = blockValidator;
             _transactionValidator = transactionValidator;
             _messageParser = new MessageParser();
             _peersStorage = new PeersRepository();
         }
 
-        public Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector, Networks network)
+        public Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector)
         {
-            var blockChain = _blockChainFactory.Build(network);
+            var blockChain = _blockChainStore.GetBlockChain();
             if (message.GetCommandName() == Constants.MessageNames.Version) // RETURNS VERSION.
             {
                 var msg = message as VersionMessage;
@@ -106,7 +106,7 @@ namespace SimpleBlockChain.Core.Connectors
             if (message.GetCommandName() == Constants.MessageNames.GetData) // RETURNS ALL THE DATA TO THE PEER.
             {
                 var msg = message as GetDataMessage;
-                var messages = Execute(msg, network);
+                var messages = Execute(msg);
                 if (messages != null)
                 {
                     foreach(var m in messages)
@@ -121,7 +121,7 @@ namespace SimpleBlockChain.Core.Connectors
             if (message.GetCommandName() == Constants.MessageNames.Transaction) // ADD TRANSACTION INTO MEMORY POOL & BROADCAST IT.
             {
                 var msg = message as TransactionMessage;
-                AddTransaction(msg.Transaction, network);
+                AddTransaction(msg.Transaction);
                 MemoryPool.Instance().Remove(msg.Transaction);
                 p2pNetworkConnector.Broadcast(msg.Transaction, msg.MessageHeader.Ipv6);
                 return null;
@@ -130,7 +130,7 @@ namespace SimpleBlockChain.Core.Connectors
             if (message.GetCommandName() == Constants.MessageNames.Block) // ADD THE BLOCK.
             {
                 var msg = message as BlockMessage;
-                _blockValidator.Check(msg.Block, network);
+                _blockValidator.Check(msg.Block);
                 blockChain.AddBlock(msg.Block);
                 if (msg.Block.Transactions != null)
                 {
@@ -227,7 +227,7 @@ namespace SimpleBlockChain.Core.Connectors
             return null;
         }
 
-        private void Launch(PeerConnector peerConnector, GetBlocksMessage message, Networks network)
+        private void Launch(PeerConnector peerConnector, GetBlocksMessage message)
         {
             var payload = peerConnector.Execute(message.Serialize());
             var result = _messageParser.Parse(payload.ToArray());
@@ -236,7 +236,7 @@ namespace SimpleBlockChain.Core.Connectors
                 return;
             }
 
-            var getDataMessage = Execute(result as InventoryMessage, network);
+            var getDataMessage = Execute(result as InventoryMessage);
             if (getDataMessage == null)
             {
                 return;
@@ -287,13 +287,13 @@ namespace SimpleBlockChain.Core.Connectors
             return _messageParser.Parse(payload.ToArray());
         }
 
-        private void Launch(PeerConnector peerConnector, InventoryMessage message, Networks network)
+        private void Launch(PeerConnector peerConnector, InventoryMessage message)
         {
             var payload = peerConnector.Execute(message.Serialize()); // S : INVENTORY.
             var response = _messageParser.Parse(payload.ToArray());
             if (response.GetCommandName() == Constants.MessageNames.GetData) // R : GETDATA.
             {
-                var inventories = Execute(response as GetDataMessage, network);
+                var inventories = Execute(response as GetDataMessage);
                 foreach(var inventory in inventories)
                 {
                     peerConnector.Execute(inventory.Serialize()); // S : TX & B.
@@ -301,7 +301,7 @@ namespace SimpleBlockChain.Core.Connectors
             }
         }
 
-        private void Launch(PeerConnector peerConnector, MemPoolMessage message, Networks network)
+        private void Launch(PeerConnector peerConnector, MemPoolMessage message)
         {
             var payload = peerConnector.Execute(message.Serialize()); // S : MEMPOOL.
             var response = _messageParser.Parse(payload.ToArray());
@@ -310,7 +310,7 @@ namespace SimpleBlockChain.Core.Connectors
                 return;
             }
 
-            response = Execute(response as InventoryMessage, network); // S : GETDATA.
+            response = Execute(response as InventoryMessage); // S : GETDATA.
             if (response == null)
             {
                 return;
@@ -318,9 +318,9 @@ namespace SimpleBlockChain.Core.Connectors
             peerConnector.Execute(response.Serialize());
         }
 
-        private IEnumerable<Message> Execute(GetDataMessage msg, Networks network)
+        private IEnumerable<Message> Execute(GetDataMessage msg)
         {
-            var blockChain = _blockChainFactory.Build(network);
+            var blockChain = _blockChainStore.GetBlockChain();
             var messages = new List<Message>();
             var notFoundInventory = new List<Inventory>();
             if (msg.Inventories.Any())
@@ -361,9 +361,9 @@ namespace SimpleBlockChain.Core.Connectors
             return messages;
         }
 
-        private Message Execute(InventoryMessage msg, Networks network)
+        private Message Execute(InventoryMessage msg)
         {
-            var blockChain = _blockChainFactory.Build(network);
+            var blockChain = _blockChainStore.GetBlockChain();
             var inventories = new List<Inventory>();
             if (msg.Inventories.Any())
             {
@@ -395,7 +395,7 @@ namespace SimpleBlockChain.Core.Connectors
             return null;
         }
 
-        private void AddTransaction(BaseTransaction transaction, Networks network)
+        private void AddTransaction(BaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -409,7 +409,7 @@ namespace SimpleBlockChain.Core.Connectors
                 return;
             }
 
-            _transactionValidator.Check(transaction, network);
+            _transactionValidator.Check(transaction);
             instance.AddTransaction(transaction);
         }
     }

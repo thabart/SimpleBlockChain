@@ -4,6 +4,7 @@ using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Scripts;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Validators;
 using System;
 
@@ -30,6 +31,7 @@ namespace SimpleBlockChain.Core
             serviceCollection.AddTransient<IScriptInterpreter, ScriptInterpreter>();
             serviceCollection.AddTransient<ITransactionHelper, TransactionHelper>();
             serviceCollection.AddTransient<IMessageCoordinator, MessageCoordinator>();
+            serviceCollection.AddSingleton<IBlockChainStore, BlockChainStore>();
             return serviceCollection;
         }
     }

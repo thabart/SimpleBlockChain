@@ -37,17 +37,17 @@ namespace SimpleBlockChain.Core.Nodes
     {
         private readonly IWalletRepository _walletRepository;
         private readonly Networks _network;
-        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly IBlockChainStore _blockChainStore;
         private readonly ITransactionHelper _transactionHelper;
         private readonly ITransactionValidator _transactionValidator;
         private readonly IBlockValidator _blockValidator;
 
-        public RPCNodeStartup(IWalletRepository walletRepository, Networks network, IBlockChainFactory blockChainFactory, 
+        public RPCNodeStartup(IWalletRepository walletRepository, Networks network, IBlockChainStore blockChainStore, 
             ITransactionHelper transactionHelper, ITransactionValidator transactionValidator, IBlockValidator blockValidator)
         {
             _walletRepository = walletRepository;
             _network = network;
-            _blockChainFactory = blockChainFactory;
+            _blockChainStore = blockChainStore;
             _transactionHelper = transactionHelper;
             _transactionValidator = transactionValidator;
             _blockValidator = blockValidator;
@@ -119,7 +119,7 @@ namespace SimpleBlockChain.Core.Nodes
             }
                   
             var transactions = MemoryPool.Instance().GetTransactions();
-            var blockChain = _blockChainFactory.Build(_network);
+            var blockChain = _blockChainStore.GetBlockChain();
             var wallet = WalletStore.Instance().GetAuthenticatedWallet();
             JObject response = CreateResponse(id);
             switch (method)
@@ -187,7 +187,7 @@ namespace SimpleBlockChain.Core.Nodes
                     var block = Block.Deserialize(payload);
                     try
                     {
-                        _blockValidator.Check(block, _network);
+                        _blockValidator.Check(block);
                         blockChain.AddBlock(block);
                         P2PConnectorEventStore.Instance().Broadcast(block);
                         if (block.Transactions != null)
@@ -289,7 +289,7 @@ namespace SimpleBlockChain.Core.Nodes
                     try
                     {
                         var tx = kvp.Key;
-                        _transactionValidator.Check(tx, _network);
+                        _transactionValidator.Check(tx);
                         MemoryPool.Instance().AddTransaction(tx);
                         P2PConnectorEventStore.Instance().Broadcast(tx);
                         response["result"] = tx.GetTxId().ToHexString();

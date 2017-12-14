@@ -404,7 +404,8 @@ namespace SimpleBlockChain.Core.Blocks
         private string GetDbFile()
         {
             var path = Path.GetDirectoryName(_assemblyHelper.GetEntryAssembly().Location);
-            return Path.Combine(path, string.Format(_databaseFile, GetDirectoryName(_network)));
+            // return Path.Combine(path, string.Format(_databaseFile, GetDirectoryName(_network)));
+            return Path.Combine(path, "db.dat");
         }
 
         public static string GetDirectoryName(Networks networkEnum)

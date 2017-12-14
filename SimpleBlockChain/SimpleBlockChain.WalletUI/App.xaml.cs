@@ -11,6 +11,7 @@ using Org.BouncyCastle.Math;
 using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Factories;
 
 namespace SimpleBlockChain.WalletUI
 {
@@ -65,12 +66,13 @@ namespace SimpleBlockChain.WalletUI
                 };
                 
                 var repo = serviceProvider.GetService<IWalletRepository>();
+                var fact = serviceProvider.GetService<IBlockChainFactory>();
                 repo.Add(clientWalletAggregate, "password".ToSecureString());
                 repo.Add(genesisWalletAggregate, "zvhab8rijwl7vwma".ToSecureString());
             }
 
             MainWin mainWindow = ActivatorUtilities.CreateInstance<MainWin>(serviceProvider);
-            mainWindow.Show();
+            mainWindow.Show();           
         }
     }
 }

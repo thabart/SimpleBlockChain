@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
@@ -13,12 +14,14 @@ namespace SimpleBlockChain.WalletUI.Pages
         private readonly AuthenticateWalletViewModel _viewModel;
         private readonly IWalletRepository _walletRepository;
         private readonly WalletPage _walletPage;
+        private readonly IBlockChainStore _blockChainStore;
 
-        public AuthenticateWalletPage(IWalletRepository walletRepository, WalletPage walletPage)
+        public AuthenticateWalletPage(IWalletRepository walletRepository, WalletPage walletPage, IBlockChainStore blockChainStore)
         {
             _viewModel = new AuthenticateWalletViewModel(DialogCoordinator.Instance);
             _walletRepository = walletRepository;
             _walletPage = walletPage;
+            _blockChainStore = blockChainStore;
             _viewModel.ConnectEvt += Connect;
             InitializeComponent();
             DataContext = _viewModel;

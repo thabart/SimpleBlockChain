@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Factories;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Linq;
@@ -14,11 +15,11 @@ namespace SimpleBlockChain.Core.Helpers
 
     internal class TransactionHelper : ITransactionHelper
     {
-        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly IBlockChainStore _blockChainStore;
 
-        public TransactionHelper(IBlockChainFactory blockChainFactory)
+        public TransactionHelper(IBlockChainStore blockChainStore)
         {
-            _blockChainFactory = blockChainFactory;
+            _blockChainStore = blockChainStore;
         }
 
         public long CalculateBalance(BaseTransaction transaction, string encodedBcAddr, Networks network)
@@ -75,7 +76,7 @@ namespace SimpleBlockChain.Core.Helpers
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var blockChain = _blockChainFactory.Build(network);
+            var blockChain = _blockChainStore.GetBlockChain();
             foreach (var txIn in transaction.TransactionIn)
             {
                 var nCbtxIn = txIn as TransactionInNoneCoinbase;
@@ -116,7 +117,7 @@ namespace SimpleBlockChain.Core.Helpers
 
             var bcAddr = BlockChainAddress.Deserialize(encodedBcAddr);
             var publicKeyHash = bcAddr.PublicKeyHash;
-            var blockChain = _blockChainFactory.Build(network);
+            var blockChain = _blockChainStore.GetBlockChain();
             foreach (var txIn in transaction.TransactionIn)
             {
                 var nCbtxIn = txIn as TransactionInNoneCoinbase;

@@ -1,7 +1,7 @@
 ﻿using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Exceptions;
-using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Stores;
 using System;
 using System.Linq;
 
@@ -9,21 +9,21 @@ namespace SimpleBlockChain.Core.Validators
 {
     public interface IBlockValidator
     {
-        void Check(Block block, Networks network);
+        void Check(Block block);
     }
 
     internal class BlockValidator : IBlockValidator
     {
-        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly IBlockChainStore _blockChainStore;
         private readonly ITransactionValidator _transactionValidator;
 
-        public BlockValidator(IBlockChainFactory blockChainFactory, ITransactionValidator transactionValidator)
+        public BlockValidator(IBlockChainStore blockChainStore, ITransactionValidator transactionValidator)
         {
-            _blockChainFactory = blockChainFactory;
+            _blockChainStore = blockChainStore;
             _transactionValidator = transactionValidator;
         }
 
-        public void Check(Block block, Networks network)
+        public void Check(Block block)
         {
             if (block == null)
             {
@@ -37,7 +37,7 @@ namespace SimpleBlockChain.Core.Validators
                 throw new ValidationException(ErrorCodes.InvalidMerkleRoot);
             }
 
-            var blockChain = _blockChainFactory.Build(network); // Check PREVIOUS BLOCK.
+            var blockChain = _blockChainStore.GetBlockChain(); // Check PREVIOUS BLOCK.
             var currentBlock = blockChain.GetCurrentBlock();
             if (!currentBlock.GetHashHeader().SequenceEqual(block.BlockHeader.PreviousBlockHeader))
             {
@@ -54,7 +54,7 @@ namespace SimpleBlockChain.Core.Validators
 
             foreach (var transaction in block.Transactions) // Check ALL TRANSACTIONS.
             {
-                _transactionValidator.Check(transaction, network);
+                _transactionValidator.Check(transaction);
             }
         }
     }

@@ -24,7 +24,6 @@ namespace SimpleBlockChain.Core.Connectors
         private RpcClientApi _client;
         private MessageParser _messageParser;
         private PeerConnection _peerConnection;
-        private PongMessage _pongMessage;
         private IpAddress _currentIpAddress;
         private ServiceFlags _serviceFlag;
         private readonly AutoResetEvent _autoEvent = null;

@@ -1,5 +1,6 @@
 ﻿using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Nodes;
+using SimpleBlockChain.Core.Stores;
 
 namespace SimpleBlockChain.Core.Factories
 {
@@ -11,19 +12,19 @@ namespace SimpleBlockChain.Core.Factories
     internal class NodeLauncherFactory : INodeLauncherFactory
     {
         private readonly IRpcNodeFactory _rpcNodeFactory;
-        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly IBlockChainStore _blockChainStore;
         private readonly IMessageCoordinator _messageCoordinator;
 
-        public NodeLauncherFactory(IRpcNodeFactory rpcNodeFactory, IBlockChainFactory blockChainFactory, IMessageCoordinator messageCoordinator)
+        public NodeLauncherFactory(IRpcNodeFactory rpcNodeFactory, IBlockChainStore blockChainStore, IMessageCoordinator messageCoordinator)
         {
             _rpcNodeFactory = rpcNodeFactory;
-            _blockChainFactory = blockChainFactory;
+            _blockChainStore = blockChainStore;
             _messageCoordinator = messageCoordinator;
         }
 
         public NodeLauncher Build(Networks network, ServiceFlags serviceFlag)
         {
-            return new NodeLauncher(network, serviceFlag, _rpcNodeFactory, _blockChainFactory, _messageCoordinator);
+            return new NodeLauncher(network, serviceFlag, _rpcNodeFactory, _blockChainStore, _messageCoordinator);
         }
     }
 }

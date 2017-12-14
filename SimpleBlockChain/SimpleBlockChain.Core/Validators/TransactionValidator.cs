@@ -1,6 +1,6 @@
 ﻿using SimpleBlockChain.Core.Exceptions;
-using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Scripts;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Linq;
@@ -9,28 +9,28 @@ namespace SimpleBlockChain.Core.Validators
 {
     public interface ITransactionValidator
     {
-        void Check(BaseTransaction transaction, Networks network);
+        void Check(BaseTransaction transaction);
     }
 
     internal class TransactionValidator : ITransactionValidator
     {
-        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly IBlockChainStore _blockChainStore;
         private readonly IScriptInterpreter _scriptInterpreter;
 
-        public TransactionValidator(IBlockChainFactory blockChainFactory, IScriptInterpreter scriptInterpreter)
+        public TransactionValidator(IBlockChainStore blockChainStore, IScriptInterpreter scriptInterpreter)
         {
-            _blockChainFactory = blockChainFactory;
+            _blockChainStore = blockChainStore;
             _scriptInterpreter = scriptInterpreter;
         }
 
-        public void Check(BaseTransaction transaction, Networks network)
+        public void Check(BaseTransaction transaction)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var blockChain = _blockChainFactory.Build(network);
+            var blockChain = _blockChainStore.GetBlockChain();
             var isCoinBaseTransaction = transaction is CoinbaseTransaction; // https://bitcoin.org/en/developer-guide#block-chain-overview
             if (!isCoinBaseTransaction && (transaction.TransactionIn == null || !transaction.TransactionIn.Any()))
             {
