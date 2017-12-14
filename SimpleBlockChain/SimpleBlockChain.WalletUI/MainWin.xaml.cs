@@ -43,6 +43,7 @@ namespace SimpleBlockChain.WalletUI
             flyout.Content = e.Data;
             flyoutsControl.Items.Add(flyout);
             flyout.IsOpen = true;
+            flyout.MinWidth = 700;
             flyout.Position = Position.Right;
         }
 

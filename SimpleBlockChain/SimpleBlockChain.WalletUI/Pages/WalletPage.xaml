@@ -87,7 +87,12 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ListView Grid.Row="0" ItemsSource="{Binding Path=Blocks}" SelectedItem="{Binding Path=SelectedBlock}" behavior:SelectionBehavior.SelectionChanged="{Binding Path=SelectBlockCommand}">                        
+                    <ListView Grid.Row="0" ItemsSource="{Binding Path=Blocks}" SelectedItem="{Binding Path=SelectedBlock}">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Open" Command="{Binding Path=SelectBlockCommand}" />
+                            </ContextMenu>
+                        </ListView.ContextMenu>
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="HASH" DisplayMemberBinding="{Binding Path=Hash}" />
