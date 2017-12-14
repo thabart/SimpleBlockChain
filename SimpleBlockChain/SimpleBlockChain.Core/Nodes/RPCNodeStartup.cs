@@ -119,7 +119,7 @@ namespace SimpleBlockChain.Core.Nodes
             }
                   
             var transactions = MemoryPool.Instance().GetTransactions();
-            var blockChain = _blockChainFactory.Build();
+            var blockChain = _blockChainFactory.Build(_network);
             var wallet = WalletStore.Instance().GetAuthenticatedWallet();
             JObject response = CreateResponse(id);
             switch (method)
@@ -149,7 +149,7 @@ namespace SimpleBlockChain.Core.Nodes
                     var previousBlockHash = currentBlock.GetHashHeader().ToHexString();
                     var transactionBuilder = new TransactionBuilder();
                     var nonce = BitConverter.GetBytes(NonceHelper.GetNonceUInt64());
-                    var value = transactions.Sum(t => _transactionHelper.GetFee(t));
+                    var value = transactions.Sum(t => _transactionHelper.GetFee(t, _network));
                     var coinBaseTransaction = transactionBuilder.NewCoinbaseTransaction()
                         .SetInput((uint)height + 1, nonce)
                         .AddOutput(value, Script.CreateCorrectScript())
@@ -187,7 +187,7 @@ namespace SimpleBlockChain.Core.Nodes
                     var block = Block.Deserialize(payload);
                     try
                     {
-                        _blockValidator.Check(block);
+                        _blockValidator.Check(block, _network);
                         blockChain.AddBlock(block);
                         P2PConnectorEventStore.Instance().Broadcast(block);
                         if (block.Transactions != null)
@@ -289,7 +289,7 @@ namespace SimpleBlockChain.Core.Nodes
                     try
                     {
                         var tx = kvp.Key;
-                        _transactionValidator.Check(tx);
+                        _transactionValidator.Check(tx, _network);
                         MemoryPool.Instance().AddTransaction(tx);
                         P2PConnectorEventStore.Instance().Broadcast(tx);
                         response["result"] = tx.GetTxId().ToHexString();
@@ -324,7 +324,7 @@ namespace SimpleBlockChain.Core.Nodes
                         {
                             foreach(var memTx in transactions)
                             {
-                                var balance = _transactionHelper.CalculateBalance(memTx, adr.Hash);
+                                var balance = _transactionHelper.CalculateBalance(memTx, adr.Hash, _network);
                                 unconfirmedBalance += balance;
                             }
                         }

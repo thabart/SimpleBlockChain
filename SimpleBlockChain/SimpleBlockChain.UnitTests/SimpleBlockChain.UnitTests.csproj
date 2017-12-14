@@ -23,7 +23,6 @@
     <ProjectReference Include="..\LevelDB.Net\LevelDB.Net.csproj" />
     <ProjectReference Include="..\SimpleBlockChain.Core\SimpleBlockChain.Core.csproj" />
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup>
     <SsdtUnitTestVersion>3.1</SsdtUnitTestVersion>
   </PropertyGroup>

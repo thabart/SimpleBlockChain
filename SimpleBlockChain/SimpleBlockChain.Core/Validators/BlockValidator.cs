@@ -9,7 +9,7 @@ namespace SimpleBlockChain.Core.Validators
 {
     public interface IBlockValidator
     {
-        void Check(Block block);
+        void Check(Block block, Networks network);
     }
 
     internal class BlockValidator : IBlockValidator
@@ -23,7 +23,7 @@ namespace SimpleBlockChain.Core.Validators
             _transactionValidator = transactionValidator;
         }
 
-        public void Check(Block block)
+        public void Check(Block block, Networks network)
         {
             if (block == null)
             {
@@ -37,7 +37,7 @@ namespace SimpleBlockChain.Core.Validators
                 throw new ValidationException(ErrorCodes.InvalidMerkleRoot);
             }
 
-            var blockChain = _blockChainFactory.Build(); // Check PREVIOUS BLOCK.
+            var blockChain = _blockChainFactory.Build(network); // Check PREVIOUS BLOCK.
             var currentBlock = blockChain.GetCurrentBlock();
             if (!currentBlock.GetHashHeader().SequenceEqual(block.BlockHeader.PreviousBlockHeader))
             {
@@ -54,7 +54,7 @@ namespace SimpleBlockChain.Core.Validators
 
             foreach (var transaction in block.Transactions) // Check ALL TRANSACTIONS.
             {
-                _transactionValidator.Check(transaction);
+                _transactionValidator.Check(transaction, network);
             }
         }
     }

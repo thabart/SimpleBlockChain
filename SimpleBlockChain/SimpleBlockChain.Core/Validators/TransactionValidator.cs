@@ -9,7 +9,7 @@ namespace SimpleBlockChain.Core.Validators
 {
     public interface ITransactionValidator
     {
-        void Check(BaseTransaction transaction);
+        void Check(BaseTransaction transaction, Networks network);
     }
 
     internal class TransactionValidator : ITransactionValidator
@@ -23,14 +23,14 @@ namespace SimpleBlockChain.Core.Validators
             _scriptInterpreter = scriptInterpreter;
         }
 
-        public void Check(BaseTransaction transaction)
+        public void Check(BaseTransaction transaction, Networks network)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var blockChain = _blockChainFactory.Build();
+            var blockChain = _blockChainFactory.Build(network);
             var isCoinBaseTransaction = transaction is CoinbaseTransaction; // https://bitcoin.org/en/developer-guide#block-chain-overview
             if (!isCoinBaseTransaction && (transaction.TransactionIn == null || !transaction.TransactionIn.Any()))
             {

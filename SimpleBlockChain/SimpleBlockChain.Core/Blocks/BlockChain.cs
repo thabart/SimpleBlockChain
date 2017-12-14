@@ -11,7 +11,8 @@ namespace SimpleBlockChain.Core.Blocks
     public class BlockChain : IDisposable
     {
         private readonly IAssemblyHelper _assemblyHelper;
-        private const string _databaseFile = "db.dat";
+        private readonly Networks _network;
+        private const string _databaseFile = "db_{0}.dat";
         private DB _db;
         private int _currentBlockHeight = 0;
         private IEnumerable<byte> _currentBlockHash = null;
@@ -29,9 +30,10 @@ namespace SimpleBlockChain.Core.Blocks
         private const string CURRENT_BLOCK = "CURRENT_BLOCK";
         private const char TXID_SEPARATOR = ',';
 
-        internal BlockChain(IAssemblyHelper assemblyHelper)
+        internal BlockChain(IAssemblyHelper assemblyHelper, Networks network)
         {
             _assemblyHelper = assemblyHelper;
+            _network = network;
             var options = new Options { CreateIfMissing = true };
             _db = new DB(GetDbFile(), options);
             string result = null;
@@ -402,7 +404,23 @@ namespace SimpleBlockChain.Core.Blocks
         private string GetDbFile()
         {
             var path = Path.GetDirectoryName(_assemblyHelper.GetEntryAssembly().Location);
-            return Path.Combine(path, _databaseFile);
+            return Path.Combine(path, string.Format(_databaseFile, GetDirectoryName(_network)));
+        }
+
+        public static string GetDirectoryName(Networks networkEnum)
+        {
+            var network = "mainnet";
+            switch (networkEnum)
+            {
+                case Networks.TestNet:
+                    network = "testnet";
+                    break;
+                case Networks.RegTest:
+                    network = "regtest";
+                    break;
+            }
+
+            return network;
         }
     }
 }

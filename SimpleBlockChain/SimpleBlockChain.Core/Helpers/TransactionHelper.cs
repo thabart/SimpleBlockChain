@@ -7,9 +7,9 @@ namespace SimpleBlockChain.Core.Helpers
 {
     public interface ITransactionHelper
     {
-        long CalculateBalance(BaseTransaction transaction, string encodedBcAddr);
-        long GetFee(BaseTransaction transaction);
-        TransactionOut GetTransactionIn(BaseTransaction transaction, string encodedBcAddr);
+        long CalculateBalance(BaseTransaction transaction, string encodedBcAddr, Networks network);
+        long GetFee(BaseTransaction transaction, Networks network);
+        TransactionOut GetTransactionIn(BaseTransaction transaction, string encodedBcAddr, Networks network);
     }
 
     internal class TransactionHelper : ITransactionHelper
@@ -21,14 +21,14 @@ namespace SimpleBlockChain.Core.Helpers
             _blockChainFactory = blockChainFactory;
         }
 
-        public long CalculateBalance(BaseTransaction transaction, string encodedBcAddr)
+        public long CalculateBalance(BaseTransaction transaction, string encodedBcAddr, Networks network)
         {
             if (string.IsNullOrWhiteSpace(encodedBcAddr))
             {
                 throw new ArgumentNullException(nameof(encodedBcAddr));
             }
 
-            var txIn = GetTransactionIn(transaction, encodedBcAddr);
+            var txIn = GetTransactionIn(transaction, encodedBcAddr, network);
             var txOut = transaction.GetTransactionOut(encodedBcAddr);
             if (txIn != null)
             {
@@ -48,7 +48,7 @@ namespace SimpleBlockChain.Core.Helpers
             return txOut.Value;
         }
 
-        public long GetFee(BaseTransaction transaction)
+        public long GetFee(BaseTransaction transaction, Networks network)
         {
             if (transaction == null)
             {
@@ -57,7 +57,7 @@ namespace SimpleBlockChain.Core.Helpers
 
             var outputValue = transaction.TransactionOut.Sum(t => t.Value); // TRANSACTION FEE + REWARD.
             long inputValue = 0;
-            var txIn = GetTransactionIn(transaction);
+            var txIn = GetTransactionIn(transaction, network);
             if (txIn != null)
             {
                 inputValue = txIn.Value;
@@ -68,14 +68,14 @@ namespace SimpleBlockChain.Core.Helpers
             return (long)result;
         }
 
-        public TransactionOut GetTransactionIn(BaseTransaction transaction)
+        public TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var blockChain = _blockChainFactory.Build();
+            var blockChain = _blockChainFactory.Build(network);
             foreach (var txIn in transaction.TransactionIn)
             {
                 var nCbtxIn = txIn as TransactionInNoneCoinbase;
@@ -102,7 +102,7 @@ namespace SimpleBlockChain.Core.Helpers
             return null;
         }
 
-        public TransactionOut GetTransactionIn(BaseTransaction transaction, string encodedBcAddr)
+        public TransactionOut GetTransactionIn(BaseTransaction transaction, string encodedBcAddr, Networks network)
         {
             if (transaction == null)
             {
@@ -116,7 +116,7 @@ namespace SimpleBlockChain.Core.Helpers
 
             var bcAddr = BlockChainAddress.Deserialize(encodedBcAddr);
             var publicKeyHash = bcAddr.PublicKeyHash;
-            var blockChain = _blockChainFactory.Build();
+            var blockChain = _blockChainFactory.Build(network);
             foreach (var txIn in transaction.TransactionIn)
             {
                 var nCbtxIn = txIn as TransactionInNoneCoinbase;

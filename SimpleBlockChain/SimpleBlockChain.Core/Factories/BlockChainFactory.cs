@@ -5,7 +5,7 @@ namespace SimpleBlockChain.Core.Factories
 {
     public interface IBlockChainFactory
     {
-        BlockChain Build();
+        BlockChain Build(Networks network);
     }
 
     internal class BlockChainFactory : IBlockChainFactory
@@ -17,9 +17,9 @@ namespace SimpleBlockChain.Core.Factories
             _assemblyHelper = assemblyHelper;
         }
 
-        public BlockChain Build()
+        public BlockChain Build(Networks network)
         {
-            return new BlockChain(_assemblyHelper);
+            return new BlockChain(_assemblyHelper, network);
         }
     }
 }
