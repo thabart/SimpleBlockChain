@@ -13,13 +13,8 @@ using System.Security.Cryptography;
 namespace SimpleBlockChain.Core.Blocks
 {
     public class Block
-    {
-        public const int CURRENT_VERSION = 4;
-        private int _version;
-
-        private DateTime _blockHeaderHashingStartTime { get; set; }
-        
-        public Block(IEnumerable<byte> previousHashHeader, uint nBits, uint nonce, int version = CURRENT_VERSION)
+    {        
+        public Block(IEnumerable<byte> previousHashHeader, uint nBits, uint nonce, int version = BlockHeader.CURRENT_VERSION)
         {
             if (previousHashHeader == null)
             {
@@ -31,9 +26,9 @@ namespace SimpleBlockChain.Core.Blocks
             {
                 NBits = nBits,
                 Nonce = nonce,
-                PreviousBlockHeader = previousHashHeader
+                PreviousBlockHeader = previousHashHeader,
+                Version = version
             };
-            _version = version;
         }
 
         public Block(BlockHeader blockHeader, IList<BaseTransaction> transactions)
@@ -48,14 +43,8 @@ namespace SimpleBlockChain.Core.Blocks
                 previousHashHeader = Enumerable.Repeat((byte)0x00, 32);
             }
 
-            _version = blockHeader.Version;
             BlockHeader = blockHeader;
             Transactions = transactions;
-        }
-
-        public void SetBlockHeaderHashingStartTime(DateTime dateTime)
-        {
-            _blockHeaderHashingStartTime = dateTime;
         }
 
         public BlockHeader BlockHeader { get; private set; }
@@ -131,6 +120,7 @@ namespace SimpleBlockChain.Core.Blocks
                 .AddOperation(OpCodes.OP_CHECKSIG)
                 .Build();
             var result = new Block(null, Constants.DEFAULT_NBITS, Constants.DEFAULT_GENESIS_NONCE, 1);
+            result.BlockHeader.Time = (new DateTime(2017, 12, 14, 12, 0, 0)).ToUnixTimeUInt32();
             var transactionBuilder = new TransactionBuilder();
             const string txt = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
             var coinBase = System.Text.ASCIIEncoding.ASCII.GetBytes(txt).ToArray();
@@ -190,7 +180,7 @@ namespace SimpleBlockChain.Core.Blocks
             var version = BitConverter.ToInt32(payload.Take(4).ToArray(), 0);
             var previousBlockHashHeader = payload.Skip(4).Take(32);
             var merkleRootHash = payload.Skip(36).Take(32);
-            var time = BitConverter.ToUInt32(payload.Skip(68).Take(4).ToArray(), 0).ToDateTime();
+            var time = BitConverter.ToUInt32(payload.Skip(68).Take(4).ToArray(), 0);
             var nBits = BitConverter.ToUInt32(payload.Skip(72).Take(4).ToArray(), 0);
             var nonce = BitConverter.ToUInt32(payload.Skip(76).Take(4).ToArray(), 0);
             return new BlockHeader
@@ -235,11 +225,11 @@ namespace SimpleBlockChain.Core.Blocks
             // https://bitcoin.org/en/developer-reference#block-headers
             var result = new List<byte>();
             var merkleTree = GetMerkleRoot();
-            var time = BitConverter.GetBytes((UInt32)_blockHeaderHashingStartTime.ToUnixTime());
-            result.AddRange(BitConverter.GetBytes(_version));
+            var time = BlockHeader.Time;
+            result.AddRange(BitConverter.GetBytes(BlockHeader.Version));
             result.AddRange(BlockHeader.PreviousBlockHeader);
             result.AddRange(merkleTree);
-            result.AddRange(time);
+            result.AddRange(BitConverter.GetBytes(time));
             result.AddRange(BitConverter.GetBytes(BlockHeader.NBits));
             result.AddRange(BitConverter.GetBytes(BlockHeader.Nonce));
             return result.ToArray();

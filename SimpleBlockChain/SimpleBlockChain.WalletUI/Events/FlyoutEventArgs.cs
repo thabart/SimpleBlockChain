@@ -5,14 +5,14 @@ namespace SimpleBlockChain.WalletUI.Events
 {
     internal class FlyoutEventArgs : EventArgs
     {
-        private readonly Page _flyout;
+        private readonly UserControl _flyout;
 
-        public FlyoutEventArgs(Page flyout)
+        public FlyoutEventArgs(UserControl flyout)
         {
             _flyout = flyout;
         }
 
-        public Page Data
+        public UserControl Data
         {
             get
             {

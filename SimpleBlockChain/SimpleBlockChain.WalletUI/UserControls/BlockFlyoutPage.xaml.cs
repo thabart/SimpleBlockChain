@@ -9,12 +9,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SimpleBlockChain.WalletUI.Pages
+namespace SimpleBlockChain.WalletUI.UserControls
 {
-    /// <summary>
-    /// Logique d'interaction pour BlockFlyoutPage.xaml
-    /// </summary>
-    public partial class BlockFlyoutPage : Page
+    public partial class BlockFlyoutPage : UserControl
     {
         private IEnumerable<byte> _hash;
         private Networks _network;
@@ -80,20 +77,23 @@ namespace SimpleBlockChain.WalletUI.Pages
                         return;
                     }
 
-                    _viewModel.Transactions.Clear();
-                    foreach (var tx in block.Transactions)
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        var txId = tx.GetTxId().ToHexString();
-                        var record = new BlockTransactionViewModel
+                        _viewModel.Transactions.Clear();
+                        foreach (var tx in block.Transactions)
                         {
-                            TxId = txId,
-                            IsCoinBase = tx is CoinbaseTransaction,
-                            Value = tx.TransactionOut.Sum(t => t.Value),
-                            NbTransactionsOut = tx.TransactionOut.Count()
-                        };
+                            var txId = tx.GetTxId().ToHexString();
+                            var record = new BlockTransactionViewModel
+                            {
+                                TxId = txId,
+                                IsCoinBase = tx is CoinbaseTransaction,
+                                Value = tx.TransactionOut.Sum(t => t.Value),
+                                NbTransactionsOut = tx.TransactionOut.Count()
+                            };
 
-                        _viewModel.Transactions.Add(record);
-                    }
+                            _viewModel.Transactions.Add(record);
+                        }
+                    });
                 }
                 catch (AggregateException ex) { }
             });

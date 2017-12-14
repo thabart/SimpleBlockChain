@@ -12,6 +12,7 @@ using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.WalletUI.Events;
 using SimpleBlockChain.WalletUI.Stores;
+using SimpleBlockChain.WalletUI.UserControls;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.ComponentModel;
@@ -373,10 +374,10 @@ namespace SimpleBlockChain.WalletUI.Pages
             var lastIndex = startIndex + (BLOCKS_PER_PAGE - 1);
             if (lastIndex > (_viewModel.NbBlocks - 1))
             {
-                lastIndex = _viewModel.NbBlocks - 1;
+                lastIndex = _viewModel.NbBlocks;
             }
 
-            for (var  i = startIndex; i <= lastIndex; i++)
+            for (var  i = startIndex; i < lastIndex; i++)
             {
                 rpcClient.GetBlockHash(i).ContinueWith((r) =>
                 {
@@ -393,7 +394,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                                 {
                                     return;
                                 }
-
+                                
                                 var blockHash = b.GetHashHeader().ToHexString();
                                 var previousHash = b.BlockHeader.PreviousBlockHeader.ToHexString();
                                 var nbTransactions = b.Transactions.Count();

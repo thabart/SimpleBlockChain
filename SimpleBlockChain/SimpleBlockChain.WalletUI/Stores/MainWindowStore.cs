@@ -21,7 +21,7 @@ namespace SimpleBlockChain.WalletUI.Stores
 
         public event EventHandler<FlyoutEventArgs> DisplayFlyoutEvt;
 
-        public void DisplayFlyout(Page flyout)
+        public void DisplayFlyout(UserControl flyout)
         {
             if (flyout == null)
             {

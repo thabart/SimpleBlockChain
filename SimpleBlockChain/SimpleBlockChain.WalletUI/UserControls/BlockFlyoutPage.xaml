@@ -1,12 +1,11 @@
-﻿<Page x:Class="SimpleBlockChain.WalletUI.Pages.BlockFlyoutPage"
+﻿<UserControl x:Class="SimpleBlockChain.WalletUI.UserControls.BlockFlyoutPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300"
-      Title="BlockFlyoutPage">
+      d:DesignHeight="300" d:DesignWidth="300">
     <StackPanel>
         <Label>Transactions</Label>
         <ListView Grid.Row="0" ItemsSource="{Binding Path=Transactions}" SelectedItem="{Binding Path=SelectedTransaction}">
@@ -17,4 +16,4 @@
             </ListView.View>
         </ListView>
     </StackPanel>
-</Page>
+</UserControl>

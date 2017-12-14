@@ -19,6 +19,24 @@ namespace SimpleBlockChain.UnitTests.Blocks
         private static uint NBits = 0x1e0ffff0;
 
         [TestMethod]
+        public void WhenSerializeGenesisBlock()
+        {
+            var genesisBlock = Block.BuildGenesisBlock();
+            var firstHeader = genesisBlock.SerializeHeader();
+            var firstHashHeader = genesisBlock.GetHashHeader();
+            var payload = genesisBlock.Serialize();
+
+            var deserializedGenesisBlock = Block.Deserialize(payload);
+            var secondHeader = deserializedGenesisBlock.SerializeHeader();
+            var secondHashHeader = deserializedGenesisBlock.GetHashHeader();
+
+            Assert.IsTrue(firstHeader.Count() == 80);
+            Assert.IsTrue(secondHeader.Count() == 80);
+            Assert.IsTrue(firstHashHeader.SequenceEqual(secondHashHeader));
+            Assert.IsTrue(firstHeader.SequenceEqual(secondHeader));
+        }
+
+        [TestMethod]
         public void WhenSerializeBlockWithOneCoinbaseTransaction()
         {
             var ba = BuildBlockChainAddress();

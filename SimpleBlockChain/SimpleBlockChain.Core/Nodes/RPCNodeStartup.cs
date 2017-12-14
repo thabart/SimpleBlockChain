@@ -161,7 +161,7 @@ namespace SimpleBlockChain.Core.Nodes
                     result.Add("curtime", currentTime);
                     result.Add("previousblockhash", previousBlockHash);
                     result.Add("transactions", jTransactions);
-                    result.Add("version", Block.CURRENT_VERSION);
+                    result.Add("version", BlockHeader.CURRENT_VERSION);
                     result.Add("target", TargetHelper.GetTarget(Constants.DEFAULT_NBITS).ToHexString());
                     result.Add("bits", Constants.DEFAULT_NBITS);
                     response["result"] = result;
@@ -344,6 +344,7 @@ namespace SimpleBlockChain.Core.Nodes
                     }
                     else
                     {
+                        var h2 = requestedBlock.GetHashHeader();
                         response["result"] = requestedBlock.GetHashHeader().ToHexString();
                     }
 
@@ -378,7 +379,8 @@ namespace SimpleBlockChain.Core.Nodes
                         response["result"] = null;
                         return response;
                     }
-
+                    
+                    var h = recordBlock.GetHashHeader();
                     response["result"] = recordBlock.Serialize().ToHexString();
                     return response;
             }

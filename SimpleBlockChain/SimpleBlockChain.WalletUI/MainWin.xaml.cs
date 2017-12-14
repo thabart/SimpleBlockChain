@@ -39,12 +39,11 @@ namespace SimpleBlockChain.WalletUI
         private void DisplayFlyout(object sender, FlyoutEventArgs e)
         {
             flyoutsControl.Items.Clear();
-
             var flyout = new Flyout();
             flyout.Content = e.Data;
+            flyoutsControl.Items.Add(flyout);
             flyout.IsOpen = true;
             flyout.Position = Position.Right;
-            flyoutsControl.Items.Add(flyout);
         }
 
         public override void OnApplyTemplate()
