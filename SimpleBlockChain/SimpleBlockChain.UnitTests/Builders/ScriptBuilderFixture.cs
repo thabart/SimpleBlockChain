@@ -31,7 +31,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             var deserializedInputScript = Script.Deserialize(serializedInputScript);
             var deserializedOutputScript = Script.Deserialize(serializedOutputScript);
 
-            var interpreter = new Interpreter();
+            var interpreter = new ScriptInterpreter();
             bool isCorrect = interpreter.Check(deserializedInputScript, deserializedOutputScript);
 
             Assert.IsTrue(isCorrect);
@@ -63,7 +63,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             var deserializedInputScript = Script.Deserialize(serializedInputScript);
             var deserializedOutputScript = Script.Deserialize(serializedOutputScript);
 
-            var interpreter = new Interpreter();
+            var interpreter = new ScriptInterpreter();
             bool isCorrect = interpreter.Check(deserializedInputScript, deserializedOutputScript);
 
             Assert.IsTrue(isCorrect);

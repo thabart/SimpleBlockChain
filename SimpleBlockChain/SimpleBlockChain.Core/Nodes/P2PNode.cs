@@ -19,17 +19,17 @@ namespace SimpleBlockChain.Core.Nodes
         private readonly P2PNetworkConnector _p2pNetworkConnector;
         private static RpcServerApi _server;
         private readonly MessageParser _messageParser;
-        private readonly MessageCoordinator _messageCoordinator;
+        private readonly IMessageCoordinator _messageCoordinator;
         private IpAdrHelper _ipAdrHelper;
         private IpAddress _ipAddress;
 
-        public P2PNode(Networks network, ServiceFlags serviceFlag, P2PNetworkConnector p2pNetworkConnector)
+        public P2PNode(Networks network, ServiceFlags serviceFlag, P2PNetworkConnector p2pNetworkConnector, IMessageCoordinator messageCoordinator)
         {
             _network = network;
             _serviceFlag = serviceFlag;
             _p2pNetworkConnector = p2pNetworkConnector;
             _messageParser = new MessageParser();
-            _messageCoordinator = new MessageCoordinator();
+            _messageCoordinator = messageCoordinator;
             _ipAdrHelper = new IpAdrHelper();
         }
 

@@ -54,36 +54,6 @@ namespace SimpleBlockChain.Core.Blocks
             BlockHeader.MerkleRoot = GetMerkleRoot();
         }
 
-        public void Check()
-        {
-            var merkleRoot = BlockHeader.MerkleRoot; // Check MERKLE-ROOT.
-            var calculatedMerkleRoot = GetMerkleRoot();
-            if (!merkleRoot.SequenceEqual(calculatedMerkleRoot))
-            {
-                throw new ValidationException(ErrorCodes.InvalidMerkleRoot);
-            }
-
-            var blockChain = BlockChainStore.Instance().GetBlockChain(); // Check PREVIOUS BLOCK.
-            var currentBlock = blockChain.GetCurrentBlock();
-            if (!currentBlock.GetHashHeader().SequenceEqual(BlockHeader.PreviousBlockHeader))
-            {
-                throw new ValidationException(ErrorCodes.InvalidPreviousHashHeader);
-            }
-
-            var hash = currentBlock.GetHashHeader();
-            var currentNBits = Constants.DEFAULT_NBITS; // TODO : CALCULATE THE DEFAULT NBITS : https://bitcoin.org/en/developer-guide#proof-of-work
-            var target = TargetHelper.GetTarget(currentNBits);
-            if (!TargetHelper.IsValid(hash, target))
-            {
-                throw new ValidationException(ErrorCodes.NotEnoughDifficult);
-            }
-
-            foreach (var transaction in Transactions) // Check ALL TRANSACTIONS.
-            {
-                transaction.Check();
-            }
-        }
-
         public long GetTotalFees()
         {
             if (Transactions == null || !Transactions.Any())
@@ -235,7 +205,7 @@ namespace SimpleBlockChain.Core.Blocks
             return result.ToArray();
         }
 
-        private IEnumerable<byte> GetMerkleRoot()
+        public IEnumerable<byte> GetMerkleRoot()
         {
             var orderedTransactions = Transactions.OrderBy(p => p);
             if (orderedTransactions.Count() == 1)

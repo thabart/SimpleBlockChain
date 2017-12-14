@@ -19,7 +19,7 @@ namespace SimpleBlockChain.Core.Connectors
         private const int CHECK_INTERVAL = 11000;
         private readonly BackgroundWorker _cheeckPeerAvailabilityWorker;
         private readonly Networks _network;
-        private readonly MessageCoordinator _messageCoordinator;
+        private readonly IMessageCoordinator _messageCoordinator;
         private Timer _timer;
         private RpcClientApi _client;
         private MessageParser _messageParser;
@@ -29,7 +29,7 @@ namespace SimpleBlockChain.Core.Connectors
         private ServiceFlags _serviceFlag;
         private readonly AutoResetEvent _autoEvent = null;
 
-        public PeerConnector(Networks network, P2PNetworkConnector p2pNetworkConnector)
+        public PeerConnector(Networks network, P2PNetworkConnector p2pNetworkConnector, IMessageCoordinator messageCoordinator)
         {
             _autoEvent = new AutoResetEvent(false);
             _client = null;
@@ -37,7 +37,7 @@ namespace SimpleBlockChain.Core.Connectors
             _messageParser = new MessageParser();
             _cheeckPeerAvailabilityWorker = new BackgroundWorker();
             _cheeckPeerAvailabilityWorker.DoWork += CheckPeerAvailability;
-            _messageCoordinator = new MessageCoordinator();
+            _messageCoordinator = messageCoordinator;
         }
 
         public event EventHandler<IpAddressEventArgs> TimeOutEvent;

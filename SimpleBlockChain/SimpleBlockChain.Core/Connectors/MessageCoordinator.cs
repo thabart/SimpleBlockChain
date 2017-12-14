@@ -1,6 +1,6 @@
-﻿using SimpleBlockChain.Core.Blocks;
-using SimpleBlockChain.Core.Common;
+﻿using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Evts;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;
@@ -8,24 +8,38 @@ using SimpleBlockChain.Core.Parsers;
 using SimpleBlockChain.Core.Storages;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.Core.Validators;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SimpleBlockChain.Core.Connectors
 {
-    public class MessageCoordinator
+    public interface IMessageCoordinator
     {
+        Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector);
+        Message Launch(PeerConnector peerConnector, Message message);
+    }
+
+    internal class MessageCoordinator : IMessageCoordinator
+    {
+        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly IBlockValidator _blockValidator;
+        private readonly ITransactionValidator _transactionValidator;
         private readonly MessageParser _messageParser;
         private readonly PeersRepository _peersStorage;
 
-        public MessageCoordinator()
+        public MessageCoordinator(IBlockChainFactory blockChainFactory, IBlockValidator blockValidator, ITransactionValidator transactionValidator)
         {
+            _blockChainFactory = blockChainFactory;
+            _blockValidator = blockValidator;
+            _transactionValidator = transactionValidator;
             _messageParser = new MessageParser();
             _peersStorage = new PeersRepository();
         }
 
         public Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector)
         {
+            var blockChain = _blockChainFactory.Build();
             if (message.GetCommandName() == Constants.MessageNames.Version) // RETURNS VERSION.
             {
                 var msg = message as VersionMessage;
@@ -116,7 +130,7 @@ namespace SimpleBlockChain.Core.Connectors
             if (message.GetCommandName() == Constants.MessageNames.Block) // ADD THE BLOCK.
             {
                 var msg = message as BlockMessage;
-                var blockChain = BlockChainStore.Instance().GetBlockChain();
+                _blockValidator.Check(msg.Block);
                 blockChain.AddBlock(msg.Block);
                 if (msg.Block.Transactions != null)
                 {
@@ -132,7 +146,6 @@ namespace SimpleBlockChain.Core.Connectors
             if (message.GetCommandName() == Constants.MessageNames.GetBlocks) // RETURN THE BLOCKS : https://bitcoin.org/en/developer-reference#getblocks
             {
                 var msg = message as GetBlocksMessage;
-                var blockChain = BlockChainStore.Instance().GetBlockChain();
                 int lastBlockHeight = -1;
                 foreach(var blockHash in msg.BlockHashes)
                 {
@@ -307,7 +320,7 @@ namespace SimpleBlockChain.Core.Connectors
 
         private IEnumerable<Message> Execute(GetDataMessage msg)
         {
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            var blockChain = _blockChainFactory.Build();
             var messages = new List<Message>();
             var notFoundInventory = new List<Inventory>();
             if (msg.Inventories.Any())
@@ -350,7 +363,7 @@ namespace SimpleBlockChain.Core.Connectors
 
         private Message Execute(InventoryMessage msg)
         {
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            var blockChain = _blockChainFactory.Build();
             var inventories = new List<Inventory>();
             if (msg.Inventories.Any())
             {
@@ -382,7 +395,7 @@ namespace SimpleBlockChain.Core.Connectors
             return null;
         }
 
-        private static void AddTransaction(BaseTransaction transaction)
+        private void AddTransaction(BaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -396,12 +409,7 @@ namespace SimpleBlockChain.Core.Connectors
                 return;
             }
 
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
-            if (blockChain.ContainsTransaction(transaction.GetTxId()))
-            {
-                return;
-            }
-
+            _transactionValidator.Check(transaction);
             instance.AddTransaction(transaction);
         }
     }

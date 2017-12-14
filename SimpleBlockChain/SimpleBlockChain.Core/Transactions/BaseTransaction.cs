@@ -2,10 +2,8 @@
 using SimpleBlockChain.Core.Aggregates;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Common;
-using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Scripts;
-using SimpleBlockChain.Core.Stores;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,15 +79,6 @@ namespace SimpleBlockChain.Core.Transactions
             return new KeyValuePair<BaseTransaction, int>(result, currentStartIndex);
         }
 
-        public long GetFee()
-        {
-            var outputValue = TransactionOut.Sum(t => t.Value); // TRANSACTION FEE + REWARD.
-            var inputValue = TransactionIn.Sum(t => t.GetValue());
-            var leftValue = inputValue - outputValue;
-            var result = ((double)(Serialize().Count() / (double)1000) * Constants.DEFAULT_MIN_TX_REWARD) + leftValue;
-            return (long)result;
-        }
-
         public IEnumerable<byte> GetTxId()
         {
             var payload = Serialize();
@@ -124,68 +113,6 @@ namespace SimpleBlockChain.Core.Transactions
 
         public abstract KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size);
 
-        public TransactionOut GetTransactionIn(string encodedBcAddr)
-        {
-            if (string.IsNullOrWhiteSpace(encodedBcAddr))
-            {
-                throw new ArgumentNullException(nameof(encodedBcAddr));
-            }
-
-            var bcAddr = BlockChainAddress.Deserialize(encodedBcAddr);
-            var publicKeyHash = bcAddr.PublicKeyHash;
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
-            foreach (var txIn in TransactionIn)
-            {
-                var nCbtxIn = txIn as TransactionInNoneCoinbase;
-                if (nCbtxIn == null || nCbtxIn.Outpoint == null)
-                {
-                    continue;
-                }
-
-                var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
-                if (previousTx == null || previousTx.TransactionOut == null)
-                {
-                    continue;
-                }
-
-                var previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
-                if (previousTxOut == null || previousTxOut.Script == null || !previousTxOut.Script.ContainsPublicKeyHash(publicKeyHash))
-                {
-                    continue;
-                }
-
-                return previousTxOut;
-            }
-
-            return null;
-        }
-
-        public long CalculateBalance(string encodedBcAddr)
-        {
-            if (string.IsNullOrWhiteSpace(encodedBcAddr))
-            {
-                throw new ArgumentNullException(nameof(encodedBcAddr));
-            }
-
-            var txIn = GetTransactionIn(encodedBcAddr);
-            var txOut = GetTransactionOut(encodedBcAddr);
-            if (txIn != null)
-            {
-                if (txOut == null)
-                {
-                    return 0;
-                }
-
-                return -(txIn.Value - txOut.Value);
-            }            
-
-            if (txOut == null)
-            {
-                return 0;
-            }
-
-            return txOut.Value;
-        }
 
         public TransactionOut GetTransactionOut(WalletAggregateAddress walletAddr)
         {
@@ -204,7 +131,7 @@ namespace SimpleBlockChain.Core.Transactions
                 return null;
             }
 
-            var interpreter = new Interpreter();
+            var interpreter = new ScriptInterpreter();
             var scriptBuilder = new ScriptBuilder();
             var secondScript = scriptBuilder.New()
                 .AddToStack(walletAddr.Key.GetSignature())
@@ -257,49 +184,6 @@ namespace SimpleBlockChain.Core.Transactions
         public bool CanSpend(string adrHash)
         {
             return GetTransactionOut(adrHash) != null;
-        }
-
-        public void Check()
-        {            
-            var isCoinBaseTransaction = this is CoinbaseTransaction; // https://bitcoin.org/en/developer-guide#block-chain-overview
-            if (!isCoinBaseTransaction && (TransactionIn == null || !TransactionIn.Any()))
-            {
-                throw new ValidationException(ErrorCodes.NoTransactionIn);
-            }
-
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
-            if (!isCoinBaseTransaction)
-            {
-                long totalOutput = 0;
-                foreach (var txIn in TransactionIn)
-                {
-                    var noneCoinBaseTxIn = txIn as TransactionInNoneCoinbase; // Check TRANSACTION EXISTS.
-                    var previousTxId = noneCoinBaseTxIn.Outpoint.Hash;
-                    var previousIndex = noneCoinBaseTxIn.Outpoint.Index;
-                    var previousTransaction = blockChain.GetUnspentTransaction(previousTxId, previousIndex);
-                    if (previousTransaction == null)
-                    {
-                        throw new ValidationException(ErrorCodes.ReferencedTransactionNotValid);
-                    }
-
-                    var previousTxOut = previousTransaction.TransactionOut.ElementAt((int)previousIndex); // Check SCRIPT.
-                    var sigScript = Script.Deserialize(noneCoinBaseTxIn.SignatureScript);
-                    var pkScript = previousTxOut.Script;
-                    var interpreter = new Interpreter();
-                    if (!interpreter.Check(sigScript, pkScript))
-                    {
-                        throw new ValidationException(ErrorCodes.TransactionSignatureNotCorrect);
-                    }
-
-                    totalOutput += previousTxOut.Value;
-                }
-
-                var sumOutput = TransactionOut.Sum(t => t.Value);
-                if (sumOutput > totalOutput)
-                {
-                    throw new ValidationException(ErrorCodes.TransactionOutputExceedInput);
-                }
-            }
         }
 
         public int CompareTo(object obj)

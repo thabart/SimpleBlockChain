@@ -8,7 +8,12 @@ using System.Security.Cryptography;
 
 namespace SimpleBlockChain.Core.Scripts
 {
-    public class Interpreter
+    public interface IScriptInterpreter
+    {
+        bool Check(Script firstScript, Script secondScript);
+    }
+
+    internal class ScriptInterpreter : IScriptInterpreter
     {
         private Dictionary<OpCodes, IEnumerable<byte>> _mappingOpCodesToBytes = new Dictionary<OpCodes, IEnumerable<byte>>
         {

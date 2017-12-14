@@ -25,15 +25,15 @@ namespace SimpleBlockChain.Core.Connectors
         private Networks _network;
         private ConcurrentBag<PeerConnector> _peers;
         private MessageParser _messageParser;
-        private MessageCoordinator _messageCoordinator;
+        private IMessageCoordinator _messageCoordinator;
         private bool _isSeedNode = false;
 
-        public P2PNetworkConnector()
+        public P2PNetworkConnector(IMessageCoordinator messageCoordinator)
         {
             _peers = new ConcurrentBag<PeerConnector>();
             _messageParser = new MessageParser();
             _peersRepository = new PeersRepository();
-            _messageCoordinator = new MessageCoordinator();
+            _messageCoordinator = messageCoordinator;
             var instance = PeerEventStore.Instance();
             instance.NewPeerEvt += ListenPeer;
             P2PConnectorEventStore.Instance().NewBlockEvt += BroadcastNewBlock;
@@ -294,7 +294,7 @@ namespace SimpleBlockChain.Core.Connectors
 
             return Task.Factory.StartNew(() =>
             {
-                var peerConnector = new PeerConnector(_network, this);
+                var peerConnector = new PeerConnector(_network, this, _messageCoordinator);
                 try
                 {
                     var manualResetEvent = new ManualResetEvent(false);

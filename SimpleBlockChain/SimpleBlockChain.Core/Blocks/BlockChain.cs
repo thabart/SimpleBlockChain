@@ -1,15 +1,16 @@
 ﻿using LevelDB;
+using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace SimpleBlockChain.Core.Blocks
 {
     public class BlockChain : IDisposable
     {
+        private readonly IAssemblyHelper _assemblyHelper;
         private const string _databaseFile = "db.dat";
         private DB _db;
         private int _currentBlockHeight = 0;
@@ -28,8 +29,9 @@ namespace SimpleBlockChain.Core.Blocks
         private const string CURRENT_BLOCK = "CURRENT_BLOCK";
         private const char TXID_SEPARATOR = ',';
 
-        public BlockChain()
+        internal BlockChain(IAssemblyHelper assemblyHelper)
         {
+            _assemblyHelper = assemblyHelper;
             var options = new Options { CreateIfMissing = true };
             _db = new DB(GetDbFile(), options);
             string result = null;
@@ -173,7 +175,6 @@ namespace SimpleBlockChain.Core.Blocks
                 throw new ArgumentNullException(nameof(block));
             }
 
-            block.Check();
             _currentBlockHeight++;
             Persist(block);
             return this;
@@ -398,9 +399,9 @@ namespace SimpleBlockChain.Core.Blocks
             _currentBlockHeight = int.Parse(_db.Get(CURRENT_BLOCK_HEIGHT, ReadOptions.Default));
         }
 
-        private static string GetDbFile()
+        private string GetDbFile()
         {
-            string path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            var path = Path.GetDirectoryName(_assemblyHelper.GetEntryAssembly().Location);
             return Path.Combine(path, _databaseFile);
         }
     }

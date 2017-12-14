@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Connectors;
+﻿using SimpleBlockChain.Core.Blocks;
+using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Messages;
@@ -18,19 +19,21 @@ namespace SimpleBlockChain.Core.Nodes
     {
         private readonly Networks _network;
         private readonly ServiceFlags _serviceFlag;
+        private readonly BlockChain _blockChain;
         private P2PNetworkConnector _p2pNetworkConnector;
         private P2PNode _p2pNode;
         private RPCNode _rpcNode;
 
-        internal NodeLauncher(Networks network, ServiceFlags serviceFlag, IRpcNodeFactory rpcNodeFactory)
+        internal NodeLauncher(Networks network, ServiceFlags serviceFlag, IRpcNodeFactory rpcNodeFactory, IBlockChainFactory blockChainFactory, IMessageCoordinator messageCoordinator)
         {
             _network = network;
             _serviceFlag = serviceFlag;
-            _p2pNetworkConnector = new P2PNetworkConnector();
+            _p2pNetworkConnector = new P2PNetworkConnector(messageCoordinator);
             _p2pNetworkConnector.ConnectEvent += P2PConnectEvent;
             _p2pNetworkConnector.DisconnectEvent += P2PDisconnectEvent;
-            _p2pNode = new P2PNode(_network, _serviceFlag, _p2pNetworkConnector);
+            _p2pNode = new P2PNode(_network, _serviceFlag, _p2pNetworkConnector, messageCoordinator);
             _rpcNode = rpcNodeFactory.Build(_network);
+            _blockChain = blockChainFactory.Build();
         }
 
         public RPCNode GetRpcNode()
@@ -83,8 +86,7 @@ namespace SimpleBlockChain.Core.Nodes
                 throw new P2PConnectorException(ErrorCodes.P2PNotReachable);
             }
 
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
-            var blocks = blockChain.GetLastBlocks(Constants.DEFAULT_NB_BLOCKS_PAST);
+            var blocks = _blockChain.GetLastBlocks(Constants.DEFAULT_NB_BLOCKS_PAST);
             var getBlocksMessage = new GetBlocksMessage(blocks.Select(b => b.GetHashHeader()), _network);
             Broadcast(getBlocksMessage);
         }

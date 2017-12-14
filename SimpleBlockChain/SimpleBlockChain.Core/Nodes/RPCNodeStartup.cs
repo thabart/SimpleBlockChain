@@ -7,10 +7,12 @@ using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.Core.Validators;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,11 +37,20 @@ namespace SimpleBlockChain.Core.Nodes
     {
         private readonly IWalletRepository _walletRepository;
         private readonly Networks _network;
+        private readonly IBlockChainFactory _blockChainFactory;
+        private readonly ITransactionHelper _transactionHelper;
+        private readonly ITransactionValidator _transactionValidator;
+        private readonly IBlockValidator _blockValidator;
 
-        public RPCNodeStartup(IWalletRepository walletRepository, Networks network)
+        public RPCNodeStartup(IWalletRepository walletRepository, Networks network, IBlockChainFactory blockChainFactory, 
+            ITransactionHelper transactionHelper, ITransactionValidator transactionValidator, IBlockValidator blockValidator)
         {
             _walletRepository = walletRepository;
             _network = network;
+            _blockChainFactory = blockChainFactory;
+            _transactionHelper = transactionHelper;
+            _transactionValidator = transactionValidator;
+            _blockValidator = blockValidator;
         }
 
         public void Configure(IApplicationBuilder app)
@@ -108,7 +119,7 @@ namespace SimpleBlockChain.Core.Nodes
             }
                   
             var transactions = MemoryPool.Instance().GetTransactions();
-            var blockChain = BlockChainStore.Instance().GetBlockChain();
+            var blockChain = _blockChainFactory.Build();
             var wallet = WalletStore.Instance().GetAuthenticatedWallet();
             JObject response = CreateResponse(id);
             switch (method)
@@ -138,7 +149,7 @@ namespace SimpleBlockChain.Core.Nodes
                     var previousBlockHash = currentBlock.GetHashHeader().ToHexString();
                     var transactionBuilder = new TransactionBuilder();
                     var nonce = BitConverter.GetBytes(NonceHelper.GetNonceUInt64());
-                    var value = transactions.Sum(t => t.GetFee());
+                    var value = transactions.Sum(t => _transactionHelper.GetFee(t));
                     var coinBaseTransaction = transactionBuilder.NewCoinbaseTransaction()
                         .SetInput((uint)height + 1, nonce)
                         .AddOutput(value, Script.CreateCorrectScript())
@@ -176,8 +187,8 @@ namespace SimpleBlockChain.Core.Nodes
                     var block = Block.Deserialize(payload);
                     try
                     {
-                        block.Check();
-                        BlockChainStore.Instance().GetBlockChain().AddBlock(block);
+                        _blockValidator.Check(block);
+                        blockChain.AddBlock(block);
                         P2PConnectorEventStore.Instance().Broadcast(block);
                         if (block.Transactions != null)
                         {
@@ -278,7 +289,7 @@ namespace SimpleBlockChain.Core.Nodes
                     try
                     {
                         var tx = kvp.Key;
-                        tx.Check();
+                        _transactionValidator.Check(tx);
                         MemoryPool.Instance().AddTransaction(tx);
                         P2PConnectorEventStore.Instance().Broadcast(tx);
                         response["result"] = tx.GetTxId().ToHexString();
@@ -313,7 +324,7 @@ namespace SimpleBlockChain.Core.Nodes
                         {
                             foreach(var memTx in transactions)
                             {
-                                var balance = memTx.CalculateBalance(adr.Hash);
+                                var balance = _transactionHelper.CalculateBalance(memTx, adr.Hash);
                                 unconfirmedBalance += balance;
                             }
                         }

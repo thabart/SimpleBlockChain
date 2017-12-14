@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Factories;
+using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Scripts;
+using SimpleBlockChain.Core.Validators;
 using System;
 
 namespace SimpleBlockChain.Core
@@ -18,7 +22,14 @@ namespace SimpleBlockChain.Core
             serviceCollection.AddTransient<INodeLauncherFactory, NodeLauncherFactory>();
             serviceCollection.AddTransient<IHttpClientFactory, HttpClientFactory>();
             serviceCollection.AddTransient<ITransactionBuilder, TransactionBuilder>();
-            serviceCollection.AddTransient<IScriptBuilder,  ScriptBuilder > ();
+            serviceCollection.AddTransient<IScriptBuilder, ScriptBuilder>();
+            serviceCollection.AddTransient<IAssemblyHelper, AssemblyHelper>();
+            serviceCollection.AddTransient<IBlockChainFactory, BlockChainFactory>();
+            serviceCollection.AddTransient<ITransactionValidator, TransactionValidator>();
+            serviceCollection.AddTransient<IBlockValidator, BlockValidator>();
+            serviceCollection.AddTransient<IScriptInterpreter, ScriptInterpreter>();
+            serviceCollection.AddTransient<ITransactionHelper, TransactionHelper>();
+            serviceCollection.AddTransient<IMessageCoordinator, MessageCoordinator>();
             return serviceCollection;
         }
     }
