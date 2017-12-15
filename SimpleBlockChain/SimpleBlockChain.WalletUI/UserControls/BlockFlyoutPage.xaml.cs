@@ -1,7 +1,9 @@
-﻿using SimpleBlockChain.Core;
+﻿using MahApps.Metro.Controls;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -42,25 +44,16 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
             _hash = hash;
             _network = network;
-            _viewModel = new BlockFlyoutViewModel();
-            DataContext = _viewModel;
             Loaded += Load;
             Unloaded += Unload;
             InitializeComponent();
         }
 
-        private void Load(object sender, RoutedEventArgs e)
+        private void Init()
         {
-            Init();
-        }
-
-        private void Unload(object sender, RoutedEventArgs e)
-        {
-            _viewModel = null;
-        }
-
-        public void Init()
-        {
+            _viewModel = new BlockFlyoutViewModel();
+            _viewModel.OpenTransactionEvt += OpenTransaction;
+            DataContext = _viewModel;
             var rpcClient = new RpcClient(_network);
             rpcClient.GetBlock(_hash).ContinueWith((r) =>
             {
@@ -97,6 +90,30 @@ namespace SimpleBlockChain.WalletUI.UserControls
                 }
                 catch (AggregateException ex) { }
             });
+        }
+
+        private void Load(object sender, RoutedEventArgs e)
+        {
+            Init();
+        }
+
+        private void Unload(object sender, RoutedEventArgs e)
+        {
+            _viewModel.OpenTransactionEvt -= OpenTransaction;
+            _viewModel = null;
+        }
+
+        private void OpenTransaction(object sender, EventArgs e)
+        {
+            var selectedTransaction = _viewModel.SelectedTransaction;
+            if (selectedTransaction == null)
+            {
+                return;
+            }
+
+            var txId = selectedTransaction.TxId.FromHexString();
+            var flyout = new TransactionFlyout(txId, _network);
+            MainWindowStore.Instance().DisplayFlyout(flyout, Position.Left, 400);
         }
     }
 }

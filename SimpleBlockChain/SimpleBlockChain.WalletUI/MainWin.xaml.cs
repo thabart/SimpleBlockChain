@@ -38,13 +38,29 @@ namespace SimpleBlockChain.WalletUI
 
         private void DisplayFlyout(object sender, FlyoutEventArgs e)
         {
-            flyoutsControl.Items.Clear();
+            if (flyoutsControl.Items != null)
+            {
+                object itemToBeRemoved = null;
+                foreach (var item in flyoutsControl.Items)
+                {
+                    if (item.GetType() == e.UserControl.GetType())
+                    {
+                        itemToBeRemoved = item;
+                    }
+                }
+
+                if (itemToBeRemoved != null)
+                {
+                    flyoutsControl.Items.Remove(itemToBeRemoved);
+                }
+            }
+
             var flyout = new Flyout();
-            flyout.Content = e.Data;
+            flyout.Content = e.UserControl;
             flyoutsControl.Items.Add(flyout);
             flyout.IsOpen = true;
-            flyout.MinWidth = 700;
-            flyout.Position = Position.Right;
+            flyout.MinWidth = e.MinWidth;
+            flyout.Position = e.Position;
         }
 
         public override void OnApplyTemplate()

@@ -8,7 +8,12 @@
       d:DesignHeight="300" d:DesignWidth="300">
     <StackPanel>
         <Label>Transactions</Label>
-        <ListView Grid.Row="0" ItemsSource="{Binding Path=Transactions}" SelectedItem="{Binding Path=SelectedTransaction}">
+        <ListView Grid.Row="0" ItemsSource="{Binding Path=Transactions}" SelectedItem="{Binding Path=SelectedTransaction, Mode=TwoWay}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Open" Command="{Binding Path=OpenTransactionCommand}" />
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="TXID" DisplayMemberBinding="{Binding Path=TxId}" />

@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="SimpleBlockChain.WalletUI.UserControls.BlockChainInformation"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <!-- Transaction history -->
+    <Grid Grid.Column="1" Grid.RowSpan="2">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ListView Grid.Row="0" ItemsSource="{Binding Path=Blocks}" SelectedItem="{Binding Path=SelectedBlock}">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Open" Command="{Binding Path=SelectBlockCommand}" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="HASH" DisplayMemberBinding="{Binding Path=Hash}" />
+                        <GridViewColumn Header="PREVIOUS HASH" DisplayMemberBinding="{Binding Path=PreviousHash}" />
+                        <GridViewColumn Header="FEES" DisplayMemberBinding="{Binding Path=Fees}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <Button>Previous</Button>
+                <Button>Next</Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

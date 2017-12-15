@@ -1,8 +1,10 @@
 ﻿<Page x:Class="SimpleBlockChain.WalletUI.Pages.WalletPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:userControls="clr-namespace:SimpleBlockChain.WalletUI.UserControls"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
       xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.Pages"      
       xmlns:behavior="clr-namespace:SimpleBlockChain.WalletUI.Behaviors"
       mc:Ignorable="d" 
@@ -28,86 +30,9 @@
                 <MenuItem Header="Refresh BLOCKCHAIN" Command="{Binding Path=RefreshBlockChainCommand}"></MenuItem>
             </MenuItem>
         </Menu>
-        <!-- CONTENT -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="3*" />
-            </Grid.RowDefinitions>
-            <!-- Transfer money to another account -->
-            <Grid Grid.Column="0" Grid.Row="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <!-- Amount of money -->
-                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Amount of money</Label>
-                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SendValue, Mode=TwoWay}"></TextBox>
-                <!-- Address -->
-                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Address</Label>
-                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=SendAddress, Mode=TwoWay}"></TextBox>
-                <!-- Transactions -->
-                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="2">Transaction</Label>
-                <ComboBox Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Path=Transactions}" DisplayMemberPath="DisplayName" SelectedItem="{Binding Path=SelectedTransaction, Mode=TwoWay}">
-                </ComboBox>
-                <!-- Submit button -->
-                <Button Margin="{StaticResource ControlMargin}" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=SendMoneyCommand}">Send</Button>
-            </Grid>
-            <!-- Display available money -->
-            <Grid Grid.Column="0" Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Label Grid.Column="0">Your account</Label>
-                <StackPanel VerticalAlignment="Center" Grid.Column="1">
-                    <TextBlock FontSize="30" Text="{Binding Path=Amount, StringFormat={} {0} PTCS}"></TextBlock>
-                </StackPanel>
-                <Label Grid.Row="1" Grid.Column="0">Balance</Label>
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=Balance, StringFormat={} {0} PTCS}"></TextBlock>
-            </Grid>
-            <!-- Transaction history -->
-            <Grid Grid.Column="1" Grid.RowSpan="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <ListView Grid.Row="0" ItemsSource="{Binding Path=Blocks}" SelectedItem="{Binding Path=SelectedBlock}">
-                        <ListView.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Open" Command="{Binding Path=SelectBlockCommand}" />
-                            </ContextMenu>
-                        </ListView.ContextMenu>
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="HASH" DisplayMemberBinding="{Binding Path=Hash}" />
-                                <GridViewColumn Header="PREVIOUS HASH" DisplayMemberBinding="{Binding Path=PreviousHash}" />
-                                <GridViewColumn Header="FEES" DisplayMemberBinding="{Binding Path=Fees}" />
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <Button>Previous</Button>
-                        <Button>Next</Button>
-                    </StackPanel>
-                </Grid>
-            </Grid>
-        </Grid>
+        <!-- TAB CONTENT -->
+        <Controls:MetroAnimatedSingleRowTabControl Grid.Row="1" x:Name="tabControl">
+        </Controls:MetroAnimatedSingleRowTabControl>
         <!-- FOOTER -->
         <StackPanel Orientation="Horizontal" Grid.Row="2" Background="#CC119EDA">
             <TextBlock Typography.Capitals="AllSmallCaps">

@@ -24,6 +24,7 @@ namespace SimpleBlockChain.Core.Rpc
         Task<Block> GetBlock(IEnumerable<byte> hash);
         Task<int> GetBlockCount();
         Task<IEnumerable<byte>> GetBlockHash(int height);
+        Task<BaseTransaction> GetRawTransaction(IEnumerable<byte> txId);
     }
 
     public class RpcClient : IRpcClient
@@ -384,6 +385,67 @@ namespace SimpleBlockChain.Core.Rpc
 
             var payload = r.FromHexString();
             return payload;
+        }
+
+        public async Task<BaseTransaction> GetRawTransaction(IEnumerable<byte> txId)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentOutOfRangeException(nameof(txId));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(txId.ToHexString());
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.GetRawTransaction);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.Value<string>("result");
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            var payload = r.FromHexString();
+            BaseTransaction transaction = null;
+            try
+            {
+                transaction = BaseTransaction.Deserialize(payload, TransactionTypes.NoneCoinbase).Key;
+            }
+            catch (Exception) { }
+            if (transaction == null)
+            {
+                try
+                {
+                    transaction = BaseTransaction.Deserialize(payload, TransactionTypes.Coinbase).Key;
+                }
+                catch (Exception) { }
+            }
+
+            return transaction;
         }
 
         public static bool TryGetError(JObject jObj, out string errorCode)

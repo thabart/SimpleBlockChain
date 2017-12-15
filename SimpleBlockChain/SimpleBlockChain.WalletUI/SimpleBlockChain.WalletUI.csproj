@@ -318,15 +318,31 @@
     <Compile Include="MainWin.xaml.cs">
       <DependentUpon>MainWin.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\BlockChainInformation.xaml.cs">
+      <DependentUpon>BlockChainInformation.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\BlockFlyoutPage.xaml.cs">
       <DependentUpon>BlockFlyoutPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Stores\MainWindowStore.cs" />
+    <Compile Include="UserControls\MemoryPoolInformation.xaml.cs">
+      <DependentUpon>MemoryPoolInformation.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\TransactionFlyout.xaml.cs">
+      <DependentUpon>TransactionFlyout.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\WalletInformation.xaml.cs">
+      <DependentUpon>WalletInformation.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\AuthenticateWalletViewModel.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
+    <Compile Include="ViewModels\BlockChainInformationViewModel.cs" />
     <Compile Include="ViewModels\CreateWalletViewModel.cs" />
     <Compile Include="ViewModels\BlockFlyoutViewModel.cs" />
     <Compile Include="ViewModels\HomePageViewModel.cs" />
+    <Compile Include="ViewModels\MemoryPoolInformationViewModel.cs" />
+    <Compile Include="ViewModels\TransactionFlyoutViewModel.cs" />
+    <Compile Include="ViewModels\WalletInformationViewModel.cs" />
     <Compile Include="ViewModels\WalletPageViewModel.cs" />
     <Page Include="MainWin.xaml">
       <SubType>Designer</SubType>
@@ -346,6 +362,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserControls\BlockChainInformation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\BlockFlyoutPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -359,6 +379,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\WalletPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\MemoryPoolInformation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\TransactionFlyout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\WalletInformation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

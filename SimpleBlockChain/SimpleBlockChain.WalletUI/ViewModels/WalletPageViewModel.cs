@@ -2,69 +2,19 @@
 using SimpleBlockChain.WalletUI.Commands;
 using SimpleBlockChain.WalletUI.Events;
 using System;
-using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace SimpleBlockChain.WalletUI.ViewModels
 {
-    public class TransactionViewModel
-    {
-        public TransactionViewModel(string txId, int vout, double amount, string hash)
-        {
-            TxId = txId;
-            Vout = vout;
-            Amount = amount;
-            Hash = hash;
-            DisplayName = string.Format("{0} : {1}", amount, txId);
-        }
-        
-        public string DisplayName { get; set; }
-        public string TxId { get; private set; }
-        public double Amount { get; set; }
-        public int Vout { get; private set; }
-        public string Hash { get; private set; }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-            {
-                return false;
-            }
-
-            var trVm = obj as TransactionViewModel;
-            if (trVm == null)
-            {
-                return false;
-            }
-
-            return Vout == trVm.Vout && TxId == trVm.TxId;
-        }
-    }
-
-    public class BlockViewModel
-    {
-        public string Hash { get; set; }
-        public string PreviousHash { get; set; }
-        public long Fees { get; set; }
-    }
-
     public class WalletPageViewModel : BaseViewModel
     {
-        private double _sendValue;
-        private string _sendAddress;
         private bool _isMainNetChecked;
         private bool _isTestNetChecked;
         private int _nbBlocks;
         private bool _isConnected;
-        private int _amount;
-        public int _balance;
         private ICommand _mainNetCommand;
         private ICommand _testNetCommand;
         private ICommand _refreshBlockChainCommand;
-        private ICommand _sendMoneyCommand;
-        private ICommand _previousPageCommand;
-        private ICommand _nextPageCommand;
-        private ICommand _selectBlockCommand;
 
         public WalletPageViewModel()
         {
@@ -72,25 +22,13 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             _isTestNetChecked = false;
             _isConnected = false;
             _nbBlocks = 0;
-            _amount = 0;
-            Transactions = new ObservableCollection<TransactionViewModel>();
-            Blocks = new ObservableCollection<BlockViewModel>();
-            _sendMoneyCommand = new RelayCommand(p => SendMoneyExecute(), p => CanSendMoney());
             _mainNetCommand = new RelayCommand(p => ExecuteMainNet(), p => CanExecuteMainNet());
             _testNetCommand = new RelayCommand(p => ExecuteTestNet(), p => CanExecuteTestNet());
             _refreshBlockChainCommand = new RelayCommand(p => ExecuteRefreshBlockChain(), p => CanExecuteRefreshBlockChain());
-            _previousPageCommand = new RelayCommand(p => ExecutePreviousPage(), p => CanExecutePreviousPage());
-            _nextPageCommand = new RelayCommand(p => ExecuteNextPage(), p => CanExecuteNextPage());
-            _selectBlockCommand = new RelayCommand(p => ExecuteSelectBlock(), p => CanSelectBlock());
         }
 
-        public ICommand SendMoney { get; private set; }
-        public event EventHandler SendMoneyEvt;
         public event EventHandler<NetworkEventHandler> NetworkSwitchEvt;
         public event EventHandler RefreshBlockChainEvt;
-        public event EventHandler PreviousPageEvt;
-        public event EventHandler NextPageEvt;
-        public event EventHandler<BlockEventArgs> SelectBlockEvt;
 
         public ICommand MainNetCommand
         {
@@ -107,76 +45,6 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             get
             {
                 return _refreshBlockChainCommand;
-            }
-        }
-
-        public ICommand SendMoneyCommand
-        {
-            get
-            {
-                return _sendMoneyCommand;
-            }
-        }
-
-        public ICommand PreviousPageCommand
-        {
-            get
-            {
-                return _previousPageCommand;
-            }
-        }
-
-        public ICommand NextPageCommand
-        {
-            get
-            {
-                return _nextPageCommand;
-            }
-        }
-
-        public ICommand SelectBlockCommand
-        {
-            get
-            {
-                return _selectBlockCommand;
-            }
-        }
-
-        public ObservableCollection<TransactionViewModel> Transactions { get; private set; }
-        public ObservableCollection<BlockViewModel> Blocks { get; private set; }
-
-        public TransactionViewModel SelectedTransaction { get; set; }
-        public BlockViewModel SelectedBlock { get; set; }
-
-        public int Amount
-        {
-            get
-            {
-                return _amount;
-            }
-            set
-            {
-                if (_amount != value)
-                {
-                    _amount = value;
-                    NotifyPropertyChanged(nameof(Amount));
-                }
-            }
-        }
-
-        public int Balance
-        {
-            get
-            {
-                return _balance;
-            }
-            set
-            {
-                if (_balance != value)
-                {
-                    _balance = value;
-                    NotifyPropertyChanged(nameof(Balance));
-                }
             }
         }
 
@@ -243,52 +111,7 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 }
             }
         }
-
-        public double SendValue
-        {
-            get
-            {
-                return _sendValue;
-            }
-            set
-            {
-                if (value != _sendValue)
-                {
-                    _sendValue = value;
-                    NotifyPropertyChanged(nameof(SendValue));
-                }
-            }
-        }
-
-        public string SendAddress
-        {
-            get
-            {
-                return _sendAddress;
-            }
-            set
-            {
-                if (_sendAddress != value)
-                {
-                    _sendAddress = value;
-                    NotifyPropertyChanged(nameof(SendAddress));
-                }
-            }
-        }
-
-        private bool CanSendMoney()
-        {
-            return true;
-        }
-
-        private void SendMoneyExecute()
-        {
-            if (SendMoneyEvt != null)
-            {
-                SendMoneyEvt(this, EventArgs.Empty);
-            }
-        }
-
+        
         public void ExecuteMainNet()
         {
             IsMainNetChecked = true;
@@ -328,45 +151,6 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
 
         private bool CanExecuteRefreshBlockChain()
-        {
-            return true;
-        }
-
-        private void ExecutePreviousPage()
-        {
-            if (PreviousPageEvt != null)
-            {
-                PreviousPageEvt(this, EventArgs.Empty);
-            }
-        }
-
-        private bool CanExecutePreviousPage()
-        {
-            return true;
-        }
-
-        private void ExecuteNextPage()
-        {
-            if (NextPageEvt != null)
-            {
-                NextPageEvt(this, EventArgs.Empty);
-            }
-        }
-
-        private bool CanExecuteNextPage()
-        {
-            return true;
-        }
-
-        private void ExecuteSelectBlock()
-        {
-            if (SelectBlockEvt != null)
-            {
-                SelectBlockEvt(this, new BlockEventArgs(SelectedBlock.Hash));
-            }
-        }
-
-        private bool CanSelectBlock()
         {
             return true;
         }

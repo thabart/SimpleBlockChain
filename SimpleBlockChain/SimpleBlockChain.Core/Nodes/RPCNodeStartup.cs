@@ -391,6 +391,39 @@ namespace SimpleBlockChain.Core.Nodes
                     var h = recordBlock.GetHashHeader();
                     response["result"] = recordBlock.Serialize().ToHexString();
                     return response;
+                case Constants.RpcOperations.GetRawTransaction: // https://bitcoin.org/en/developer-reference#getrawtransaction
+                    if (parameters == null || !parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The txid is not specified");
+                    }
+
+                    var txIdStr = parameters.First();
+                    bool txFormat = false;
+                    if (parameters.Count() > 2)
+                    {
+                        var txFormatStr = parameters.ElementAt(1);
+                        if (bool.TryParse(txFormatStr, out txFormat)) { }
+                    }
+
+                    IEnumerable<byte> txIdPayload;
+                    try
+                    {
+                        txIdPayload = txIdStr.FromHexString();
+                    }
+                    catch (Exception)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The txid cannot be decoded");
+                    }
+
+                    var txG = blockChain.GetTransaction(txIdPayload);
+                    if (txG == null)
+                    {
+                        response["result"] = null;
+                        return response;
+                    }
+
+                    response["result"] = txG.Serialize().ToHexString();
+                    return response;
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

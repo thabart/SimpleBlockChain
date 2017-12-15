@@ -70,6 +70,7 @@ namespace SimpleBlockChain.Core
             public const string GetBlockCount = "getblockcount";
             public const string GetBlockHash = "getblockhash";
             public const string GetBlock = "getblock";
+            public const string GetRawTransaction = "getrawtransaction";
         }
     }
 }

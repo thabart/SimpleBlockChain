@@ -12,6 +12,7 @@ using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Factories;
+using SimpleBlockChain.WalletUI.UserControls;
 
 namespace SimpleBlockChain.WalletUI
 {
@@ -28,6 +29,9 @@ namespace SimpleBlockChain.WalletUI
             serviceCollection.AddTransient<CreateWalletPage>();
             serviceCollection.AddTransient<AuthenticateWalletPage>();
             serviceCollection.AddTransient<WalletPage>();
+            serviceCollection.AddTransient<BlockChainInformation>();
+            serviceCollection.AddTransient<WalletInformation>();
+            serviceCollection.AddTransient<MemoryPoolInformation>();
 
             serviceCollection.AddTransient<HomePageViewModel>();
             serviceCollection.AddTransient<CreateWalletViewModel>();
