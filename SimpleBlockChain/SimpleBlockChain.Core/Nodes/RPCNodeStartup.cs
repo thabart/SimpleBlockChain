@@ -7,7 +7,6 @@ using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Evts;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
-using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;

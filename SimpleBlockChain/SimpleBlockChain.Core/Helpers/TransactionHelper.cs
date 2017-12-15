@@ -1,5 +1,4 @@
-﻿using SimpleBlockChain.Core.Factories;
-using SimpleBlockChain.Core.Stores;
+﻿using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Linq;
@@ -11,15 +10,33 @@ namespace SimpleBlockChain.Core.Helpers
         long CalculateBalance(BaseTransaction transaction, string encodedBcAddr, Networks network);
         long GetFee(BaseTransaction transaction, Networks network);
         TransactionOut GetTransactionIn(BaseTransaction transaction, string encodedBcAddr, Networks network);
+        long GetMinFee();
+        long GetReward(BaseTransaction transaction);
     }
 
     internal class TransactionHelper : ITransactionHelper
     {
+        private const double DEFAULT_TX_SIZE = 500;
         private readonly IBlockChainStore _blockChainStore;
 
         public TransactionHelper(IBlockChainStore blockChainStore)
         {
             _blockChainStore = blockChainStore;
+        }
+
+        public long GetMinFee()
+        {
+            return (long)Math.Ceiling(((DEFAULT_TX_SIZE / (double)1000) * Constants.DEFAULT_MIN_TX_FEE));
+        }
+
+        public long GetReward(BaseTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            return (long)Math.Ceiling(((transaction.Serialize().Count() / (double)1000) * Constants.DEFAULT_MIN_TX_FEE));
         }
 
         public long CalculateBalance(BaseTransaction transaction, string encodedBcAddr, Networks network)
@@ -65,8 +82,9 @@ namespace SimpleBlockChain.Core.Helpers
             }
 
             var leftValue = inputValue - outputValue;
-            var result = ((double)(transaction.Serialize().Count() / (double)1000) * Constants.DEFAULT_MIN_TX_REWARD) + leftValue;
-            return (long)result;
+            var reward = GetReward(transaction);
+            var result = reward + leftValue;
+            return result;
         }
 
         public TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network)

@@ -4,6 +4,7 @@ using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Factories;
+using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Rpc;
@@ -27,8 +28,7 @@ namespace SimpleBlockChain.WalletUI.Pages
 {
     public partial class WalletPage : Page
     {
-        private const int BLOCKS_PER_PAGE = 5;
-        private const double DEFAULT_TX_SIZE = 500; // TODO : Correctly set the transaction FEE.
+        private const int BLOCKS_PER_PAGE = 5; // TODO : Correctly set the transaction FEE.
         private int _currentPage = 0;
         private const int REFRESH_INFORMATION_INTERVAL = 5000;
         private WalletPageViewModel _viewModel;
@@ -40,16 +40,19 @@ namespace SimpleBlockChain.WalletUI.Pages
         private readonly ITransactionBuilder _transactionBuilder;
         private readonly IScriptBuilder _scriptBuilder;
         private readonly IWalletRepository _walletRepository;
+        private readonly ITransactionHelper _transactionHelper;
         private object _lock = new object();
         private bool _isBlocksInitialized = false;
 
-        public WalletPage(INodeLauncherFactory nodeLauncherFactory, ITransactionBuilder transactionBuilder, IScriptBuilder scriptBuilder, IWalletRepository walletRepository)
+        public WalletPage(INodeLauncherFactory nodeLauncherFactory, ITransactionBuilder transactionBuilder,
+            IScriptBuilder scriptBuilder, IWalletRepository walletRepository, ITransactionHelper transactionHelper)
         {
             _currentPage = 0;
             _nodeLauncherFactory = nodeLauncherFactory;
             _transactionBuilder = transactionBuilder;
             _scriptBuilder = scriptBuilder;
             _walletRepository = walletRepository;
+            _transactionHelper = transactionHelper;
             _autoEvent = new AutoResetEvent(false);
             _refreshUiBackgroundWorker = new BackgroundWorker();
             _refreshUiBackgroundWorker.DoWork += RefreshUi;
@@ -142,7 +145,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 return;
             }
 
-            double txFee = (DEFAULT_TX_SIZE / (double)1000) * Constants.DEFAULT_MIN_TX_FEE;
+            var txFee = _transactionHelper.GetMinFee();
             var senderValue = selectedTransaction.Amount - receiverValue - txFee;
             var walletAddr = authenticatedWallet.Addresses.FirstOrDefault(a => a.Hash == selectedTransaction.Hash);
             if (walletAddr == null)
@@ -186,11 +189,15 @@ namespace SimpleBlockChain.WalletUI.Pages
                 .AddOperation(OpCodes.OP_EQUALVERIFY)
                 .AddOperation(OpCodes.OP_CHECKSIG)
                 .Build();
-            var tx = _transactionBuilder.NewNoneCoinbaseTransaction()
+            var txBuilder = _transactionBuilder.NewNoneCoinbaseTransaction()
                 .Spend(selectedTransaction.TxId.FromHexString(), (uint)selectedTransaction.Vout, script.Serialize())
-                .AddOutput((long)receiverValue, receiverScript)
-                .AddOutput((long)senderValue, senderSript)
-                .Build();
+                .AddOutput((long)receiverValue, receiverScript);
+            if (senderValue > 0)
+            {
+                txBuilder.AddOutput((long)senderValue, senderSript);
+            }
+
+            var tx = txBuilder.Build();
             var s = tx.Serialize().Count();
             var rpcClient = new RpcClient(authenticatedWallet.Network);
             rpcClient.SendRawTransaction(tx).ContinueWith((r) =>
