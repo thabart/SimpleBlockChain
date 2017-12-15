@@ -315,7 +315,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                                     _viewModel.Transactions.Remove(txRemove);
                                 }
 
-                                var transactionsToAdd = unspentTransactions.Where(utxo => _viewModel.Transactions.All(tvm => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout));
+                                var transactionsToAdd = unspentTransactions.Where(utxo => _viewModel.Transactions.All(tvm => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout)).ToList();
                                 foreach (var transactionToAdd in transactionsToAdd)
                                 {
                                     var txVm = new TransactionViewModel(transactionToAdd.TxId, transactionToAdd.Vout, transactionToAdd.Amount, transactionToAdd.Address);

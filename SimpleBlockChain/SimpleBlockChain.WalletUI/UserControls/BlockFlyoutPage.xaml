@@ -12,6 +12,8 @@
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="TXID" DisplayMemberBinding="{Binding Path=TxId}" />
+                    <GridViewColumn Header="VALUE" DisplayMemberBinding="{Binding Path=Value}" />
+                    <GridViewColumn Header="NBTXOUT" DisplayMemberBinding="{Binding Path=NbTransactionsOut}" />
                 </GridView>
             </ListView.View>
         </ListView>

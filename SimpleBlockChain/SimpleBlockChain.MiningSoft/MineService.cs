@@ -69,9 +69,10 @@ namespace SimpleBlockChain.MiningSoft
                     _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
                 }
             }
-            catch(RpcException rpcException)
+            catch(Exception)
             {
-                string s = "";
+                Console.WriteLine("RPC ERROR");
+                Mine(sender);
             }
         }
 

@@ -227,35 +227,33 @@ namespace SimpleBlockChain.Core.Nodes
                     }
 
                     var res = new JArray();
-                    var unspentTxIds = blockChain.GetUnspentTransactions();
+                    var utxos = blockChain.GetUnspentTransactions();
                     if (addrs == null || !addrs.Any())
                     {
                         addrs = wallet.Addresses.Select(a => a.Hash);
                     }
 
-                    if (unspentTxIds != null)
+                    if (utxos != null && addrs.Any())
                     {
-                        foreach (var unspentTxId in unspentTxIds)
+                        foreach (var utxo in utxos)
                         {
-                            var transaction = blockChain.GetUnspentTransaction(unspentTxId);
-                            if (addrs.Any())
+                            foreach (var hash in addrs)
                             {
-                                foreach (var hash in addrs)
+                                var bcAddr = BlockChainAddress.Deserialize(hash);
+                                var publicKeyHash = bcAddr.PublicKeyHash;
+                                if (utxo.Script.ContainsPublicKeyHash(publicKeyHash))
                                 {
-                                    var txOut = transaction.GetTransactionOut(hash);
-                                    if (txOut != null)
-                                    {
-                                        var record = new JObject();
-                                        record.Add("txid", transaction.GetTxId().ToHexString());
-                                        record.Add("vout", transaction.TransactionOut.IndexOf(txOut));
-                                        record.Add("address", hash);
-                                        record.Add("scriptPubKey", txOut.Script.Serialize().ToHexString());
-                                        record.Add("amount", txOut.Value);
-                                        record.Add("confirmations", 0);
-                                        record.Add("spendable", wallet.Addresses.Select(a => a.Hash).Contains(hash));
-                                        record.Add("solvable", true);
-                                        res.Add(record);
-                                    }
+                                    var record = new JObject();
+                                    record.Add("txid", utxo.TxId.ToHexString());
+                                    record.Add("vout", utxo.Index);
+                                    record.Add("address", hash);
+                                    record.Add("scriptPubKey", utxo.Script.Serialize().ToHexString());
+                                    record.Add("amount", utxo.Value);
+                                    record.Add("confirmations", 0);
+                                    record.Add("spendable", wallet.Addresses.Select(a => a.Hash).Contains(hash));
+                                    record.Add("solvable", true);
+                                    res.Add(record);
+                                    break;
                                 }
                             }
                         }
