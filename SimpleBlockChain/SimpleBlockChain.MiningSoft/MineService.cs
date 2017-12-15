@@ -65,6 +65,7 @@ namespace SimpleBlockChain.MiningSoft
                     {
                         Mine(null);
                     }
+
                     var b = _rpcClient.SubmitBlock(block).Result;
                     _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
                 }

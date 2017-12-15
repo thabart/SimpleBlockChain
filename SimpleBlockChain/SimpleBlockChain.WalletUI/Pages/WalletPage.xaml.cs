@@ -171,6 +171,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 .AddToStack(walletAddr.Key.GetSignature())
                 .AddToStack(walletAddr.Key.GetPublicKey())
                 .Build();
+            var pp = walletAddr.Key.GetPublicKeyHashed();
             var senderSript = _scriptBuilder.New() // SEND MONEY TO MY WALLET.
                 .AddOperation(OpCodes.OP_DUP)
                 .AddOperation(OpCodes.OP_HASH160)

@@ -1,8 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Scripts;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.UnitTests.Stores;
 using System.Text;
 
 namespace SimpleBlockChain.UnitTests.Builders
@@ -53,6 +55,36 @@ namespace SimpleBlockChain.UnitTests.Builders
                 .AddOperation(OpCodes.OP_DUP)
                 .AddOperation(OpCodes.OP_HASH160)
                 .AddToStack(publicKeyHash)
+                .AddOperation(OpCodes.OP_EQUALVERIFY)
+                .AddOperation(OpCodes.OP_CHECKSIG)
+                .Build();
+
+            var serializedInputScript = inputScript.Serialize();
+            var serializedOutputScript = outputScript.Serialize();
+
+            var deserializedInputScript = Script.Deserialize(serializedInputScript);
+            var deserializedOutputScript = Script.Deserialize(serializedOutputScript);
+
+            var interpreter = new ScriptInterpreter();
+            bool isCorrect = interpreter.Check(deserializedInputScript, deserializedOutputScript);
+
+            Assert.IsTrue(isCorrect);
+        }
+
+        [TestMethod]
+        public void CheckClientSignature()
+        {
+            var clientKey = KeyStore.GetClientKey();
+            var clientWallet = BlockChainAddress.Deserialize("12K5LnVWKCu9QGyB39uGAgVSAfBs33PKS96HSL93");
+            var scriptBuilder = new ScriptBuilder();
+            var inputScript = scriptBuilder.New()
+                .AddToStack(clientKey.GetSignature())
+                .AddToStack(clientKey.GetPublicKey())
+                .Build();
+            var outputScript = scriptBuilder.New()
+                .AddOperation(OpCodes.OP_DUP)
+                .AddOperation(OpCodes.OP_HASH160)
+                .AddToStack(clientWallet.PublicKeyHash)
                 .AddOperation(OpCodes.OP_EQUALVERIFY)
                 .AddOperation(OpCodes.OP_CHECKSIG)
                 .Build();
