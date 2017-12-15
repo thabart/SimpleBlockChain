@@ -134,7 +134,40 @@ namespace SimpleBlockChain.Core.Nodes
                             verboseOutput = f == 0;
                         }
                     }
-                    response["result"] = new JArray(transactions.Select(t => t.GetTxId()));
+
+                    if (!verboseOutput)
+                    {
+                        response["result"] = new JArray(transactions.Select(t => t.Transaction.GetTxId()));
+                        return response;
+                    }
+
+                    JArray jTxs = new JArray();
+                    if (transactions != null)
+                    {
+                        foreach(var transaction in transactions.Select(t => t))
+                        {
+                            var jTxContentObj = new JObject();
+                            jTxContentObj.Add("size", transaction.Transaction.Serialize().Count());
+                            jTxContentObj.Add("fee", _transactionHelper.GetFee(transaction.Transaction, _network));
+                            jTxContentObj.Add("modifiedfee", _transactionHelper.GetFee(transaction.Transaction, _network));
+                            jTxContentObj.Add("modifiedfee", _transactionHelper.GetFee(transaction.Transaction, _network));
+                            jTxContentObj.Add("time", transaction.InsertTime.ToUnixTime());
+                            jTxContentObj.Add("height", transaction.BlockHeight);
+                            jTxContentObj.Add("startingpriority", null);
+                            jTxContentObj.Add("currentpriority", null);
+                            jTxContentObj.Add("descendantcount", null);
+                            jTxContentObj.Add("descendantsize", null);
+                            jTxContentObj.Add("descendantfees", null);
+                            jTxContentObj.Add("ancestorcount", null);
+                            jTxContentObj.Add("ancestorsize", null);
+                            jTxContentObj.Add("ancestorfees", null);
+                            jTxContentObj.Add("depends", null); // DEPENDS ON SEVERAL TRANSACTIONS.
+                            var rec = new JObject();
+                            rec.Add(transaction.Transaction.GetTxId().ToHexString(), jTxContentObj);
+                            jTxs.Add(rec);
+                        }
+                    }
+
                     return response;
                 case Constants.RpcOperations.Getblocktemplate: // https://bitcoin.org/en/developer-reference#getblocktemplate
                     if (transactions == null || !transactions.Any())
@@ -148,7 +181,7 @@ namespace SimpleBlockChain.Core.Nodes
                     var previousBlockHash = currentBlock.GetHashHeader().ToHexString();
                     var transactionBuilder = new TransactionBuilder();
                     var nonce = BitConverter.GetBytes(NonceHelper.GetNonceUInt64());
-                    var value = transactions.Sum(t => _transactionHelper.GetFee(t, _network));
+                    var value = transactions.Sum(t => _transactionHelper.GetFee(t.Transaction, _network));
                     var coinBaseTransaction = transactionBuilder.NewCoinbaseTransaction()
                         .SetInput((uint)height + 1, nonce)
                         .AddOutput(value, Script.CreateCorrectScript())
@@ -157,7 +190,7 @@ namespace SimpleBlockChain.Core.Nodes
                     var jTransactions = new JArray();
                     foreach (var transaction in transactions)
                     {
-                        jTransactions.Add(transaction.Serialize().ToHexString());
+                        jTransactions.Add(transaction.Transaction.Serialize().ToHexString());
                     }
 
 
@@ -287,7 +320,7 @@ namespace SimpleBlockChain.Core.Nodes
                     {
                         var tx = kvp.Key;
                         _transactionValidator.Check(tx);
-                        MemoryPool.Instance().AddTransaction(tx);
+                        MemoryPool.Instance().AddTransaction(tx, blockChain.GetCurrentBlockHeight());
                         P2PConnectorEventStore.Instance().Broadcast(tx);
                         response["result"] = tx.GetTxId().ToHexString();
                         return response;
@@ -321,7 +354,7 @@ namespace SimpleBlockChain.Core.Nodes
                         {
                             foreach(var memTx in transactions)
                             {
-                                var balance = _transactionHelper.CalculateBalance(memTx, adr.Hash, _network);
+                                var balance = _transactionHelper.CalculateBalance(memTx.Transaction, adr.Hash, _network);
                                 unconfirmedBalance += balance;
                             }
                         }

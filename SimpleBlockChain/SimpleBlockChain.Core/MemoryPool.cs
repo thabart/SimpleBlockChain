@@ -5,14 +5,29 @@ using System.Linq;
 
 namespace SimpleBlockChain.Core
 {
+    public class MemoryPoolRecord
+    {
+        public MemoryPoolRecord(BaseTransaction transaction, DateTime insertTime, int blockHeight)
+        {
+            Transaction = transaction;
+            InsertTime = insertTime;
+            BlockHeight = blockHeight;
+        }
+
+        public BaseTransaction Transaction { get; set; }
+        public DateTime InsertTime { get; set; }
+        public int Height { get; set; }
+        public int BlockHeight { get; set; }
+    }
+
     public class MemoryPool
     {
         private static MemoryPool _instance;
-        private IList<BaseTransaction> _transactions;
+        private IList<MemoryPoolRecord> _transactions;
 
         private MemoryPool()
         {
-            _transactions = new List<BaseTransaction>();
+            _transactions = new List<MemoryPoolRecord>();
         }
 
         public static MemoryPool Instance()
@@ -25,17 +40,17 @@ namespace SimpleBlockChain.Core
             return _instance;
         }
 
-        public void AddTransaction(BaseTransaction transaction)
+        public void AddTransaction(BaseTransaction transaction, int blockHeight)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            _transactions.Add(transaction);
+            _transactions.Add(new MemoryPoolRecord(transaction, DateTime.UtcNow, blockHeight));
         }
 
-        public IList<BaseTransaction> GetTransactions()
+        public IList<MemoryPoolRecord> GetTransactions()
         {
             return _transactions;
         }
@@ -57,7 +72,7 @@ namespace SimpleBlockChain.Core
                 throw new ArgumentNullException(nameof(txIds));
             }
 
-            var removedTxs = _transactions.Where(t => txIds.Any(s => s.SequenceEqual(t.GetTxId()))).ToList();
+            var removedTxs = _transactions.Where(t => txIds.Any(s => s.SequenceEqual(t.Transaction.GetTxId()))).ToList();
             foreach(var removedTx in removedTxs)
             {
                 _transactions.Remove(removedTx);

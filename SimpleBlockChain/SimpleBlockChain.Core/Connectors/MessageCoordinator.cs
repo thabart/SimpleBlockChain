@@ -93,7 +93,7 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 var msg = message as MemPoolMessage;
                 var memoryPool = MemoryPool.Instance();
-                var txIds = memoryPool.GetTransactions().Select(t => t.GetTxId());
+                var txIds = memoryPool.GetTransactions().Select(t => t.Transaction.GetTxId());
                 var inventories = new List<Inventory>();
                 foreach (var txId in txIds)
                 {
@@ -330,10 +330,10 @@ namespace SimpleBlockChain.Core.Connectors
                     switch (inventory.Type)
                     {
                         case InventoryTypes.MSG_TX:
-                            var tx = MemoryPool.Instance().GetTransactions().FirstOrDefault(t => t.GetTxId().SequenceEqual(inventory.Hash));
+                            var tx = MemoryPool.Instance().GetTransactions().FirstOrDefault(t => t.Transaction.GetTxId().SequenceEqual(inventory.Hash));
                             if (tx != null)
                             {
-                                messages.Add(new TransactionMessage(tx, msg.MessageHeader.Network));
+                                messages.Add(new TransactionMessage(tx.Transaction, msg.MessageHeader.Network));
                                 continue;
                             }
                             break;
@@ -373,7 +373,7 @@ namespace SimpleBlockChain.Core.Connectors
                     switch (inventory.Type)
                     {
                         case InventoryTypes.MSG_TX:
-                            addIntoInventory = !MemoryPool.Instance().GetTransactions().Any(t => t.GetTxId() == inventory.Hash);
+                            addIntoInventory = !MemoryPool.Instance().GetTransactions().Any(t => t.Transaction.GetTxId() == inventory.Hash);
                             break;
                         case InventoryTypes.MSG_BLOCK:
                             addIntoInventory = !blockChain.ContainsBlock(inventory.Hash);
@@ -404,13 +404,13 @@ namespace SimpleBlockChain.Core.Connectors
 
             var instance = MemoryPool.Instance();
             var transactions = instance.GetTransactions();
-            if (transactions.Any(t => t.GetTxId().SequenceEqual(transaction.GetTxId())))
+            if (transactions.Any(t => t.Transaction.GetTxId().SequenceEqual(transaction.GetTxId())))
             {
                 return;
             }
 
             _transactionValidator.Check(transaction);
-            instance.AddTransaction(transaction);
+            instance.AddTransaction(transaction, _blockChainStore.GetBlockChain().GetCurrentBlockHeight());
         }
     }
 }
