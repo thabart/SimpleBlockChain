@@ -60,6 +60,13 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public ObservableCollection<TransactionViewModel> Transactions { get; private set; }
         public TransactionViewModel SelectedTransaction { get; set; }
 
+        public void Reset()
+        {
+            Amount = 0;
+            Balance = 0;
+            Transactions = new ObservableCollection<TransactionViewModel>();
+        }
+
         public int Amount
         {
             get

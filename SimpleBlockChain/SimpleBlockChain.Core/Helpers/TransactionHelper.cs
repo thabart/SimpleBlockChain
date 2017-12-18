@@ -46,24 +46,26 @@ namespace SimpleBlockChain.Core.Helpers
                 throw new ArgumentNullException(nameof(encodedBcAddr));
             }
 
-            var txIn = GetTransactionIn(transaction, encodedBcAddr, network);
-            var txOut = transaction.GetTransactionOut(encodedBcAddr);
-            if (txIn != null)
+            if (!transaction.CanSpend(encodedBcAddr))
             {
+                return 0;
+            }
+
+            var bcAdr = BlockChainAddress.Deserialize(encodedBcAddr);
+            var noneCoinBaseTransaction = transaction as NoneCoinbaseTransaction;
+            if (noneCoinBaseTransaction != null)
+            {
+                var txOut = transaction.GetTransactionOut(encodedBcAddr);
                 if (txOut == null)
                 {
                     return 0;
                 }
 
-                return -(txIn.Value - txOut.Value);
+                return txOut.Value;
             }
 
-            if (txOut == null)
-            {
-                return 0;
-            }
-
-            return txOut.Value;
+            var coinBaseTransaction = transaction as CoinbaseTransaction;
+            return coinBaseTransaction.TransactionOut.First().Value;
         }
 
         public long GetFee(BaseTransaction transaction, Networks network)

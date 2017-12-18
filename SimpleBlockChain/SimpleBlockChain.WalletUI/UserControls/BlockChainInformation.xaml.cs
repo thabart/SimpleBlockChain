@@ -34,23 +34,24 @@ namespace SimpleBlockChain.WalletUI.UserControls
             RefreshBlocks();
         }
 
+        public void Reset()
+        {
+            if (_viewModel == null) { return; }
+            _viewModel.Reset();
+        }
+
         private void Load(object sender, RoutedEventArgs e)
-        {
-            Init();
-        }
-
-        private void Unload(object sender, RoutedEventArgs e)
-        {
-            Destroy();
-        }
-
-        private void Init()
         {
             _viewModel = new BlockChainInformationViewModel();
             DataContext = _viewModel;
             _viewModel.NextPageEvt += NextPage;
             _viewModel.PreviousPageEvt += PreviousPage;
             _viewModel.SelectBlockEvt += DisplayBlock;
+        }
+
+        private void Unload(object sender, RoutedEventArgs e)
+        {
+            Destroy();
         }
 
         private void DisplayBlock(object sender, BlockEventArgs e)

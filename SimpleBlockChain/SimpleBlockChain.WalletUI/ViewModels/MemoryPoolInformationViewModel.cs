@@ -18,5 +18,11 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 
         public ObservableCollection<RawMemPoolViewModel> Raws { get; set; }
         public RawMemPoolViewModel SelectedRaw { get; set; }
+
+        public void Reset()
+        {
+            Raws = new ObservableCollection<RawMemPoolViewModel>();
+            SelectedRaw = null;
+        }
     }
 }

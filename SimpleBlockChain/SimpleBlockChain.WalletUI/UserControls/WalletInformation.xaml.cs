@@ -11,6 +11,7 @@ using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
 using System.Windows;
@@ -27,8 +28,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
         private WalletInformationViewModel _viewModel;
         private object _lock = new object();
 
-        public WalletInformation(IScriptBuilder scriptBuilder, ITransactionHelper transactionHelper, IWalletRepository walletRepository,
-            ITransactionBuilder transactionBuilder)
+        public WalletInformation(IScriptBuilder scriptBuilder, ITransactionHelper transactionHelper, IWalletRepository walletRepository, ITransactionBuilder transactionBuilder)
         {
             _scriptBuilder = scriptBuilder;
             _transactionHelper = transactionHelper;
@@ -46,21 +46,22 @@ namespace SimpleBlockChain.WalletUI.UserControls
             RefreshBalance();
         }
 
+        public void Reset()
+        {
+            if (_viewModel == null) { return; }
+            _viewModel.Reset();
+        }
+
         private void Load(object sender, RoutedEventArgs e)
         {
-            Init();
+            _viewModel = new WalletInformationViewModel();
+            _viewModel.SendMoneyEvt += SendMoney;
+            DataContext = _viewModel;
         }
 
         private void Unload(object sender, RoutedEventArgs e)
         {
             Destroy();
-        }
-
-        private void Init()
-        {
-            _viewModel = new WalletInformationViewModel();
-            _viewModel.SendMoneyEvt += SendMoney;
-            DataContext = _viewModel;
         }
 
         private void SendMoney(object sender, EventArgs e)

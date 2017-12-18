@@ -1,5 +1,4 @@
-﻿using SimpleBlockChain.Core;
-using SimpleBlockChain.Core.Rpc;
+﻿using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
@@ -19,20 +18,31 @@ namespace SimpleBlockChain.WalletUI.UserControls
             Unloaded += Unload;
         }
 
+        private void Load(object sender, RoutedEventArgs e)
+        {
+            _viewModel = new MemoryPoolInformationViewModel();
+            DataContext = _viewModel;
+        }
+
+        public void Refresh()
+        {
+            if (_viewModel == null) { return; }
+            Init();
+        }
+
+        public void Reset()
+        {
+            if (_viewModel == null) { return; }
+            _viewModel.Reset();
+        }
+
         private void Unload(object sender, RoutedEventArgs e)
         {
             Destroy();
         }
-
-        private void Load(object sender, RoutedEventArgs e)
-        {
-            Init();
-        }
-
+        
         private void Init()
         {
-            _viewModel = new MemoryPoolInformationViewModel();
-            DataContext = _viewModel;
             var walletStore = WalletStore.Instance();
             var rpcClient = new RpcClient(walletStore.GetAuthenticatedWallet().Network);
             rpcClient.GetRawMemPool(true).ContinueWith((r) =>
