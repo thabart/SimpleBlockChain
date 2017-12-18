@@ -30,5 +30,6 @@
         public const string NotCorrectNetwork = "not_correct_network";
         public const string NotCorrectType = "not_correct_type";
         public const string NoResult = "no_result";
+        public const string AlreadySpentInMemoryPool = "already_spent_in_memory_pool";
     }
 }

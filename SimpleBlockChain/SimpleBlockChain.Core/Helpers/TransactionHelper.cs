@@ -52,6 +52,7 @@ namespace SimpleBlockChain.Core.Helpers
             }
 
             var bcAdr = BlockChainAddress.Deserialize(encodedBcAddr);
+            var memPool = MemoryPool.Instance();
             var noneCoinBaseTransaction = transaction as NoneCoinbaseTransaction;
             if (noneCoinBaseTransaction != null)
             {
@@ -59,6 +60,11 @@ namespace SimpleBlockChain.Core.Helpers
                 if (txOut == null)
                 {
                     return 0;
+                }
+
+                foreach(var memTx in memPool.GetTransactions())
+                {
+                    // TODO : Check NOT BEEN SPENT.
                 }
 
                 return txOut.Value;
@@ -106,16 +112,24 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
+                TransactionOut previousTxOut = null;
                 if (previousTx == null || previousTx.TransactionOut == null)
                 {
-                    continue;
+                    previousTxOut = MemoryPool.Instance().GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
+                    if (previousTxOut == null)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
+                    if (previousTxOut == null || previousTxOut.Script == null)
+                    {
+                        continue;
+                    }
                 }
 
-                var previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
-                if (previousTxOut == null || previousTxOut.Script == null)
-                {
-                    continue;
-                }
 
                 return previousTxOut;
             }

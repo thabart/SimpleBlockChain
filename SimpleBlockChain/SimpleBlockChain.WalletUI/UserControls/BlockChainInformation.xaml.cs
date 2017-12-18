@@ -135,6 +135,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
         private void Destroy()
         {
+            if (_viewModel == null) { return; }
             _viewModel.NextPageEvt -= NextPage;
             _viewModel.PreviousPageEvt -= PreviousPage;
             _viewModel.SelectBlockEvt -= DisplayBlock;

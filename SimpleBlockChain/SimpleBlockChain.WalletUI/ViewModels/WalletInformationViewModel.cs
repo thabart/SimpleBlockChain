@@ -7,20 +7,27 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 {
     public class TransactionViewModel
     {
-        public TransactionViewModel(string txId, int vout, double amount, string hash)
+        public TransactionViewModel(string txId, int vout, double amount, string hash, int confirmation)
         {
             TxId = txId;
             Vout = vout;
             Amount = amount;
             Hash = hash;
-            DisplayName = string.Format("{0} : {1}", amount, txId);
+            if (confirmation == 0)
+            {
+                DisplayName = string.Format("Unconfirmed TRANSACTION {0}: {1}", amount, txId);
+            }
+            else
+            {
+                DisplayName = string.Format("{0} : {1}", amount, txId);
+            }
         }
 
         public string DisplayName { get; set; }
-        public string TxId { get; private set; }
+        public string TxId { get; set; }
         public double Amount { get; set; }
-        public int Vout { get; private set; }
-        public string Hash { get; private set; }
+        public int Vout { get; set; }
+        public string Hash { get; set; }
 
         public override bool Equals(object obj)
         {

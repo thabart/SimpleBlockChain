@@ -40,11 +40,14 @@ namespace SimpleBlockChain.WalletUI.UserControls
         {
             Destroy();
         }
-        
+
         private void Init()
         {
             var walletStore = WalletStore.Instance();
             var rpcClient = new RpcClient(walletStore.GetAuthenticatedWallet().Network);
+            Application.Current.Dispatcher.Invoke(() => {
+                _viewModel.Raws.Clear();
+            });
             rpcClient.GetRawMemPool(true).ContinueWith((r) =>
             {
                 try

@@ -257,6 +257,7 @@ namespace SimpleBlockChain.Core.Rpc
                     ScriptPubKey = o.Value<string>("scriptPubKey"),
                     Spendable = spendable,
                     TxId = o.Value<string>("txid"),
+                    Confirmations = int.Parse(o.Value<string>("confirmations")),
                     Vout = vout
                 });
             }

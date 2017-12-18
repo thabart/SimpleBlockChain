@@ -11,7 +11,6 @@ using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
 using System.Windows;
@@ -191,11 +190,11 @@ namespace SimpleBlockChain.WalletUI.UserControls
                                 var transactionsToAdd = unspentTransactions.Where(utxo => _viewModel.Transactions.All(tvm => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout)).ToList();
                                 foreach (var transactionToAdd in transactionsToAdd)
                                 {
-                                    var txVm = new TransactionViewModel(transactionToAdd.TxId, transactionToAdd.Vout, transactionToAdd.Amount, transactionToAdd.Address);
+                                    var txVm = new TransactionViewModel(transactionToAdd.TxId, transactionToAdd.Vout, transactionToAdd.Amount, transactionToAdd.Address, transactionToAdd.Confirmations);
                                     _viewModel.Transactions.Add(txVm);
                                 }
 
-                                _viewModel.Amount = unspentTransactions.Sum(t => t.Amount);
+                                _viewModel.Amount = unspentTransactions.Where(t => t.Confirmations > 0).Sum(t => t.Amount);
                             });
                         }
 
@@ -258,6 +257,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
         private void Destroy()
         {
+            if (_viewModel == null) { return; }
             _viewModel.SendMoneyEvt -= SendMoney;
             _viewModel = null;
         }
