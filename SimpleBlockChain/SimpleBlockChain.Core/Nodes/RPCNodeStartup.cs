@@ -150,7 +150,6 @@ namespace SimpleBlockChain.Core.Nodes
                             jTxContentObj.Add("size", transaction.Transaction.Serialize().Count());
                             jTxContentObj.Add("fee", _transactionHelper.GetFee(transaction.Transaction, _network));
                             jTxContentObj.Add("modifiedfee", _transactionHelper.GetFee(transaction.Transaction, _network));
-                            jTxContentObj.Add("modifiedfee", _transactionHelper.GetFee(transaction.Transaction, _network));
                             jTxContentObj.Add("time", transaction.InsertTime.ToUnixTime());
                             jTxContentObj.Add("height", transaction.BlockHeight);
                             jTxContentObj.Add("startingpriority", null);
@@ -168,6 +167,7 @@ namespace SimpleBlockChain.Core.Nodes
                         }
                     }
 
+                    response["result"] = jTxs;
                     return response;
                 case Constants.RpcOperations.Getblocktemplate: // https://bitcoin.org/en/developer-reference#getblocktemplate
                     if (transactions == null || !transactions.Any())
