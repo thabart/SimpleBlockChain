@@ -147,7 +147,7 @@ namespace SimpleBlockChain.Core.Transactions
 
             return null;
         }
-
+        
         public TransactionOut GetTransactionOut(string encodedBcAddr)
         {
             if (string.IsNullOrWhiteSpace(encodedBcAddr))

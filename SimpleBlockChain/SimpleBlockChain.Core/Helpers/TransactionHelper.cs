@@ -1,17 +1,19 @@
 ﻿using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SimpleBlockChain.Core.Helpers
 {
     public interface ITransactionHelper
     {
-        long CalculateBalance(BaseTransaction transaction, string encodedBcAddr, Networks network);
-        long GetFee(BaseTransaction transaction, Networks network);
-        TransactionOut GetTransactionIn(BaseTransaction transaction, string encodedBcAddr, Networks network);
         long GetMinFee();
         long GetReward(BaseTransaction transaction);
+        long CalculateBalance(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
+        long GetFee(BaseTransaction transaction, Networks network);
+        TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network);
+        TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
     }
 
     internal class TransactionHelper : ITransactionHelper
@@ -39,15 +41,30 @@ namespace SimpleBlockChain.Core.Helpers
             return (long)Math.Ceiling(((transaction.Serialize().Count() / (double)1000) * Constants.DEFAULT_MIN_TX_FEE));
         }
 
-        public long CalculateBalance(BaseTransaction transaction, string encodedBcAddr, Networks network)
+        public long CalculateBalance(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
         {
-            if (string.IsNullOrWhiteSpace(encodedBcAddr))
+            if (transaction == null)
             {
-                throw new ArgumentNullException(nameof(encodedBcAddr));
+                throw new ArgumentNullException(nameof(transaction));
             }
 
-            var txIn = GetTransactionIn(transaction, encodedBcAddr, network);
-            var txOut = transaction.GetTransactionOut(encodedBcAddr);
+            if (bcAddrs == null)
+            {
+                throw new ArgumentNullException(nameof(bcAddrs));
+            }
+            
+            var txIn = GetTransactionIn(transaction, bcAddrs, network);
+            var publicKeyHashes = bcAddrs.Select(bcAddr => bcAddr.PublicKeyHash);
+            TransactionOut txOut = null;
+            foreach (var transactionOut in transaction.TransactionOut)
+            {
+                var script = transactionOut.Script;
+                if (publicKeyHashes.Any(publicKeyHash => script.ContainsPublicKeyHash(publicKeyHash)))
+                {
+                    txOut = transactionOut;
+                }
+            }
+
             if (txIn != null)
             {
                 if (txOut == null)
@@ -121,20 +138,19 @@ namespace SimpleBlockChain.Core.Helpers
             return null;
         }
 
-        public TransactionOut GetTransactionIn(BaseTransaction transaction, string encodedBcAddr, Networks network)
+        public TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
         {
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            if (string.IsNullOrWhiteSpace(encodedBcAddr))
+            if (bcAddrs == null)
             {
-                throw new ArgumentNullException(nameof(encodedBcAddr));
+                throw new ArgumentNullException(nameof(bcAddrs));
             }
 
-            var bcAddr = BlockChainAddress.Deserialize(encodedBcAddr);
-            var publicKeyHash = bcAddr.PublicKeyHash;
+            var publicKeyHashes = bcAddrs.Select(bcAddr => bcAddr.PublicKeyHash);
             var blockChain = _blockChainStore.GetBlockChain();
             foreach (var txIn in transaction.TransactionIn)
             {
@@ -151,7 +167,7 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
-                if (previousTxOut == null || previousTxOut.Script == null || !previousTxOut.Script.ContainsPublicKeyHash(publicKeyHash))
+                if (previousTxOut == null || previousTxOut.Script == null || publicKeyHashes.All(publicKeyHash => !previousTxOut.Script.ContainsPublicKeyHash(publicKeyHash)))
                 {
                     continue;
                 }

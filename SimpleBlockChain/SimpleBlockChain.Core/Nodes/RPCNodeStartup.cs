@@ -350,13 +350,11 @@ namespace SimpleBlockChain.Core.Nodes
                     long unconfirmedBalance = 0;
                     if (wallet.Addresses != null)
                     {
-                        foreach(var adr in wallet.Addresses)
+                        var bcAddrs = wallet.Addresses.Select(addr => BlockChainAddress.Deserialize(addr.Hash));
+                        foreach(var memTx in transactions)
                         {
-                            foreach(var memTx in transactions)
-                            {
-                                var balance = _transactionHelper.CalculateBalance(memTx.Transaction, adr.Hash, _network);
-                                unconfirmedBalance += balance;
-                            }
+                            var balance = _transactionHelper.CalculateBalance(memTx.Transaction, bcAddrs, _network);
+                            unconfirmedBalance += balance;
                         }
                     }
 
