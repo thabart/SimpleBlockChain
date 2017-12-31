@@ -7,6 +7,18 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-            
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ListView Grid.Row="0" ItemsSource="{Binding Path=Raws}" SelectedItem="{Binding Path=SelectedRaw}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="TXID" DisplayMemberBinding="{Binding Path=TxId}" />
+                    <GridViewColumn Header="TIME" DisplayMemberBinding="{Binding Path=Time}" />
+                    <GridViewColumn Header="FEE" DisplayMemberBinding="{Binding Path=Fee}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </UserControl>

@@ -27,8 +27,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
         private WalletInformationViewModel _viewModel;
         private object _lock = new object();
 
-        public WalletInformation(IScriptBuilder scriptBuilder, ITransactionHelper transactionHelper, IWalletRepository walletRepository,
-            ITransactionBuilder transactionBuilder)
+        public WalletInformation(IScriptBuilder scriptBuilder, ITransactionHelper transactionHelper, IWalletRepository walletRepository, ITransactionBuilder transactionBuilder)
         {
             _scriptBuilder = scriptBuilder;
             _transactionHelper = transactionHelper;
@@ -46,21 +45,22 @@ namespace SimpleBlockChain.WalletUI.UserControls
             RefreshBalance();
         }
 
+        public void Reset()
+        {
+            if (_viewModel == null) { return; }
+            _viewModel.Reset();
+        }
+
         private void Load(object sender, RoutedEventArgs e)
         {
-            Init();
+            _viewModel = new WalletInformationViewModel();
+            _viewModel.SendMoneyEvt += SendMoney;
+            DataContext = _viewModel;
         }
 
         private void Unload(object sender, RoutedEventArgs e)
         {
             Destroy();
-        }
-
-        private void Init()
-        {
-            _viewModel = new WalletInformationViewModel();
-            _viewModel.SendMoneyEvt += SendMoney;
-            DataContext = _viewModel;
         }
 
         private void SendMoney(object sender, EventArgs e)
@@ -190,11 +190,11 @@ namespace SimpleBlockChain.WalletUI.UserControls
                                 var transactionsToAdd = unspentTransactions.Where(utxo => _viewModel.Transactions.All(tvm => tvm.TxId != utxo.TxId && tvm.Vout != utxo.Vout)).ToList();
                                 foreach (var transactionToAdd in transactionsToAdd)
                                 {
-                                    var txVm = new TransactionViewModel(transactionToAdd.TxId, transactionToAdd.Vout, transactionToAdd.Amount, transactionToAdd.Address);
+                                    var txVm = new TransactionViewModel(transactionToAdd.TxId, transactionToAdd.Vout, transactionToAdd.Amount, transactionToAdd.Address, transactionToAdd.Confirmations);
                                     _viewModel.Transactions.Add(txVm);
                                 }
 
-                                _viewModel.Amount = unspentTransactions.Sum(t => t.Amount);
+                                _viewModel.Amount = unspentTransactions.Where(t => t.Confirmations > 0).Sum(t => t.Amount);
                             });
                         }
 
@@ -257,6 +257,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
         private void Destroy()
         {
+            if (_viewModel == null) { return; }
             _viewModel.SendMoneyEvt -= SendMoney;
             _viewModel = null;
         }

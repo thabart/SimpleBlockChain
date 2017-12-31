@@ -40,6 +40,16 @@ namespace SimpleBlockChain.Core.Stores
             _password = password;
         }
 
+        public void Switch(Networks network)
+        {
+            if (_authenticatedWallet == null)
+            {
+                return;
+            }
+
+            _authenticatedWallet.Network = network;
+        }
+
         public WalletAggregate GetAuthenticatedWallet()
         {
             return _authenticatedWallet;

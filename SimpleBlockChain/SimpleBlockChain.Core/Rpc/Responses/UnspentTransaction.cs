@@ -8,5 +8,6 @@
         public string ScriptPubKey { get; set; }
         public int Amount { get; set; }
         public bool Spendable { get; set; }
+        public int Confirmations { get; set; }
     }
 }

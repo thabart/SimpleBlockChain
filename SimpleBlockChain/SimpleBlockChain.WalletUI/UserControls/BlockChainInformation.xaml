@@ -6,7 +6,6 @@
              xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.UserControls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <!-- Transaction history -->
     <Grid Grid.Column="1" Grid.RowSpan="2">
         <Grid>
             <Grid.RowDefinitions>

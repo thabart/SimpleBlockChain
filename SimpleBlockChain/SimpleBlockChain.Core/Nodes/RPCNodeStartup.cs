@@ -116,7 +116,8 @@ namespace SimpleBlockChain.Core.Nodes
                     parameters = arr.Select(a => a.ToString());
                 }
             }
-                  
+
+            var memPool = MemoryPool.Instance();
             var transactions = MemoryPool.Instance().GetTransactions();
             var blockChain = _blockChainStore.GetBlockChain();
             var wallet = WalletStore.Instance().GetAuthenticatedWallet();
@@ -147,27 +148,30 @@ namespace SimpleBlockChain.Core.Nodes
                         foreach(var transaction in transactions.Select(t => t))
                         {
                             var jTxContentObj = new JObject();
+                            var depends = new List<string>();
+                            transaction.GetDepends(depends);
+                            var arrDepends = JArray.FromObject(depends);
                             jTxContentObj.Add("size", transaction.Transaction.Serialize().Count());
                             jTxContentObj.Add("fee", _transactionHelper.GetFee(transaction.Transaction, _network));
-                            jTxContentObj.Add("modifiedfee", _transactionHelper.GetFee(transaction.Transaction, _network));
                             jTxContentObj.Add("modifiedfee", _transactionHelper.GetFee(transaction.Transaction, _network));
                             jTxContentObj.Add("time", transaction.InsertTime.ToUnixTime());
                             jTxContentObj.Add("height", transaction.BlockHeight);
                             jTxContentObj.Add("startingpriority", null);
                             jTxContentObj.Add("currentpriority", null);
-                            jTxContentObj.Add("descendantcount", null);
+                            jTxContentObj.Add("descendantcount", memPool.CountDescendants(transaction)); // Nombre of descendants.
                             jTxContentObj.Add("descendantsize", null);
                             jTxContentObj.Add("descendantfees", null);
                             jTxContentObj.Add("ancestorcount", null);
                             jTxContentObj.Add("ancestorsize", null);
                             jTxContentObj.Add("ancestorfees", null);
-                            jTxContentObj.Add("depends", null); // DEPENDS ON SEVERAL TRANSACTIONS.
+                            jTxContentObj.Add("depends", arrDepends);
                             var rec = new JObject();
                             rec.Add(transaction.Transaction.GetTxId().ToHexString(), jTxContentObj);
                             jTxs.Add(rec);
                         }
                     }
 
+                    response["result"] = jTxs;
                     return response;
                 case Constants.RpcOperations.Getblocktemplate: // https://bitcoin.org/en/developer-reference#getblocktemplate
                     if (transactions == null || !transactions.Any())
@@ -252,42 +256,71 @@ namespace SimpleBlockChain.Core.Nodes
                         }
                     }
 
-
                     if (wallet == null)
                     {
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_WALLET_NOT_FOUND, "No authenticated wallet");
                     }
 
                     var res = new JArray();
-                    var utxos = blockChain.GetUnspentTransactions();
                     if (addrs == null || !addrs.Any())
                     {
                         addrs = wallet.Addresses.Select(a => a.Hash);
                     }
 
-                    if (utxos != null && addrs.Any())
+                    var walletBlockChainAddrs = addrs.Select(a => new { bca = BlockChainAddress.Deserialize(a), hash = a });
+                    if (maxConfirmations >= 0) // CONFIRMATION 0.
                     {
-                        foreach (var utxo in utxos)
+                        if (transactions != null && transactions.Any())
                         {
-                            foreach (var hash in addrs)
+                            foreach(var unconfirmedTransaction in transactions)
                             {
-                                var bcAddr = BlockChainAddress.Deserialize(hash);
-                                var publicKeyHash = bcAddr.PublicKeyHash;
-                                if (utxo.Script.ContainsPublicKeyHash(publicKeyHash))
+                                if (unconfirmedTransaction.Transaction != null)
                                 {
-                                    var record = new JObject();
-                                    record.Add("txid", utxo.TxId.ToHexString());
-                                    record.Add("vout", utxo.Index);
-                                    record.Add("address", hash);
-                                    record.Add("scriptPubKey", utxo.Script.Serialize().ToHexString());
-                                    record.Add("amount", utxo.Value);
-                                    record.Add("confirmations", 0);
-                                    record.Add("spendable", wallet.Addresses.Select(a => a.Hash).Contains(hash));
-                                    record.Add("solvable", true);
-                                    res.Add(record);
-                                    break;
+                                    foreach (var unconfirmedUTXO in unconfirmedTransaction.Transaction.TransactionOut)
+                                    {
+                                        var bcAdr = walletBlockChainAddrs.FirstOrDefault(wph => unconfirmedUTXO.Script.ContainsPublicKeyHash(wph.bca.PublicKeyHash));
+                                        if (bcAdr == null)
+                                        {
+                                            continue;
+                                        }
+
+                                        var record = new JObject();
+                                        record.Add("txid", unconfirmedTransaction.Transaction.GetTxId().ToHexString());
+                                        record.Add("vout", unconfirmedTransaction.Transaction.TransactionOut.IndexOf(unconfirmedUTXO));
+                                        record.Add("address", bcAdr.hash);
+                                        record.Add("scriptPubKey", unconfirmedUTXO.Script.Serialize().ToHexString());
+                                        record.Add("amount", unconfirmedUTXO.Value);
+                                        record.Add("confirmations", 0);
+                                        record.Add("spendable", true);
+                                        record.Add("solvable", true);
+                                        res.Add(record);
+                                    }
                                 }
                             }
+                        }
+                    }
+
+                    if (maxConfirmations >= 1)  // CONFIRMATION 1.
+                    {
+                        var utxos = blockChain.GetUnspentTransactions();
+                        foreach (var utxo in utxos)
+                        {
+                            var bcAdr = walletBlockChainAddrs.FirstOrDefault(wph => utxo.Script.ContainsPublicKeyHash(wph.bca.PublicKeyHash));
+                            if (bcAdr == null)
+                            {
+                                continue;
+                            }
+
+                            var record = new JObject();
+                            record.Add("txid", utxo.TxId.ToHexString());
+                            record.Add("vout", utxo.Index);
+                            record.Add("address", bcAdr.hash);
+                            record.Add("scriptPubKey", utxo.Script.Serialize().ToHexString());
+                            record.Add("amount", utxo.Value);
+                            record.Add("confirmations", 1);
+                            record.Add("spendable", true);
+                            record.Add("solvable", true);
+                            res.Add(record);
                         }
                     }
 

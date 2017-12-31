@@ -17,6 +17,7 @@ namespace SimpleBlockChain.WalletUI.Pages
 {
     public partial class WalletPage : Page
     {
+        private const string ADR = "192.168.76.132";
         private const int REFRESH_INFORMATION_INTERVAL = 5000;
         private readonly WalletInformation _walletInformation;
         private readonly BlockChainInformation _blockChainInformation;
@@ -28,8 +29,7 @@ namespace SimpleBlockChain.WalletUI.Pages
         private readonly BackgroundWorker _refreshUiBackgroundWorker;
         private readonly INodeLauncherFactory _nodeLauncherFactory;
 
-        public WalletPage(INodeLauncherFactory nodeLauncherFactory, 
-            WalletInformation walletInformation, BlockChainInformation blockChainInformation, MemoryPoolInformation memoryPoolInformation)
+        public WalletPage(INodeLauncherFactory nodeLauncherFactory, WalletInformation walletInformation, BlockChainInformation blockChainInformation, MemoryPoolInformation memoryPoolInformation)
         {
             _walletInformation = walletInformation;
             _blockChainInformation = blockChainInformation;
@@ -103,7 +103,7 @@ namespace SimpleBlockChain.WalletUI.Pages
         private void OpenNetwork(Networks network)
         {
             Disconnect();
-            var ipBytes = IPAddress.Parse("192.168.76.132").MapToIPv6().GetAddressBytes();
+            var ipBytes = IPAddress.Parse(ADR).MapToIPv6().GetAddressBytes();
             _nodeLauncher = _nodeLauncherFactory.Build(network, ServiceFlags.NODE_NONE);
             _nodeLauncher.LaunchP2PNode(ipBytes);
             _nodeLauncher.LaunchRPCNode();
@@ -117,6 +117,7 @@ namespace SimpleBlockChain.WalletUI.Pages
             _nodeLauncher.RefreshBlockChain();
             _timer = new Timer(TimerElapsed, _autoEvent, REFRESH_INFORMATION_INTERVAL, REFRESH_INFORMATION_INTERVAL);
             _viewModel.IsConnected = true;
+            WalletStore.Instance().Switch(_viewModel.IsTestNetChecked ? Networks.TestNet : Networks.MainNet);
         }
 
         private void TimerElapsed(object sender)
@@ -132,6 +133,7 @@ namespace SimpleBlockChain.WalletUI.Pages
             RefreshNbBlocks();
             _walletInformation.Refresh();
             _blockChainInformation.Refresh(_viewModel.NbBlocks);
+            _memoryPoolInformation.Refresh();
         }
 
         private void RefreshNbBlocks()
@@ -184,6 +186,12 @@ namespace SimpleBlockChain.WalletUI.Pages
                 _timer.Dispose(_autoEvent);
                 _timer = null;
             }
+
+            _viewModel.IsConnected = false;
+            _viewModel.NbBlocks = 0;
+            _walletInformation.Reset();
+            _blockChainInformation.Reset();
+            _memoryPoolInformation.Reset();
         }
 
         private void Destroy()
@@ -192,6 +200,7 @@ namespace SimpleBlockChain.WalletUI.Pages
             _viewModel.NetworkSwitchEvt -= NetworkSwitch;
             _viewModel.RefreshBlockChainEvt -= RefreshBlockChain;
             _viewModel = null;
+            this.tabControl.Items.Clear();
         }
     }
 }

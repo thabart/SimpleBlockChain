@@ -64,8 +64,9 @@ namespace SimpleBlockChain.Core.Helpers
                     txOut = transactionOut;
                 }
             }
-
-            if (txIn != null)
+            
+            var noneCoinBaseTransaction = transaction as NoneCoinbaseTransaction;
+            if (noneCoinBaseTransaction != null)
             {
                 if (txOut == null)
                 {
@@ -121,16 +122,24 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
+                TransactionOut previousTxOut = null;
                 if (previousTx == null || previousTx.TransactionOut == null)
                 {
-                    continue;
+                    previousTxOut = MemoryPool.Instance().GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
+                    if (previousTxOut == null)
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
+                    if (previousTxOut == null || previousTxOut.Script == null)
+                    {
+                        continue;
+                    }
                 }
 
-                var previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
-                if (previousTxOut == null || previousTxOut.Script == null)
-                {
-                    continue;
-                }
 
                 return previousTxOut;
             }

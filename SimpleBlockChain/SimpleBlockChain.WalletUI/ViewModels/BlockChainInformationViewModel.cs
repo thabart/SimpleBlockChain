@@ -33,6 +33,11 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public ObservableCollection<BlockViewModel> Blocks { get; private set; }
         public BlockViewModel SelectedBlock { get; set; }
 
+        public void Reset()
+        {
+            Blocks = new ObservableCollection<BlockViewModel>();
+        }
+
         public ICommand PreviousPageCommand
         {
             get

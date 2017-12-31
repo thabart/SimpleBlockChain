@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Exceptions;
+﻿using SimpleBlockChain.Core.Blocks;
+using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Scripts;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
@@ -31,6 +32,7 @@ namespace SimpleBlockChain.Core.Validators
             }
 
             var blockChain = _blockChainStore.GetBlockChain();
+            var memoryPool = MemoryPool.Instance();
             var isCoinBaseTransaction = transaction is CoinbaseTransaction; // https://bitcoin.org/en/developer-guide#block-chain-overview
             if (!isCoinBaseTransaction && (transaction.TransactionIn == null || !transaction.TransactionIn.Any()))
             {
@@ -42,15 +44,32 @@ namespace SimpleBlockChain.Core.Validators
                 long totalOutput = 0;
                 foreach (var txIn in transaction.TransactionIn)
                 {
-                    var noneCoinBaseTxIn = txIn as TransactionInNoneCoinbase; // Check TRANSACTION EXISTS.
+                    var noneCoinBaseTxIn = txIn as TransactionInNoneCoinbase; // Check TRANSACTION EXISTS IN BLOCK CHAIN & MEMORY POOL.
                     var previousTxId = noneCoinBaseTxIn.Outpoint.Hash;
                     var previousIndex = noneCoinBaseTxIn.Outpoint.Index;
+                    if (memoryPool.ContainsTransactions(previousTxId, previousIndex))
+                    {
+                        throw new ValidationException(ErrorCodes.AlreadySpentInMemoryPool);
+                    }
+
                     var previousTxOut = blockChain.GetUnspentTransaction(previousTxId, previousIndex);
                     if (previousTxOut == null)
                     {
-                        throw new ValidationException(ErrorCodes.ReferencedTransactionNotValid);
-                    }
+                        var r = memoryPool.GetUnspentTransaction(previousTxId, previousIndex);
+                        if (r == null)
+                        {
+                            throw new ValidationException(ErrorCodes.ReferencedTransactionNotValid);
+                        }
 
+                        previousTxOut = new UTXO
+                        {
+                            Index = (int)previousIndex,
+                            Script = r.Script,
+                            TxId = transaction.GetTxId(),
+                            Value = r.Value
+                        };
+                    }
+                    
                     var sigScript = Script.Deserialize(noneCoinBaseTxIn.SignatureScript);  // Check SCRIPT.
                     var pkScript = previousTxOut.Script;
                     if (!_scriptInterpreter.Check(sigScript, pkScript))

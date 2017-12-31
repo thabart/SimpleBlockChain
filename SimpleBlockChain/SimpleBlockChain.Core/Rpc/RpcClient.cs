@@ -9,6 +9,7 @@ using SimpleBlockChain.Core.Rpc.Responses;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace SimpleBlockChain.Core.Rpc
 {
     public interface IRpcClient
     {
-        Task<string> GetRawMemPool();
+        Task<IEnumerable<RawMemoryPool>> GetRawMemPool(bool verboseOutput = false);
         Task<BlockTemplate> GetBlockTemplate();
         Task<bool> SubmitBlock(Block block);
         Task<bool> SendRawTransaction(BaseTransaction transaction);
@@ -39,12 +40,15 @@ namespace SimpleBlockChain.Core.Rpc
             _network = network;
         }
         
-        public async Task<string> GetRawMemPool()
+        public async Task<IEnumerable<RawMemoryPool>> GetRawMemPool(bool verboseOutput = false)
         {
             var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(verboseOutput ? 0 : 1);
             var jObj = new JObject();
             jObj.Add("id", Guid.NewGuid().ToString());
             jObj.Add("method", Constants.RpcOperations.Getrawmempool);
+            jObj.Add("params", jParams);
             var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
             var request = new HttpRequestMessage
             {
@@ -54,7 +58,16 @@ namespace SimpleBlockChain.Core.Rpc
             };
 
             var response = await httpClient.SendAsync(request).ConfigureAwait(false);
-            return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var jsonObj = JObject.Parse(json);
+            string errorCode = null;
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var resultObj = jsonObj.GetValue("result") as JArray;
+            return ExtractRawMemPool(resultObj);
         }
 
         public async Task<BlockTemplate> GetBlockTemplate()
@@ -244,6 +257,7 @@ namespace SimpleBlockChain.Core.Rpc
                     ScriptPubKey = o.Value<string>("scriptPubKey"),
                     Spendable = spendable,
                     TxId = o.Value<string>("txid"),
+                    Confirmations = int.Parse(o.Value<string>("confirmations")),
                     Vout = vout
                 });
             }
@@ -464,6 +478,49 @@ namespace SimpleBlockChain.Core.Rpc
 
             errorCode = errorToken.ToString();
             return true;
+        }
+
+        private static IEnumerable<RawMemoryPool> ExtractRawMemPool(JArray arr)
+        {
+            if (arr == null)
+            {
+                throw new ArgumentNullException(nameof(arr));
+            }
+
+            var result = new List<RawMemoryPool>();
+            foreach(var rec in arr)
+            {
+                var record = new RawMemoryPool();
+                if (rec.Type == JTokenType.String)
+                {
+                    record.TxId = rec.ToString();
+                }
+                else
+                {
+                    var oRec = rec as JObject;
+                    if (oRec == null)
+                    {
+                        continue;
+                    }
+
+                    record.TxId = oRec.Properties().First().Name;
+                    var values = oRec.Values();
+                    JObject child = null;
+                    foreach(var v in values)
+                    {
+                        child = v as JObject;
+                        break;
+                    }
+
+                    record.Fee = long.Parse(child.GetValue("fee").ToString());
+                    record.ModifiedFee = long.Parse(child.GetValue("modifiedfee").ToString());
+                    record.Time = int.Parse(child.GetValue("time").ToString());
+                }
+
+                result.Add(record);
+            }
+
+            return result;
         }
 
         private Uri GetUri()

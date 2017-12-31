@@ -1,28 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleBlockChain.Core.Rpc;
+using SimpleBlockChain.Core.Stores;
+using SimpleBlockChain.WalletUI.ViewModels;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SimpleBlockChain.WalletUI.UserControls
 {
-    /// <summary>
-    /// Logique d'interaction pour MemoryPoolInformation.xaml
-    /// </summary>
     public partial class MemoryPoolInformation : UserControl
     {
+        private MemoryPoolInformationViewModel _viewModel;
+
         public MemoryPoolInformation()
         {
             InitializeComponent();
+            Loaded += Load;
+            Unloaded += Unload;
+        }
+
+        private void Load(object sender, RoutedEventArgs e)
+        {
+            _viewModel = new MemoryPoolInformationViewModel();
+            DataContext = _viewModel;
+        }
+
+        public void Refresh()
+        {
+            if (_viewModel == null) { return; }
+            Init();
+        }
+
+        public void Reset()
+        {
+            if (_viewModel == null) { return; }
+            _viewModel.Reset();
+        }
+
+        private void Unload(object sender, RoutedEventArgs e)
+        {
+            Destroy();
+        }
+
+        private void Init()
+        {
+            var walletStore = WalletStore.Instance();
+            var rpcClient = new RpcClient(walletStore.GetAuthenticatedWallet().Network);
+            Application.Current.Dispatcher.Invoke(() => {
+                _viewModel.Raws.Clear();
+            });
+            rpcClient.GetRawMemPool(true).ContinueWith((r) =>
+            {
+                try
+                {
+                    var result = r.Result;
+                    foreach(var rawMemPool in result)
+                    {
+                        var record = new RawMemPoolViewModel
+                        {
+                            Fee = rawMemPool.Fee,
+                            Time = rawMemPool.Time,
+                            TxId = rawMemPool.TxId
+                        };
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            _viewModel.Raws.Add(record);
+                        });
+                    }
+                }
+                catch(AggregateException ex)
+                {
+
+                }
+            });
+        }
+
+        private void Destroy()
+        {
+            _viewModel = null;
         }
     }
 }
