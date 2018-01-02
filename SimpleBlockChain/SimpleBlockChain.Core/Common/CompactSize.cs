@@ -50,7 +50,7 @@ namespace SimpleBlockChain.Core.Common
             if (firstB == 0xfd)
             {
                 var val = payload.Skip(1).Take(2);
-                result = Convert.ToUInt16(val.ToArray());
+                result = BitConverter.ToUInt16(val.ToArray(), 0);
                 nbBytes = 3;
             }
             else if (firstB == 0xfe)

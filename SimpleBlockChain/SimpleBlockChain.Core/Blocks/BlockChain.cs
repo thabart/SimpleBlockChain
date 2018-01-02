@@ -29,6 +29,8 @@ namespace SimpleBlockChain.Core.Blocks
         private const string TRANSACTION_ELT = TRANSACTION + "_{0}";
         private const string TRANSACTION_CB = "TRANSACTION_CB";
         private const string TRANSACTION_CB_ELT = TRANSACTION_CB + "_{0}";
+        private const string SMART_CONTRACT_TRANSACTION = "SMART_CONTRACT_TRANSACTION";
+        private const string SMART_CONTRACT_TRANSACTION_ELT = SMART_CONTRACT_TRANSACTION + "_{0}";
 
         private const string TX_OUT_UNSPENT = "TX_OUT_UNSPENT";
         private const string TX_OUT_UNSPENT_ELT = TX_OUT_UNSPENT + "_{0}";
@@ -340,10 +342,15 @@ namespace SimpleBlockChain.Core.Blocks
                 var currentTxId = transaction.GetTxId();
                 var base64TxId = Convert.ToBase64String(currentTxId.ToArray());
                 var cb = transaction as CoinbaseTransaction;
+                var smContract = transaction as SmartContractTransaction;
                 var arr = transaction.Serialize().ToArray();
                 if (cb != null)
                 {
                     batch.Put(string.Format(TRANSACTION_CB_ELT, base64TxId), Convert.ToBase64String(arr));
+                }
+                else if (smContract != null)
+                {
+                    batch.Put(string.Format(SMART_CONTRACT_TRANSACTION_ELT, base64TxId), Convert.ToBase64String(arr));
                 }
                 else
                 {

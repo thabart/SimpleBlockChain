@@ -1,13 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleBlockChain.Core.Compiler;
-using SimpleBlockChain.Core.Extensions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace SimpleBlockChain.UnitTests.Compiler
 {
