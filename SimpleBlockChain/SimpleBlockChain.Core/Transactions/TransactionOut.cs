@@ -5,18 +5,16 @@ using System.Linq;
 
 namespace SimpleBlockChain.Core.Transactions
 {
-    public class TransactionOut
+    public class TransactionOut : BaseTransactionOut
     {
         public long Value { get; private set; }
-        public Script Script { get; set; }
 
-        public TransactionOut(long value, Script script)
+        public TransactionOut(long value, Script script) : base(script)
         {
             Value = value;
-            Script = script;
         }
 
-        public IEnumerable<byte> Serialize()
+        public override IEnumerable<byte> Serialize()
         {
             var result = new List<byte>();
             var scriptPayload = Script.Serialize();

@@ -14,7 +14,8 @@ namespace SimpleBlockChain.Core.Transactions
     public enum TransactionTypes
     {
         Coinbase,
-        NoneCoinbase
+        NoneCoinbase,
+        SmartContract
     }
 
     public abstract class BaseTransaction : IComparable
@@ -24,7 +25,7 @@ namespace SimpleBlockChain.Core.Transactions
         public uint Version { get; set; } // version
         public uint LockTime { get; set; } // lock_time
         public List<BaseTransactionIn> TransactionIn { get; protected set; } // tx_in
-        public List<TransactionOut> TransactionOut { get; protected set; } // tx_out
+        public List<BaseTransactionOut> TransactionOut { get; protected set; } // tx_out
 
         public BaseTransaction() : this(CURRENT_VERSION, DateTime.UtcNow.ToUnixTimeUInt32()) { }
 
@@ -33,7 +34,7 @@ namespace SimpleBlockChain.Core.Transactions
             Version = version;
             LockTime = lockTime;
             TransactionIn = new List<BaseTransactionIn>();
-            TransactionOut = new List<TransactionOut>();
+            TransactionOut = new List<BaseTransactionOut>();
         }
 
         public static KeyValuePair<BaseTransaction, int> Deserialize(IEnumerable<byte> payload, TransactionTypes type)
@@ -46,6 +47,9 @@ namespace SimpleBlockChain.Core.Transactions
                     break;
                 case TransactionTypes.NoneCoinbase:
                     result = new NoneCoinbaseTransaction();
+                    break;
+                case TransactionTypes.SmartContract:
+                    result = new SmartContractTransaction();
                     break;
             }
 
@@ -112,9 +116,8 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public abstract KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size);
-
-
-        public TransactionOut GetTransactionOut(WalletAggregateAddress walletAddr)
+        
+        public BaseTransactionOut GetTransactionOut(WalletAggregateAddress walletAddr)
         {
             if (walletAddr == null)
             {
@@ -148,7 +151,7 @@ namespace SimpleBlockChain.Core.Transactions
             return null;
         }
         
-        public TransactionOut GetTransactionOut(string encodedBcAddr)
+        public BaseTransactionOut GetTransactionOut(string encodedBcAddr)
         {
             if (string.IsNullOrWhiteSpace(encodedBcAddr))
             {
@@ -160,7 +163,7 @@ namespace SimpleBlockChain.Core.Transactions
             return GetTransactionOut(publicKeyHash);
         }
 
-        public TransactionOut GetTransactionOut(IEnumerable<byte> publicKeyHash)
+        public BaseTransactionOut GetTransactionOut(IEnumerable<byte> publicKeyHash)
         {
             if (publicKeyHash == null)
             {
@@ -240,6 +243,11 @@ namespace SimpleBlockChain.Core.Transactions
             */
             result.Add(GetTxId().ToHexString(), content);
             return result;
+        }
+
+        public override int GetHashCode()
+        {
+            return Version.GetHashCode() * LockTime.GetHashCode();
         }
     }
 }

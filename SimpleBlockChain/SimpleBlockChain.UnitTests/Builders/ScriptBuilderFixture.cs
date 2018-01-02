@@ -101,33 +101,5 @@ namespace SimpleBlockChain.UnitTests.Builders
 
             Assert.IsTrue(isCorrect);
         }
-
-        [TestMethod]
-        public void WhenExecuteContract()
-        {
-            var code = @"
-                using System;
-                public class SimpleTest
-                {
-                    private string y {get; set;}
-                    private string z;
-                    public string Test2(string parameter)
-                    {
-                        return parameter;
-                    }
-                    private string Test()
-                    {
-                        return ""1"";
-                    }
-                }";
-            var compiler = new DotnetCompiler();
-            var payload = compiler.Compile(code);
-            var scriptBuilder = new ScriptBuilder();
-            var script = scriptBuilder.New().AddOperation(OpCodes.OP_ADDCONTRACT)
-                .AddToStack(payload)
-                .Build();
-            var serializedScript = script.Serialize();
-            var deserializedScript = Script.Deserialize(serializedScript);
-        }
     }
 }

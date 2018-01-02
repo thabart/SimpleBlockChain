@@ -57,7 +57,7 @@ namespace SimpleBlockChain.Core.Validators
                     var previousTxOut = blockChain.GetUnspentTransaction(previousTxId, previousIndex);
                     if (previousTxOut == null)
                     {
-                        var r = memoryPool.GetUnspentTransaction(previousTxId, previousIndex);
+                        var r = memoryPool.GetUnspentTransaction(previousTxId, previousIndex) as TransactionOut;
                         if (r == null)
                         {
                             throw new ValidationException(ErrorCodes.ReferencedTransactionNotValid);
@@ -82,7 +82,7 @@ namespace SimpleBlockChain.Core.Validators
                     totalOutput += previousTxOut.Value;
                 }
 
-                var sumOutput = transaction.TransactionOut.Sum(t => t.Value);
+                var sumOutput = transaction.TransactionOut.Where(t => t is TransactionOut).Sum(t => ((TransactionOut)t).Value);
                 if (sumOutput > totalOutput)
                 {
                     throw new ValidationException(ErrorCodes.TransactionOutputExceedInput);

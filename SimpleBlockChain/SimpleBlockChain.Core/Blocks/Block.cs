@@ -61,13 +61,13 @@ namespace SimpleBlockChain.Core.Blocks
             long result = 0;
             foreach(var tx in Transactions)
             {
-                var cbTx = tx as CoinbaseTransaction;
+                var cbTx = tx as NoneCoinbaseTransaction;
                 if (cbTx == null)
                 {
                     continue;
                 }
 
-                result += cbTx.TransactionOut.First().Value;
+                result += ((TransactionOut)cbTx.TransactionOut.First()).Value;
             }
 
             return result;

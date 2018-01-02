@@ -12,8 +12,8 @@ namespace SimpleBlockChain.Core.Helpers
         long GetReward(BaseTransaction transaction);
         long CalculateBalance(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
         long GetFee(BaseTransaction transaction, Networks network);
-        BaseTransactionOut GetTransactionIn(BaseTransaction transaction, Networks network);
-        BaseTransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
+        TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network);
+        TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
     }
 
     internal class TransactionHelper : ITransactionHelper
@@ -53,7 +53,7 @@ namespace SimpleBlockChain.Core.Helpers
                 throw new ArgumentNullException(nameof(bcAddrs));
             }
             
-            var txIn = GetTransactionIn(transaction, bcAddrs, network) as TransactionOut;
+            var txIn = GetTransactionIn(transaction, bcAddrs, network);
             var publicKeyHashes = bcAddrs.Select(bcAddr => bcAddr.PublicKeyHash);
             TransactionOut txOut = null;
             foreach (var transactionOut in transaction.TransactionOut)
@@ -61,27 +61,40 @@ namespace SimpleBlockChain.Core.Helpers
                 var script = transactionOut.Script;
                 if (publicKeyHashes.Any(publicKeyHash => script.ContainsPublicKeyHash(publicKeyHash)))
                 {
-                    txOut = transactionOut as TransactionOut;
+                    txOut = transactionOut;
                 }
             }
-            
+
+<<<<<<< HEAD
+            if (txIn != null)
+=======
+            if (!transaction.CanSpend(encodedBcAddr))
+            {
+                return 0;
+            }
+
+            var bcAdr = BlockChainAddress.Deserialize(encodedBcAddr);
+            var memPool = MemoryPool.Instance();
             var noneCoinBaseTransaction = transaction as NoneCoinbaseTransaction;
             if (noneCoinBaseTransaction != null)
+>>>>>>> origin/master
             {
+                var txOut = transaction.GetTransactionOut(encodedBcAddr);
                 if (txOut == null)
                 {
                     return 0;
                 }
 
-                return -(txIn.Value - txOut.Value);
+                foreach(var memTx in memPool.GetTransactions())
+                {
+                    // TODO : Check NOT BEEN SPENT.
+                }
+
+                return txOut.Value;
             }
 
-            if (txOut == null)
-            {
-                return 0;
-            }
-
-            return txOut.Value;
+            var coinBaseTransaction = transaction as CoinbaseTransaction;
+            return coinBaseTransaction.TransactionOut.First().Value;
         }
 
         public long GetFee(BaseTransaction transaction, Networks network)
@@ -91,9 +104,9 @@ namespace SimpleBlockChain.Core.Helpers
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            var outputValue = transaction.TransactionOut.Where(t => t is TransactionOut).Sum(t => (t as TransactionOut).Value); // TRANSACTION FEE + REWARD.
+            var outputValue = transaction.TransactionOut.Sum(t => t.Value); // TRANSACTION FEE + REWARD.
             long inputValue = 0;
-            var txIn = GetTransactionIn(transaction, network) as TransactionOut;
+            var txIn = GetTransactionIn(transaction, network);
             if (txIn != null)
             {
                 inputValue = txIn.Value;
@@ -105,7 +118,7 @@ namespace SimpleBlockChain.Core.Helpers
             return result;
         }
 
-        public BaseTransactionOut GetTransactionIn(BaseTransaction transaction, Networks network)
+        public TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network)
         {
             if (transaction == null)
             {
@@ -122,7 +135,7 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
-                BaseTransactionOut previousTxOut = null;
+                TransactionOut previousTxOut = null;
                 if (previousTx == null || previousTx.TransactionOut == null)
                 {
                     previousTxOut = MemoryPool.Instance().GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
@@ -147,7 +160,7 @@ namespace SimpleBlockChain.Core.Helpers
             return null;
         }
 
-        public BaseTransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
+        public TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
         {
             if (transaction == null)
             {
@@ -161,7 +174,6 @@ namespace SimpleBlockChain.Core.Helpers
 
             var publicKeyHashes = bcAddrs.Select(bcAddr => bcAddr.PublicKeyHash);
             var blockChain = _blockChainStore.GetBlockChain();
-            var memPool = MemoryPool.Instance();
             foreach (var txIn in transaction.TransactionIn)
             {
                 var nCbtxIn = txIn as TransactionInNoneCoinbase;
@@ -171,20 +183,12 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
-                BaseTransactionOut previousTxOut = null;
                 if (previousTx == null || previousTx.TransactionOut == null)
                 {
-                    previousTxOut = memPool.GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
-                    if (previousTxOut == null)
-                    {
-                        continue;
-                    }
+                    continue;
                 }
-                else
-                {
-                    previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
-                }
-                
+
+                var previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
                 if (previousTxOut == null || previousTxOut.Script == null || publicKeyHashes.All(publicKeyHash => !previousTxOut.Script.ContainsPublicKeyHash(publicKeyHash)))
                 {
                     continue;

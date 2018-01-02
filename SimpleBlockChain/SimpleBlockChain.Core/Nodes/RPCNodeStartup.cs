@@ -276,7 +276,7 @@ namespace SimpleBlockChain.Core.Nodes
                             {
                                 if (unconfirmedTransaction.Transaction != null)
                                 {
-                                    foreach (var unconfirmedUTXO in unconfirmedTransaction.Transaction.TransactionOut)
+                                    foreach (var unconfirmedUTXO in unconfirmedTransaction.Transaction.TransactionOut.Where(t => t is TransactionOut).Select(t => t as TransactionOut))
                                     {
                                         var bcAdr = walletBlockChainAddrs.FirstOrDefault(wph => unconfirmedUTXO.Script.ContainsPublicKeyHash(wph.bca.PublicKeyHash));
                                         if (bcAdr == null)

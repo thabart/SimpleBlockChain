@@ -298,7 +298,7 @@ namespace SimpleBlockChain.Core.Blocks
             return res;
         }
 
-        public TransactionOut GetTransactionOut(IEnumerable<byte> txId, int index)
+        public BaseTransactionOut GetTransactionOut(IEnumerable<byte> txId, int index)
         {
             if (txId == null)
             {
@@ -439,7 +439,7 @@ namespace SimpleBlockChain.Core.Blocks
                 var values = kvp.Key.Replace(TX_OUT_UNSPENT, "").Split('_');
                 var txId = Convert.FromBase64String(values.ElementAt(1));
                 var index = int.Parse(values.ElementAt(2));
-                var txOut = GetTransactionOut(txId, index);
+                var txOut = (TransactionOut)GetTransactionOut(txId, index);
                 if (txOut == null)
                 {
                     continue;

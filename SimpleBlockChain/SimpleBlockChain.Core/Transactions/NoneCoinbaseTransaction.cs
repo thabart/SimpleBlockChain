@@ -29,7 +29,7 @@ namespace SimpleBlockChain.Core.Transactions
             return new KeyValuePair<List<BaseTransactionIn>, int>(result, currentStartIndex);
         }
 
-        public IEnumerable<TransactionOut> GetReferencedTransactionOut(NoneCoinbaseTransaction transaction)
+        public IEnumerable<BaseTransactionOut> GetReferencedTransactionOut(NoneCoinbaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -37,7 +37,7 @@ namespace SimpleBlockChain.Core.Transactions
             }
 
             var trIns = transaction.TransactionIn.Select(ti => ti as TransactionInNoneCoinbase);
-            var result = new List<TransactionOut>();
+            var result = new List<BaseTransactionOut>();
             foreach (var trIn in trIns)
             {
                 if (!GetTxId().SequenceEqual(trIn.Outpoint.Hash))
