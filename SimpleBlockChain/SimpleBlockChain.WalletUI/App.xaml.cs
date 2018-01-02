@@ -36,6 +36,7 @@ namespace SimpleBlockChain.WalletUI
             serviceCollection.AddTransient<HomePageViewModel>();
             serviceCollection.AddTransient<CreateWalletViewModel>();
             serviceCollection.AddTransient<WalletPageViewModel>();
+            serviceCollection.AddTransient<WalletInformationViewModel>();
             serviceCollection.AddSingleton<IDialogCoordinator>(DialogCoordinator.Instance);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())

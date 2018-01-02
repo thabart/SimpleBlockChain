@@ -1,7 +1,9 @@
 ﻿using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using SimpleBlockChain.WalletUI.Events;
 using SimpleBlockChain.WalletUI.Pages;
 using SimpleBlockChain.WalletUI.Stores;
+using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Collections;
 using System.Windows;
@@ -13,10 +15,13 @@ namespace SimpleBlockChain.WalletUI
     public partial class MainWin : MetroWindow
     {
         private readonly HomePage _homePage;
+        private MainWindowViewModel _viewModel;
 
         public MainWin(HomePage homePage)
         {
             _homePage = homePage;
+            _viewModel = new MainWindowViewModel(DialogCoordinator.Instance);
+            DataContext = _viewModel;
             InitializeComponent();
             this.Loaded += Load;
             this.Closing += MetroNavigationWindow_Closing;
@@ -34,6 +39,12 @@ namespace SimpleBlockChain.WalletUI
             PART_BackButton.Click += PART_BackButton_Click;
             PART_ForwardButton.Click += PART_ForwardButton_Click;
             MainWindowStore.Instance().DisplayFlyoutEvt += DisplayFlyout;
+            MainWindowStore.Instance().DisplayErrorEvt += DisplayError;
+        }
+
+        private void DisplayError(object sender, ErrorEventArgs e)
+        {
+            _viewModel.DisplayError(e.Data);
         }
 
         private void DisplayFlyout(object sender, FlyoutEventArgs e)

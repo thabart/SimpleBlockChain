@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.WalletUI.Commands;
+﻿using MahApps.Metro.Controls.Dialogs;
+using SimpleBlockChain.WalletUI.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;

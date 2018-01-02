@@ -2,6 +2,7 @@
 using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
+using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Windows;
@@ -18,7 +19,7 @@ namespace SimpleBlockChain.WalletUI.Pages
 
         public AuthenticateWalletPage(IWalletRepository walletRepository, WalletPage walletPage, IBlockChainStore blockChainStore)
         {
-            _viewModel = new AuthenticateWalletViewModel(DialogCoordinator.Instance);
+            _viewModel = new AuthenticateWalletViewModel();
             _walletRepository = walletRepository;
             _walletPage = walletPage;
             _blockChainStore = blockChainStore;
@@ -50,7 +51,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                 }
                 catch (AggregateException)
                 {
-                    _viewModel.DisplayMessage("Error", "Cannot connect to the wallet");
+                    MainWindowStore.Instance().DisplayError("Cannot connect to the wallet");
                 }
                 finally
                 {

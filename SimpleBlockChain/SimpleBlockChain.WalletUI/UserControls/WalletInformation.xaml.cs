@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core;
+﻿using MahApps.Metro.Controls.Dialogs;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Aggregates;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
@@ -9,6 +10,7 @@ using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Linq;
@@ -27,7 +29,8 @@ namespace SimpleBlockChain.WalletUI.UserControls
         private WalletInformationViewModel _viewModel;
         private object _lock = new object();
 
-        public WalletInformation(IScriptBuilder scriptBuilder, ITransactionHelper transactionHelper, IWalletRepository walletRepository, ITransactionBuilder transactionBuilder)
+        public WalletInformation(IScriptBuilder scriptBuilder, ITransactionHelper transactionHelper, 
+            IWalletRepository walletRepository, ITransactionBuilder transactionBuilder)
         {
             _scriptBuilder = scriptBuilder;
             _transactionHelper = transactionHelper;
@@ -68,6 +71,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
             if (authenticatedWallet == null)
             {
+                MainWindowStore.Instance().DisplayError("You're not authenticated");
                 return;
             }
 
@@ -76,6 +80,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             var selectedTransaction = _viewModel.SelectedTransaction;
             if (selectedTransaction == null)
             {
+                MainWindowStore.Instance().DisplayError("A transaction must be selected");
                 return;
             }
 
@@ -89,6 +94,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             var walletAddr = authenticatedWallet.Addresses.FirstOrDefault(a => a.Hash == selectedTransaction.Hash);
             if (walletAddr == null)
             {
+                MainWindowStore.Instance().DisplayError("The selected tranasction is not linked to your wallet");
                 return;
             }
 
@@ -99,11 +105,12 @@ namespace SimpleBlockChain.WalletUI.UserControls
             }
             catch (Exception)
             {
-
+                MainWindowStore.Instance().DisplayError("The address is not correct");
             }
 
             if (bcAddr == null)
             {
+                MainWindowStore.Instance().DisplayError("The address is not correct");
                 return;
             }
 
@@ -147,7 +154,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
                 }
                 catch (AggregateException ex)
                 {
-
+                    var exx = ex.InnerExceptions;
                 }
             });
         }

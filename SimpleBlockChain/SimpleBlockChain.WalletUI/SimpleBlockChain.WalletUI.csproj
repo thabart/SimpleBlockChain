@@ -313,6 +313,7 @@
     <Compile Include="Behaviors\PasswordBoxBindingBehavior.cs" />
     <Compile Include="Behaviors\SelectionBehavior.cs" />
     <Compile Include="Events\BlockEventArgs.cs" />
+    <Compile Include="Events\ErrorEventArgs.cs" />
     <Compile Include="Events\FlyoutEventArgs.cs" />
     <Compile Include="Events\NetworkEventHandler.cs" />
     <Compile Include="MainWin.xaml.cs">
@@ -340,6 +341,7 @@
     <Compile Include="ViewModels\CreateWalletViewModel.cs" />
     <Compile Include="ViewModels\BlockFlyoutViewModel.cs" />
     <Compile Include="ViewModels\HomePageViewModel.cs" />
+    <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\MemoryPoolInformationViewModel.cs" />
     <Compile Include="ViewModels\TransactionFlyoutViewModel.cs" />
     <Compile Include="ViewModels\WalletInformationViewModel.cs" />
