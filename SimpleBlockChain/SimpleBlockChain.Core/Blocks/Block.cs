@@ -1,9 +1,6 @@
 ﻿using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Common;
-using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
-using SimpleBlockChain.Core.Helpers;
-using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;

@@ -47,10 +47,12 @@ namespace SimpleBlockChain.Core.Validators
                     var noneCoinBaseTxIn = txIn as TransactionInNoneCoinbase; // Check TRANSACTION EXISTS IN BLOCK CHAIN & MEMORY POOL.
                     var previousTxId = noneCoinBaseTxIn.Outpoint.Hash;
                     var previousIndex = noneCoinBaseTxIn.Outpoint.Index;
+                    /*
                     if (memoryPool.ContainsTransactions(previousTxId, previousIndex))
                     {
                         throw new ValidationException(ErrorCodes.AlreadySpentInMemoryPool);
                     }
+                    */
 
                     var previousTxOut = blockChain.GetUnspentTransaction(previousTxId, previousIndex);
                     if (previousTxOut == null)

@@ -334,6 +334,7 @@ namespace SimpleBlockChain.Core.Blocks
             var hashHeader = Convert.ToBase64String(block.GetHashHeader());
             batch.Put(string.Format(BLOCK_KEY, hashHeader), Convert.ToBase64String(block.SerializeHeader()));
             var allTxIds = new List<IEnumerable<byte>>();
+            var allOutpoint = block.Transactions.Where(t => t is NoneCoinbaseTransaction).Select(t => (t.TransactionIn.First() as TransactionInNoneCoinbase).Outpoint);
             foreach (var transaction in block.Transactions)
             {
                 var currentTxId = transaction.GetTxId();
@@ -354,7 +355,10 @@ namespace SimpleBlockChain.Core.Blocks
                     foreach(var transactionOut in transaction.TransactionOut)
                     {
                         var index = transaction.TransactionOut.IndexOf(transactionOut);
-                        batch.Put(string.Format(TX_OUT_UNSPENT_ELT, string.Format("{0}_{1}", base64TxId, index)), "empty");
+                        if (!allOutpoint.Any(o => o.Hash.SequenceEqual(transaction.GetTxId()) && o.Index == index))
+                        {
+                            batch.Put(string.Format(TX_OUT_UNSPENT_ELT, string.Format("{0}_{1}", base64TxId, index)), "empty");
+                        }
                     }
                 }
 
