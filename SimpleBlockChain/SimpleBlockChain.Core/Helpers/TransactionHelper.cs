@@ -161,6 +161,7 @@ namespace SimpleBlockChain.Core.Helpers
 
             var publicKeyHashes = bcAddrs.Select(bcAddr => bcAddr.PublicKeyHash);
             var blockChain = _blockChainStore.GetBlockChain();
+            var memPool = MemoryPool.Instance();
             foreach (var txIn in transaction.TransactionIn)
             {
                 var nCbtxIn = txIn as TransactionInNoneCoinbase;
@@ -170,12 +171,20 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
+                TransactionOut previousTxOut = null;
                 if (previousTx == null || previousTx.TransactionOut == null)
                 {
-                    continue;
+                    previousTxOut = memPool.GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
+                    if (previousTxOut == null)
+                    {
+                        continue;
+                    }
                 }
-
-                var previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
+                else
+                {
+                    previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
+                }
+                
                 if (previousTxOut == null || previousTxOut.Script == null || publicKeyHashes.All(publicKeyHash => !previousTxOut.Script.ContainsPublicKeyHash(publicKeyHash)))
                 {
                     continue;

@@ -1,6 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Math;
 using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Blocks;

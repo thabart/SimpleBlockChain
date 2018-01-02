@@ -6,5 +6,7 @@
         public long Fee { get; set; }
         public long ModifiedFee { get; set; }
         public long Time { get; set; }
+        public int AncestorCount { get; set; }
+        public int DescendantCount { get; set; }
     }
 }

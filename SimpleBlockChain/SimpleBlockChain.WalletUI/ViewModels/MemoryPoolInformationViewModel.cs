@@ -7,6 +7,8 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         public string TxId { get; set; }
         public long Time { get; set; }
         public long Fee { get; set; }
+        public int AncestorCount { get; set; }
+        public int DescendantCount { get; set; }
     }
 
     public class MemoryPoolInformationViewModel

@@ -515,6 +515,8 @@ namespace SimpleBlockChain.Core.Rpc
                     record.Fee = long.Parse(child.GetValue("fee").ToString());
                     record.ModifiedFee = long.Parse(child.GetValue("modifiedfee").ToString());
                     record.Time = int.Parse(child.GetValue("time").ToString());
+                    record.AncestorCount = int.Parse(child.GetValue("ancestorcount").ToString());
+                    record.DescendantCount = int.Parse(child.GetValue("descendantcount").ToString());
                 }
 
                 result.Add(record);

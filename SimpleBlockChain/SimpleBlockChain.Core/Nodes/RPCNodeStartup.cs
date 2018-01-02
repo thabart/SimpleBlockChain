@@ -161,7 +161,7 @@ namespace SimpleBlockChain.Core.Nodes
                             jTxContentObj.Add("descendantcount", memPool.CountDescendants(transaction)); // Nombre of descendants.
                             jTxContentObj.Add("descendantsize", null);
                             jTxContentObj.Add("descendantfees", null);
-                            jTxContentObj.Add("ancestorcount", null);
+                            jTxContentObj.Add("ancestorcount", memPool.CountAncestors(transaction));
                             jTxContentObj.Add("ancestorsize", null);
                             jTxContentObj.Add("ancestorfees", null);
                             jTxContentObj.Add("depends", arrDepends);

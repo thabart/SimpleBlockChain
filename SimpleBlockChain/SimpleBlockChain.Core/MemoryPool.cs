@@ -93,7 +93,8 @@ namespace SimpleBlockChain.Core
                 throw new ArgumentNullException(nameof(memPoolRecord.Transaction));
             }
 
-            var descendants = GetDescendants(memPoolRecord);
+            var descendants = new List<MemoryPoolRecord>();
+            GetDescendants(memPoolRecord, descendants);
             if (descendants == null)
             {
                 return 1;
@@ -102,7 +103,7 @@ namespace SimpleBlockChain.Core
             return descendants.Count() + 1;
         }
 
-        public IEnumerable<MemoryPoolRecord> GetDescendants(MemoryPoolRecord memPoolRecord)
+        public void GetDescendants(MemoryPoolRecord memPoolRecord, List<MemoryPoolRecord> records)
         {
             if (memPoolRecord == null)
             {
@@ -117,7 +118,7 @@ namespace SimpleBlockChain.Core
             var transaction = memPoolRecord.Transaction;
             if (transaction.TransactionOut != null && transaction.TransactionOut.Any())
             {
-                return _transactions.Where(t =>
+                var txs = _transactions.Where(t =>
                 {
                     var noneCbTx = t.Transaction as NoneCoinbaseTransaction;
                     if (noneCbTx == null)
@@ -129,9 +130,48 @@ namespace SimpleBlockChain.Core
                     return txIn.Outpoint.Hash.SequenceEqual(transaction.GetTxId());
 
                 });
+                if (txs == null || !txs.Any())
+                {
+                    return;
+                }
+
+                records.AddRange(txs);
+                foreach(var m in txs)
+                {
+                    GetDescendants(m, records);
+                }
+            }
+        }
+
+        public int CountAncestors(MemoryPoolRecord memPoolRecord)
+        {
+            if (memPoolRecord == null)
+            {
+                throw new ArgumentNullException(nameof(memPoolRecord));
+            }
+            
+            var ancestors = new List<MemoryPoolRecord>();
+            GetAncestors(memPoolRecord, ancestors);
+            if (ancestors == null)
+            {
+                return 1;
             }
 
-            return null;
+            return ancestors.Count() + 1;
+        }
+
+        public void GetAncestors(MemoryPoolRecord memPoolRecord, List<MemoryPoolRecord> records)
+        {
+            if (memPoolRecord == null)
+            {
+                throw new ArgumentNullException(nameof(memPoolRecord));
+            }
+            
+            if (memPoolRecord.ParentMemoryPool != null)
+            {
+                records.Add(memPoolRecord.ParentMemoryPool);
+                GetAncestors(memPoolRecord.ParentMemoryPool, records);
+            }
         }
 
         public bool ContainsTransactions(IEnumerable<byte> txId, uint index)
@@ -158,6 +198,22 @@ namespace SimpleBlockChain.Core
             });
         }
 
+        public MemoryPoolRecord GetUnspentMemoryRecord(IEnumerable<byte> txId)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentNullException(nameof(txId));
+            }
+
+            var referencedTx = _transactions.FirstOrDefault(t => t.Transaction.GetTxId().SequenceEqual(txId));
+            if (referencedTx == null)
+            {
+                return null;
+            }
+
+            return referencedTx;
+        }
+
         public MemoryPoolRecord GetUnspentMemoryRecord(IEnumerable<byte> txId, uint index)
         {
             if (index < 0)
@@ -165,12 +221,7 @@ namespace SimpleBlockChain.Core
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            if (txId == null)
-            {
-                throw new ArgumentNullException(nameof(txId));
-            }
-            
-            var referencedTx = _transactions.FirstOrDefault(t => t.Transaction.GetTxId().SequenceEqual(txId));
+            var referencedTx = GetUnspentMemoryRecord(txId);
             if (referencedTx == null || index >= referencedTx.Transaction.TransactionOut.Count())
             {
                 return null;

@@ -59,7 +59,9 @@ namespace SimpleBlockChain.WalletUI.UserControls
                         {
                             Fee = rawMemPool.Fee,
                             Time = rawMemPool.Time,
-                            TxId = rawMemPool.TxId
+                            TxId = rawMemPool.TxId,
+                            AncestorCount = rawMemPool.AncestorCount,
+                            DescendantCount = rawMemPool.DescendantCount
                         };
                         Application.Current.Dispatcher.Invoke(() =>
                         {

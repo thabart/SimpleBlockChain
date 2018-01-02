@@ -66,8 +66,8 @@ namespace SimpleBlockChain.UnitTests.Helpers
                 .AddOutput(2, destinationScript)
                 .Build();
 
-            var balance = transactionHelper.CalculateBalance(noneCoinBaseTransaction, genesisAdr.GetSerializedHash(), _network);
-            var receiverBalance = transactionHelper.CalculateBalance(noneCoinBaseTransaction, destinationBlockChainAddress.GetSerializedHash(), _network);
+            var balance = transactionHelper.CalculateBalance(noneCoinBaseTransaction, new[] { genesisAdr }, _network);
+            var receiverBalance = transactionHelper.CalculateBalance(noneCoinBaseTransaction, new[] { destinationBlockChainAddress }, _network);
 
             Assert.IsTrue(balance == 0);
             Assert.IsTrue(receiverBalance == 2);
@@ -108,8 +108,8 @@ namespace SimpleBlockChain.UnitTests.Helpers
                 .AddOutput(48, destGenesisScript)
                 .Build();
 
-            var genesisBalance= transactionHelper.CalculateBalance(noneCoinBaseTransaction, genesisAdr.GetSerializedHash(), _network);
-            var receiverBalance = transactionHelper.CalculateBalance(noneCoinBaseTransaction, destinationBlockChainAddress.GetSerializedHash(), _network);
+            var genesisBalance= transactionHelper.CalculateBalance(noneCoinBaseTransaction, new[] { genesisAdr }, _network);
+            var receiverBalance = transactionHelper.CalculateBalance(noneCoinBaseTransaction, new[] { destinationBlockChainAddress }, _network);
 
             Assert.IsTrue(genesisBalance == 48);
             Assert.IsTrue(receiverBalance == 2);

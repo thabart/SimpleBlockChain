@@ -17,6 +17,8 @@
                     <GridViewColumn Header="TXID" DisplayMemberBinding="{Binding Path=TxId}" />
                     <GridViewColumn Header="TIME" DisplayMemberBinding="{Binding Path=Time}" />
                     <GridViewColumn Header="FEE" DisplayMemberBinding="{Binding Path=Fee}" />
+                    <GridViewColumn Header="ANCESTORS" DisplayMemberBinding="{Binding Path=AncestorCount}" />
+                    <GridViewColumn Header="DESCENDANTS" DisplayMemberBinding="{Binding Path=DescendantCount}" />
                 </GridView>
             </ListView.View>
         </ListView>
