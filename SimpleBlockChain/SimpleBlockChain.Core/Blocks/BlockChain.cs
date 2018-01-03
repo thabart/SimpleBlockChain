@@ -298,7 +298,7 @@ namespace SimpleBlockChain.Core.Blocks
             return res;
         }
 
-        public BaseTransactionOut GetTransactionOut(IEnumerable<byte> txId, int index)
+        public TransactionOut GetTransactionOut(IEnumerable<byte> txId, int index)
         {
             if (txId == null)
             {
@@ -342,15 +342,10 @@ namespace SimpleBlockChain.Core.Blocks
                 var currentTxId = transaction.GetTxId();
                 var base64TxId = Convert.ToBase64String(currentTxId.ToArray());
                 var cb = transaction as CoinbaseTransaction;
-                var smContract = transaction as SmartContractTransaction;
                 var arr = transaction.Serialize().ToArray();
                 if (cb != null)
                 {
                     batch.Put(string.Format(TRANSACTION_CB_ELT, base64TxId), Convert.ToBase64String(arr));
-                }
-                else if (smContract != null)
-                {
-                    batch.Put(string.Format(SMART_CONTRACT_TRANSACTION_ELT, base64TxId), Convert.ToBase64String(arr));
                 }
                 else
                 {

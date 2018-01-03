@@ -488,6 +488,15 @@ namespace SimpleBlockChain.Core.Nodes
 
                     response["result"] = txG.Serialize().ToHexString();
                     return response;
+                case Constants.RpcOperations.CallSmartContract: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_call
+                    if (parameters == null || !parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The method is not specified");
+                    }
+
+                    var smartContractName = parameters.First();
+                    
+                    break;
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");

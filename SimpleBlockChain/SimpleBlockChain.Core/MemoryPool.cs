@@ -230,7 +230,7 @@ namespace SimpleBlockChain.Core
             return referencedTx;
         }
 
-        public BaseTransactionOut GetUnspentTransaction(IEnumerable<byte> txId, uint index)
+        public TransactionOut GetUnspentTransaction(IEnumerable<byte> txId, uint index)
         {
             if (index < 0)
             {

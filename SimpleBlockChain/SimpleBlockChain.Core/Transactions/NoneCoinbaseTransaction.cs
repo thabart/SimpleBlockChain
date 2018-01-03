@@ -29,7 +29,7 @@ namespace SimpleBlockChain.Core.Transactions
             return new KeyValuePair<List<BaseTransactionIn>, int>(result, currentStartIndex);
         }
 
-        public override KeyValuePair<BaseTransactionOut, int> DeserializeOutput(IEnumerable<byte> payload)
+        public override KeyValuePair<TransactionOut, int> DeserializeOutput(IEnumerable<byte> payload)
         {
             if (payload == null)
             {
@@ -39,7 +39,7 @@ namespace SimpleBlockChain.Core.Transactions
             return Transactions.TransactionOut.Deserialize(payload);
         }
 
-        public IEnumerable<BaseTransactionOut> GetReferencedTransactionOut(NoneCoinbaseTransaction transaction)
+        public IEnumerable<TransactionOut> GetReferencedTransactionOut(NoneCoinbaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -47,7 +47,7 @@ namespace SimpleBlockChain.Core.Transactions
             }
 
             var trIns = transaction.TransactionIn.Select(ti => ti as TransactionInNoneCoinbase);
-            var result = new List<BaseTransactionOut>();
+            var result = new List<TransactionOut>();
             foreach (var trIn in trIns)
             {
                 if (!GetTxId().SequenceEqual(trIn.Outpoint.Hash))

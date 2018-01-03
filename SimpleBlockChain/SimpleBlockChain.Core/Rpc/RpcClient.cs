@@ -20,7 +20,7 @@ namespace SimpleBlockChain.Core.Rpc
         Task<IEnumerable<RawMemoryPool>> GetRawMemPool(bool verboseOutput = false);
         Task<BlockTemplate> GetBlockTemplate();
         Task<bool> SubmitBlock(Block block);
-        Task<bool> SendRawTransaction(BaseTransaction transaction);
+        Task<bool> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false, TransactionTypes type = TransactionTypes.NoneCoinbase);
         Task<long> GetUnconfirmedBalance();
         Task<Block> GetBlock(IEnumerable<byte> hash);
         Task<int> GetBlockCount();
@@ -136,7 +136,7 @@ namespace SimpleBlockChain.Core.Rpc
             return true;
         }
 
-        public async Task<bool> SendRawTransaction(BaseTransaction transaction)
+        public async Task<bool> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false, TransactionTypes type = TransactionTypes.NoneCoinbase)
         {
             if (transaction == null)
             {
@@ -144,8 +144,16 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             var httpClient = _httpClientFactory.BuildClient();
+            var typeStr = "coinbase";
+            if (type == TransactionTypes.NoneCoinbase)
+            {
+                typeStr = "nonecoinbase";
+            }
+
             var parameters = new JArray();
             parameters.Add(transaction.Serialize().ToHexString());
+            parameters.Add(allowHighFees);
+            parameters.Add(typeStr);
             var jObj = new JObject();
             jObj.Add("id", Guid.NewGuid().ToString());
             jObj.Add("method", Constants.RpcOperations.SendRawTransaction);

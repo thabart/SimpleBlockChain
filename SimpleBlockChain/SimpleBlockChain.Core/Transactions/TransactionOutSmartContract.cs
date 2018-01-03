@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace SimpleBlockChain.Core.Transactions
 {
-    public class TransactionOutSmartContract : BaseTransactionOut
+    public class TransactionOutSmartContract
     {
-        public TransactionOutSmartContract(Script script, IEnumerable<byte> data, string author, string name) : base(script)
+        public TransactionOutSmartContract(Script script, IEnumerable<byte> data, string author, string name)
         {
             Data = data;
             Author = author;
@@ -15,7 +15,7 @@ namespace SimpleBlockChain.Core.Transactions
             Parameters = new string[0];
         }
 
-        public TransactionOutSmartContract(Script script, IEnumerable<byte> data, string author, string name, IEnumerable<string> parameters) : base(script)
+        public TransactionOutSmartContract(Script script, IEnumerable<byte> data, string author, string name, IEnumerable<string> parameters) 
         {
             Data = data;
             Author = author;
@@ -28,10 +28,9 @@ namespace SimpleBlockChain.Core.Transactions
         public IEnumerable<byte> Data { get; set; }
         public IEnumerable<string> Parameters { get; set; }
 
-        public override IEnumerable<byte> Serialize()
+        public IEnumerable<byte> Serialize()
         {
             var result = new List<byte>();
-            var scriptPayload = Script.Serialize();
             var dataPayload = Data;
             var authorPayload = System.Text.Encoding.UTF8.GetBytes(Author);
             var namePayload = System.Text.Encoding.UTF8.GetBytes(Name);
@@ -41,13 +40,10 @@ namespace SimpleBlockChain.Core.Transactions
             var compactSizeAutor = new CompactSize();
             var compactSizeName = new CompactSize();
             var compactSizeParameters = new CompactSize();
-            compactSizeScript.Size = (ulong)scriptPayload.Count();
             compactSizeData.Size = (ulong)dataPayload.Count();
             compactSizeAutor.Size = (ulong)authorPayload.Count();
             compactSizeName.Size = (ulong)namePayload.Count();
             compactSizeParameters.Size = (ulong)parametersPayload.Count();
-            result.AddRange(compactSizeScript.Serialize()); // SCRIPT.
-            result.AddRange(scriptPayload);
             result.AddRange(compactSizeData.Serialize()); // DATA.
             result.AddRange(dataPayload);
             result.AddRange(compactSizeAutor.Serialize()); // AUTHOR.
@@ -59,7 +55,7 @@ namespace SimpleBlockChain.Core.Transactions
             return result;
         }
 
-        public static KeyValuePair<BaseTransactionOut, int> Deserialize(IEnumerable<byte> payload)
+        public static KeyValuePair<TransactionOutSmartContract, int> Deserialize(IEnumerable<byte> payload)
         {
             if (payload == null)
             {
@@ -92,7 +88,7 @@ namespace SimpleBlockChain.Core.Transactions
             var parameters = System.Text.Encoding.UTF8.GetString(payload.Skip(startIndex).Take((int)compactSizeParameters.Key.Size).ToArray()).Split(',');
             startIndex += (int)compactSizeParameters.Key.Size;
 
-            return new KeyValuePair<BaseTransactionOut, int>(new TransactionOutSmartContract(script, data, author, name, parameters), startIndex);
+            return new KeyValuePair<TransactionOutSmartContract, int>(new TransactionOutSmartContract(script, data, author, name, parameters), startIndex);
         }
     }
 }

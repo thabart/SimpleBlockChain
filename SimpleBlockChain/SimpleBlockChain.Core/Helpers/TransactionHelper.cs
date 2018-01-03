@@ -12,8 +12,8 @@ namespace SimpleBlockChain.Core.Helpers
         long GetReward(BaseTransaction transaction);
         long CalculateBalance(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
         long GetFee(BaseTransaction transaction, Networks network);
-        BaseTransactionOut GetTransactionIn(BaseTransaction transaction, Networks network);
-        BaseTransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
+        TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network);
+        TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
     }
 
     internal class TransactionHelper : ITransactionHelper
@@ -105,7 +105,7 @@ namespace SimpleBlockChain.Core.Helpers
             return result;
         }
 
-        public BaseTransactionOut GetTransactionIn(BaseTransaction transaction, Networks network)
+        public TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network)
         {
             if (transaction == null)
             {
@@ -122,7 +122,7 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
-                BaseTransactionOut previousTxOut = null;
+                TransactionOut previousTxOut = null;
                 if (previousTx == null || previousTx.TransactionOut == null)
                 {
                     previousTxOut = MemoryPool.Instance().GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
@@ -147,7 +147,7 @@ namespace SimpleBlockChain.Core.Helpers
             return null;
         }
 
-        public BaseTransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
+        public TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
         {
             if (transaction == null)
             {
@@ -171,7 +171,7 @@ namespace SimpleBlockChain.Core.Helpers
                 }
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
-                BaseTransactionOut previousTxOut = null;
+                TransactionOut previousTxOut = null;
                 if (previousTx == null || previousTx.TransactionOut == null)
                 {
                     previousTxOut = memPool.GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);

@@ -43,11 +43,6 @@ namespace SimpleBlockChain.Core.Builders
             return new CoinbaseTransactionBuilder();
         }
 
-        public SmartContractTransactionBuilder NewSmartContractTransaction()
-        {
-            return new SmartContractTransactionBuilder();
-        }
-
         public CoinbaseTransactionBuilder NewCoinbaseTransaction(uint version, uint lockTime)
         {
             return new CoinbaseTransactionBuilder(version, lockTime);

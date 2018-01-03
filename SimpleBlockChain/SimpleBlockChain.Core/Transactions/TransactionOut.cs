@@ -5,16 +5,18 @@ using System.Linq;
 
 namespace SimpleBlockChain.Core.Transactions
 {
-    public class TransactionOut : BaseTransactionOut
+    public class TransactionOut
     {
+        public Script Script { get; set; }
         public long Value { get; private set; }
 
-        public TransactionOut(long value, Script script) : base(script)
+        public TransactionOut(long value, Script script)
         {
+            Script = script;
             Value = value;
         }
 
-        public override IEnumerable<byte> Serialize()
+        public IEnumerable<byte> Serialize()
         {
             var result = new List<byte>();
             var scriptPayload = Script.Serialize();
@@ -26,7 +28,7 @@ namespace SimpleBlockChain.Core.Transactions
             return result;
         }
 
-        public static KeyValuePair<BaseTransactionOut, int> Deserialize(IEnumerable<byte> payload)
+        public static KeyValuePair<TransactionOut, int> Deserialize(IEnumerable<byte> payload)
         {
             if (payload == null)
             {
@@ -40,7 +42,7 @@ namespace SimpleBlockChain.Core.Transactions
             startIndex += compactSize.Value;
             var script = Script.Deserialize(payload.Skip(startIndex).Take((int)compactSize.Key.Size));
             startIndex += (int)compactSize.Key.Size;
-            return new KeyValuePair<BaseTransactionOut, int>(new TransactionOut(value, script), startIndex);
+            return new KeyValuePair<TransactionOut, int>(new TransactionOut(value, script), startIndex);
         }
     }
 }

@@ -37,6 +37,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             var serializedTransaction = transaction.Serialize();
         }
 
+        /*
         [TestMethod]
         public void WhenBuildSmartContractTransaction()
         {
@@ -68,7 +69,7 @@ namespace SimpleBlockChain.UnitTests.Builders
             var deserializedTx = BaseTransaction.Deserialize(serializedTransaction, TransactionTypes.SmartContract);
             string s = "";
         }
-
+        */
 
         private static BlockChainAddress BuildBlockChainAddress()
         {
