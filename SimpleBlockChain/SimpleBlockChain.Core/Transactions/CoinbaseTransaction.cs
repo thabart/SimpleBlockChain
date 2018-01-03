@@ -29,6 +29,16 @@ namespace SimpleBlockChain.Core.Transactions
             return new KeyValuePair<List<BaseTransactionIn>, int>(result, currentStartIndex);
         }
 
+        public override KeyValuePair<BaseTransactionOut, int> DeserializeOutput(IEnumerable<byte> payload)
+        {
+            if (payload == null)
+            {
+                throw new ArgumentNullException(nameof(payload));
+            }
+
+            return Transactions.TransactionOut.Deserialize(payload);
+        }
+
         public void SetTransactionIn(TransactionInCoinbase transactionIn)
         {
             if (transactionIn == null)

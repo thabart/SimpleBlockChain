@@ -59,7 +59,7 @@ namespace SimpleBlockChain.Core.Transactions
             return result;
         }
 
-        public static KeyValuePair<TransactionOutSmartContract, int> Deserialize(IEnumerable<byte> payload)
+        public static KeyValuePair<BaseTransactionOut, int> Deserialize(IEnumerable<byte> payload)
         {
             if (payload == null)
             {
@@ -92,7 +92,7 @@ namespace SimpleBlockChain.Core.Transactions
             var parameters = System.Text.Encoding.UTF8.GetString(payload.Skip(startIndex).Take((int)compactSizeParameters.Key.Size).ToArray()).Split(',');
             startIndex += (int)compactSizeParameters.Key.Size;
 
-            return new KeyValuePair<TransactionOutSmartContract, int>(new TransactionOutSmartContract(script, data, author, name, parameters), startIndex);
+            return new KeyValuePair<BaseTransactionOut, int>(new TransactionOutSmartContract(script, data, author, name, parameters), startIndex);
         }
     }
 }

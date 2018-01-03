@@ -72,7 +72,7 @@ namespace SimpleBlockChain.Core.Transactions
             {
                 for (var i = 0; i < (int)transactionOutputCompactSize.Key.Size; i++)
                 {
-                    var kvp = Transactions.TransactionOut.Deserialize(payload.Skip(currentStartIndex).ToArray());
+                    var kvp = result.DeserializeOutput(payload.Skip(currentStartIndex).ToArray());
                     result.TransactionOut.Add(kvp.Key);
                     currentStartIndex += kvp.Value;
                 }
@@ -116,6 +116,7 @@ namespace SimpleBlockChain.Core.Transactions
         }
 
         public abstract KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size);
+        public abstract KeyValuePair<BaseTransactionOut, int> DeserializeOutput(IEnumerable<byte> payload);
         
         public BaseTransactionOut GetTransactionOut(WalletAggregateAddress walletAddr)
         {
