@@ -5,15 +5,17 @@ namespace SimpleBlockChain.Core.Compiler
 {
     public class SolidityProgram
     {
+        private readonly ICollection<byte> _ops;
+        private readonly SolidityProgramInvoke _progInvoke;
         private int _pc;
-        private ICollection<byte> _ops;
-        private List<IEnumerable<byte>> _stack = new List<IEnumerable<byte>>();
+        private List<DataWord> _stack;
 
-        public SolidityProgram(ICollection<byte> ops)
+        public SolidityProgram(ICollection<byte> ops, SolidityProgramInvoke progInvoke)
         {
             _ops = ops;
+            _progInvoke = progInvoke;
             _pc = 0;
-            _stack = new List<IEnumerable<byte>>();
+            _stack = new List<DataWord>();
         }
 
         public byte GetCurrentOpCode()
@@ -33,23 +35,22 @@ namespace SimpleBlockChain.Core.Compiler
 
         public void StackPush(IEnumerable<byte> data)
         {
+            StackPush(new DataWord(data));
+        }
+
+        public void StackPush(DataWord data)
+        {
             _stack.Add(data);
         }
 
-        public IEnumerable<byte> StackPop()
+        public DataWord StackPop()
         {
             return _stack.Last();
         }
 
-        public IEnumerable<byte> GetDataValue(IEnumerable<byte> data)
+        public DataWord GetDataValue(DataWord data)
         {
-            var result = new List<byte>();
-            for (var i = 0; i < 32 - data.Count(); i++) {
-                result.Add(0);
-            }
-
-            result.AddRange(data);
-            return result;
+            return _progInvoke.GetDataValue(data);
         }
 
         public IEnumerable<byte> Sweep(int n)

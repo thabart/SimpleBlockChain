@@ -23,7 +23,7 @@ namespace SimpleBlockChain.Core.Extensions
             return sb.ToString();
         }
 
-        public  static IEnumerable<byte> FromHexString(this string hex)
+        public static IEnumerable<byte> FromHexString(this string hex)
         {
             if (string.IsNullOrWhiteSpace(hex))
             {
