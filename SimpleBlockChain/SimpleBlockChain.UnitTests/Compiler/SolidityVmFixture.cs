@@ -98,5 +98,25 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var pop = program.StackPop().GetData().ToHexString().ToUpper();
             Assert.IsTrue(pop == "B100000000000000000000000000000000000000000000000000000000000000");
         }
+
+        [TestMethod]
+        public void WhenCallDataCopy1()
+        {
+            string code = "60206000600037";
+            var payload = code.FromHexString().ToList();
+            IEnumerable<byte> msgData = ("00000000000000000000000000000000000000000000000000000000000000A1" +
+                "00000000000000000000000000000000000000000000000000000000000000B1").FromHexString().ToList();
+            var pgInvoke = new SolidityProgramInvoke(msgData);
+            var program = new SolidityProgram(payload, pgInvoke);
+            var vm = new SolidityVm();
+
+            vm.Step(program);
+            vm.Step(program);
+            vm.Step(program);
+            vm.Step(program);
+
+            var pop = program.GetMemory().First().ToHexString().ToUpper();
+            Assert.IsTrue(pop == "00000000000000000000000000000000000000000000000000000000000000A1");
+        }
     }
 }

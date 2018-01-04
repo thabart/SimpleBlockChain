@@ -12,10 +12,28 @@ namespace SimpleBlockChain.Core.Compiler
             _msgDataRaw = msgDataRaw;
         }
 
+        public IEnumerable<byte> GetDataCopy(DataWord offsetData, DataWord lengthData)
+        {
+            var offset = (int)offsetData.GetValue();
+            var length = (int)lengthData.GetValue();
+            byte[] data = new byte[length];
+            if (_msgDataRaw == null)
+            {
+                return data;
+            }
+
+            if (offset > _msgDataRaw.Count())
+            {
+                return data;
+            }
+
+            var res = _msgDataRaw.Skip(offset).Take(length).ToList();
+            return res;
+        }
+
         public DataWord GetDataValue(DataWord indexData)
         {
             byte[] data = new byte[32];
-            var v = indexData.GetValue();
             var index = (int)indexData.GetValue();
             int size = 32;
             if (_msgDataRaw == null)

@@ -33,6 +33,15 @@ namespace SimpleBlockChain.Core.Compiler
                     program.StackPush(dataValue);
                     program.Step();
                     break;
+                case SolidityOpCodes.CALLDATACOPY:
+                    var memOffsetData = program.StackPop();
+                    var dataOffsetData = program.StackPop();
+                    var lengthData = program.StackPop();
+                    var msgData = program.GetDataCopy(dataOffsetData, lengthData);
+                    program.SaveMemory(msgData);
+                    program.Step();
+                    // copy s bytes from calldata at position f to mem at position t
+                    break;
             }
         }
     }
