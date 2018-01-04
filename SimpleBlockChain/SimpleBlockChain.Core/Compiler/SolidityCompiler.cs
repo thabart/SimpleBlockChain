@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SimpleBlockChain.Core.Compiler
 {
@@ -34,29 +36,38 @@ namespace SimpleBlockChain.Core.Compiler
             var fileName = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".sol";
             File.Create(fileName).Close();
             File.AppendAllText(fileName, contract);
-            var process = new Process();
-            process.StartInfo.FileName = _solc.FilePath;
-            process.StartInfo.Arguments = "--bin " + fileName;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.OutputDataReceived += Process_OutputDataReceived;
-            process.ErrorDataReceived += Process_ErrorDataReceived;
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            process.WaitForExit();
-            string s = "";
-        }
+            var processStartInfo = new ProcessStartInfo();
+            processStartInfo.FileName = _solc.FilePath;
+            processStartInfo.Arguments = string.Format("--bin \"{0}\"", fileName);
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.CreateNoWindow = true;
+            processStartInfo.RedirectStandardOutput = true;
+            processStartInfo.RedirectStandardError = true;
+            processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            using (var process = Process.Start(processStartInfo))
+            {
+                using (StreamReader standardOutput = process.StandardOutput)
+                {
+                    var output = standardOutput.ReadToEnd();
+                    if (!string.IsNullOrWhiteSpace(output))
+                    {
+                        var binaries = GetBinaries(output);
+                        bool b = true;
+                    }
+                }
+                using (StreamReader standardError = process.StandardError)
+                {
+                    string error = standardError.ReadToEnd();
+                    if (!string.IsNullOrWhiteSpace(error))
+                    {
+                        throw new InvalidOperationException(error);
+                    }
+                }
 
-        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            string s = "";
-        }
+                process.WaitForExit();
+            }
 
-        private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            string s = "";
+            File.Delete(fileName);
         }
 
         public static SolidityCompiler Instance()
@@ -67,6 +78,31 @@ namespace SimpleBlockChain.Core.Compiler
             }
 
             return _instance;
+        }
+
+        private static IEnumerable<string> GetBinaries(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                throw new ArgumentNullException(nameof(code));
+            }
+
+            var cleanPattern = "\\r\\n [=]{7} [a-zA-Z0-9]+ [=]{7}\\r\\n";
+            var splitPattern = "Binary: \\r\\n[a-zA-Z0-9]+\\r\\n";
+            var cleanRgx = new Regex(cleanPattern);
+            var splitRgx = new Regex(splitPattern);
+            code = cleanRgx.Replace(code, "");
+            var splittedValues = splitRgx.Matches(code);
+            var binaries = new List<string>();
+            foreach (Match splittedValue in splittedValues)
+            {
+                var binary = splittedValue.Value;
+                binary = binary.Replace("Binary:", "");
+                binary = binary.Replace("\r\n", "");
+                binaries.Add(binary);
+            }
+
+            return binaries;
         }
     }
 }
