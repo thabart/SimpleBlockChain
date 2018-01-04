@@ -1,7 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleBlockChain.Core.Compiler;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace SimpleBlockChain.UnitTests.Compiler
 {
@@ -9,7 +7,7 @@ namespace SimpleBlockChain.UnitTests.Compiler
     public  class SolidityCompilerFixture
     {
         [TestMethod]
-        public void Test()
+        public void WhenCompile()
         {
             string contract =
                 "contract Multiply7 { "+
@@ -28,8 +26,7 @@ namespace SimpleBlockChain.UnitTests.Compiler
                         "return input * 7; " +
                     "} " +
                 "}";
-            SolidityCompiler.Compile(contract);
-            string s = "";
+            var binaries = SolidityCompiler.Compile(contract);
         }
     }
 }

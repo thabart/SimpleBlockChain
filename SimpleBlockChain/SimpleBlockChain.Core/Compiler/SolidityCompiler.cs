@@ -16,23 +16,24 @@ namespace SimpleBlockChain.Core.Compiler
             _solc = new Solc();
         }
 
-        public static void Compile(string contract)
+        public static IEnumerable<string> Compile(string contract)
         {
             if (contract == null)
             {
                 throw new ArgumentNullException(nameof(contract));
             }
 
-            Instance().CompileSrc(contract);
+            return Instance().CompileSrc(contract);
         }
 
-        public void CompileSrc(string contract)
+        public IEnumerable<string> CompileSrc(string contract)
         {
             if (contract == null)
             {
                 throw new ArgumentNullException(nameof(contract));
             }
 
+            IEnumerable<string> result = new List<string>();
             var fileName = System.IO.Path.GetTempPath() + Guid.NewGuid().ToString() + ".sol";
             File.Create(fileName).Close();
             File.AppendAllText(fileName, contract);
@@ -51,8 +52,7 @@ namespace SimpleBlockChain.Core.Compiler
                     var output = standardOutput.ReadToEnd();
                     if (!string.IsNullOrWhiteSpace(output))
                     {
-                        var binaries = GetBinaries(output);
-                        bool b = true;
+                        result = GetBinaries(output);
                     }
                 }
                 using (StreamReader standardError = process.StandardError)
@@ -68,6 +68,7 @@ namespace SimpleBlockChain.Core.Compiler
             }
 
             File.Delete(fileName);
+            return result;
         }
 
         public static SolidityCompiler Instance()
@@ -99,6 +100,7 @@ namespace SimpleBlockChain.Core.Compiler
                 var binary = splittedValue.Value;
                 binary = binary.Replace("Binary:", "");
                 binary = binary.Replace("\r\n", "");
+                binary = binary.Replace(" ", "");
                 binaries.Add(binary);
             }
 
