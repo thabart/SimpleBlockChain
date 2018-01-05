@@ -10,23 +10,13 @@ namespace SimpleBlockChain.UnitTests.Compiler
         public void WhenCompile()
         {
             string contract =
-                "contract Multiply7 { "+
-                    "event Print(uint); "+
-                    "function multiply(uint input) returns(uint) "+
-                    "{ "+
-                        "Print(input * 7); "+
-                        "return input * 7; "+
-                    "} "+
-                "} " + 
-                "contract Multiply8 { " +
-                    "event Print(uint); " +
-                    "function multiply(uint input) returns(uint) " +
-                    "{ " +
-                        "Print(input * 7); " +
-                        "return input * 7; " +
-                    "} " +
-                "}";
+                "contract Multiply8 { "+
+                    "function multiply() returns(string) { "+
+                        "return \"hello world\"; "+
+                     "} "+
+                 "}";
             var binaries = SolidityCompiler.Compile(contract);
+            string s = "";
         }
     }
 }

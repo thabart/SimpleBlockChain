@@ -8,11 +8,18 @@ namespace SimpleBlockChain.Core.Compiler
         private static int _size = 32;
         private IEnumerable<byte> _msgDataRaw;
         private DataWord _address;
+        private DataWord _callValue;
 
-        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, DataWord address)
+        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, DataWord address, DataWord callValue)
         {
             _msgDataRaw = msgDataRaw;
             _address = address;
+            _callValue = callValue;
+        }
+
+        public DataWord GetCallValue()
+        {
+            return _callValue;
         }
 
         public DataWord GetOwnerAddress()
@@ -27,8 +34,8 @@ namespace SimpleBlockChain.Core.Compiler
 
         public IEnumerable<byte> GetDataCopy(DataWord offsetData, DataWord lengthData)
         {
-            var offset = (int)offsetData.GetValue();
-            var length = (int)lengthData.GetValue();
+            var offset = offsetData.GetValue().IntValue;
+            var length = lengthData.GetValue().IntValue;
             byte[] data = new byte[length];
             if (_msgDataRaw == null)
             {
@@ -56,7 +63,7 @@ namespace SimpleBlockChain.Core.Compiler
         public DataWord GetDataValue(DataWord indexData)
         {
             byte[] data = new byte[_size];
-            var index = (int)indexData.GetValue();
+            var index = indexData.GetValue().IntValue;
             int size = _size;
             if (_msgDataRaw == null)
             {

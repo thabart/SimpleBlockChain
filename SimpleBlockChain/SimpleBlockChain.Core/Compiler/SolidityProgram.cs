@@ -9,7 +9,7 @@ namespace SimpleBlockChain.Core.Compiler
         private readonly SolidityProgramInvoke _progInvoke;
         private int _pc;
         private List<DataWord> _stack;
-        private readonly List<IEnumerable<byte>> _memory;
+        private SolidityMemory _memory;
 
         public SolidityProgram(ICollection<byte> ops, SolidityProgramInvoke progInvoke)
         {
@@ -17,7 +17,7 @@ namespace SimpleBlockChain.Core.Compiler
             _progInvoke = progInvoke;
             _pc = 0;
             _stack = new List<DataWord>();
-            _memory = new List<IEnumerable<byte>>();
+            _memory = new SolidityMemory();
         }
 
         public byte GetCurrentOpCode()
@@ -34,10 +34,57 @@ namespace SimpleBlockChain.Core.Compiler
         {
             return _progInvoke.GetOwnerAddress();
         }
-        
+
+        public int VerifyJumpDest(DataWord nextPC)
+        {
+            /*
+            if (nextPC.bytesOccupied() > 4)
+            {
+                throw Program.Exception.badJumpDestination(-1);
+            }
+
+            int ret = nextPC.GetInt();
+            if (!GetProgramPrecompile().hasJumpDest(ret))
+            {
+                throw Program.Exception.badJumpDestination(ret);
+            }
+            return ret;
+            */
+            return 0;
+        }
+
+        /*
+        public ProgramPrecompile GetProgramPrecompile()
+        {
+            if (programPrecompile == null)
+            {
+                if (codeHash != null && commonConfig.precompileSource() != null)
+                {
+                    programPrecompile = commonConfig.precompileSource().get(codeHash);
+                }
+
+                if (programPrecompile == null)
+                {
+                    programPrecompile = ProgramPrecompile.compile(ops);
+
+                    if (codeHash != null && commonConfig.precompileSource() != null)
+                    {
+                        commonConfig.precompileSource().put(codeHash, programPrecompile);
+                    }
+                }
+            }
+            return programPrecompile;
+        }
+        */
+
         public void Step()
         {
             SetPc(_pc + 1);
+        }
+
+        public DataWord GetCallValue()
+        {
+            return _progInvoke.GetCallValue();
         }
 
         public void StackPush(IEnumerable<byte> data)
@@ -50,11 +97,21 @@ namespace SimpleBlockChain.Core.Compiler
             _stack.Add(data);
         }
 
+        public List<DataWord> GetStack()
+        {
+            return _stack;
+        }
+
         public DataWord StackPop()
         {
             var result = _stack.Last();
             _stack.Remove(_stack.Last());
             return result;
+        }
+
+        public byte[] GetMemory()
+        {
+            return _memory.Read(0, _memory.GetSize());
         }
 
         public IEnumerable<byte> GetDataCopy(DataWord offsetData, DataWord lengthData)
@@ -67,14 +124,24 @@ namespace SimpleBlockChain.Core.Compiler
             return _progInvoke.GetDataValue(data);
         }
 
-        public void SaveMemory(IEnumerable<byte> value)
+        public void SaveMemory(DataWord addrB, DataWord value)
         {
-            _memory.Add(value);
+            _memory.Write(addrB.GetInt(), value.GetData(), value.GetData().Length, false);
         }
 
-        public List<IEnumerable<byte>> GetMemory()
+        public void SaveMemory(int addr, byte[] value)
         {
-            return _memory;
+            _memory.Write(addr, value, value.Length, false);
+        }
+
+        public void SaveMemory(int addr, int allocSize, byte[] value)
+        {
+            _memory.ExtendAndWrite(addr, allocSize, value);
+        }
+
+        public byte[] ChunkMemory(int offset, int size)
+        {
+            return _memory.Read(offset, size);
         }
 
         public IEnumerable<byte> Sweep(int n)

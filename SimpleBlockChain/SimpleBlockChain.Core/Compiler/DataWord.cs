@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Org.BouncyCastle.Math;
+using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace SimpleBlockChain.Core.Compiler
 {
@@ -53,6 +53,17 @@ namespace SimpleBlockChain.Core.Compiler
             return intVal;
         }
 
+        public int GetIntValueSafe()
+        {
+            return GetInt();
+            /*
+            int bytesOccupied = bytesOccupied();
+            int intValue = intValue();
+            if (bytesOccupied > 4 || intValue < 0) return Integer.MAX_VALUE;
+            return intValue;
+            */
+        }
+
         public DataWord Or(DataWord w2)
         {
             for (int i = 0; i < _data.Count(); ++i)
@@ -77,9 +88,24 @@ namespace SimpleBlockChain.Core.Compiler
             return _data;
         }
 
+        public bool IsZero()
+        {
+            foreach (byte tmp in _data)
+            {
+                if (tmp != 0) return false;
+            }
+
+            return true;
+        }
+
         public BigInteger GetValue()
         {
-            return new BigInteger(GetDataWithoutFixSize().ToArray());
+            return new BigInteger(1, _data);
+        }
+
+        public BigInteger GetSValue()
+        {
+            return new BigInteger(_data);
         }
 
         private byte[] GetDataWithoutFixSize()
@@ -91,10 +117,12 @@ namespace SimpleBlockChain.Core.Compiler
                 if (r != 0x00)
                 {
                     startIndex = i;
+                    break;
                 }
             }
 
-            return _data.ToList().Skip(startIndex).ToArray();
+            var result = _data.ToList().Skip(startIndex).ToArray();
+            return result;
         }
     }
 }
