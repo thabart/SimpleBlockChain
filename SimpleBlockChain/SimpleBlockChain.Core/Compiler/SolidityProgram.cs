@@ -29,6 +29,11 @@ namespace SimpleBlockChain.Core.Compiler
         {
             _pc = pc;
         }
+
+        public DataWord GetOwnerAddress()
+        {
+            return _progInvoke.GetOwnerAddress();
+        }
         
         public void Step()
         {
@@ -37,7 +42,7 @@ namespace SimpleBlockChain.Core.Compiler
 
         public void StackPush(IEnumerable<byte> data)
         {
-            StackPush(new DataWord(data));
+            StackPush(new DataWord(data.ToArray()));
         }
 
         public void StackPush(DataWord data)

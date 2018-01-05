@@ -5,11 +5,24 @@ namespace SimpleBlockChain.Core.Compiler
 {
     public class SolidityProgramInvoke
     {
+        private static int _size = 32;
         private IEnumerable<byte> _msgDataRaw;
+        private DataWord _address;
 
-        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw)
+        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, DataWord address)
         {
             _msgDataRaw = msgDataRaw;
+            _address = address;
+        }
+
+        public DataWord GetOwnerAddress()
+        {
+            return _address;
+        }
+
+        public void SetOwnerAddress(DataWord address)
+        {
+            _address = address;
         }
 
         public IEnumerable<byte> GetDataCopy(DataWord offsetData, DataWord lengthData)
@@ -28,14 +41,23 @@ namespace SimpleBlockChain.Core.Compiler
             }
 
             var res = _msgDataRaw.Skip(offset).Take(length).ToList();
+            var mod = res.Count % _size;
+            if (mod != 0)
+            {
+                for (int i = 0; i < (_size - mod); i++)
+                {
+                    res.Add(0);
+                }
+            }
+
             return res;
         }
 
         public DataWord GetDataValue(DataWord indexData)
         {
-            byte[] data = new byte[32];
+            byte[] data = new byte[_size];
             var index = (int)indexData.GetValue();
-            int size = 32;
+            int size = _size;
             if (_msgDataRaw == null)
             {
                 return new DataWord(data);
@@ -46,18 +68,18 @@ namespace SimpleBlockChain.Core.Compiler
                 return new DataWord(data);
             }
 
-            if (index + 32 > _msgDataRaw.Count())
+            if (index + _size > _msgDataRaw.Count())
             {
                 size = _msgDataRaw.Count() - index;
             }
 
             var res = _msgDataRaw.Skip(index).Take(size).ToList();
-            for (int i = res.Count(); i < 32; i++)
+            for (int i = res.Count(); i < _size; i++)
             {
                 res.Add(0);
             }
 
-            return new DataWord(res);
+            return new DataWord(res.ToArray());
         }
     }
 }
