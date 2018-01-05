@@ -10,6 +10,8 @@ namespace SimpleBlockChain.Core.Compiler
         private int _pc;
         private List<DataWord> _stack;
         private SolidityMemory _memory;
+        private SolidityProgramResult _result;
+        private bool _stopped;
 
         public SolidityProgram(ICollection<byte> ops, SolidityProgramInvoke progInvoke)
         {
@@ -18,6 +20,8 @@ namespace SimpleBlockChain.Core.Compiler
             _pc = 0;
             _stack = new List<DataWord>();
             _memory = new SolidityMemory();
+            _result = new SolidityProgramResult();
+            _stopped = false;
         }
 
         public byte GetCurrentOpCode()
@@ -33,6 +37,11 @@ namespace SimpleBlockChain.Core.Compiler
         public DataWord GetOwnerAddress()
         {
             return _progInvoke.GetOwnerAddress();
+        }
+
+        public SolidityProgramResult GetResult()
+        {
+            return _result;
         }
 
         public int VerifyJumpDest(DataWord nextPC)
@@ -76,10 +85,29 @@ namespace SimpleBlockChain.Core.Compiler
             return programPrecompile;
         }
         */
+        public ICollection<byte> GetCode()
+        {
+            return _ops;
+        }
 
         public void Step()
         {
             SetPc(_pc + 1);
+        }
+
+        public void SetHReturn(byte[] buff)
+        {
+            _result.SetHReturn(buff);
+        }
+
+        public bool IsStopped()
+        {
+            return _stopped;
+        }
+
+        public void Stop()
+        {
+            _stopped = true;
         }
 
         public DataWord GetCallValue()

@@ -275,6 +275,29 @@ namespace SimpleBlockChain.Core.Compiler
                     program.StackPush(dup1W1);
                     program.Step();
                     break;
+                case SolidityOpCodes.CODECOPY:
+                    byte[] fullCode = ByteUtil.EMPTY_BYTE_ARRAY;
+                    fullCode = program.GetCode().ToArray();
+                    int copyDataW1 = program.StackPop().GetIntValueSafe();
+                    int copyDataW2 = program.StackPop().GetIntValueSafe();
+                    int copyDataW3 = program.StackPop().GetIntValueSafe();
+                    int sizeToBeCopied =
+                            (long)copyDataW2 + copyDataW3 > fullCode.Length ?
+                                    (fullCode.Length < copyDataW2 ? 0 : fullCode.Length - copyDataW2)
+                                    : copyDataW3;
+                    byte[] codeCopy = new byte[copyDataW3];
+                    if (copyDataW2 < fullCode.Length) { Array.Copy(fullCode, copyDataW2, codeCopy, 0, sizeToBeCopied); }
+                    program.SaveMemory(copyDataW1, codeCopy);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.RETURN:
+                    DataWord retW1 = program.StackPop();
+                    DataWord retW2 = program.StackPop();
+                    byte[] hReturn = program.ChunkMemory(retW1.GetIntValueSafe(), retW2.GetIntValueSafe());
+                    program.SetHReturn(hReturn);
+                    program.Step();
+                    program.Stop();
+                    break;
             }
         }
     }

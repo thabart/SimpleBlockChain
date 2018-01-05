@@ -133,6 +133,7 @@ namespace SimpleBlockChain.Core.Compiler
         STATICCALL = 0xfa,
         REVERT = 0xfd,
         SUICIDE = 0xff,
-        DUP1 = 0x80
+        DUP1 = 0x80,
+        RETURN = 0xf3
     }
 }
