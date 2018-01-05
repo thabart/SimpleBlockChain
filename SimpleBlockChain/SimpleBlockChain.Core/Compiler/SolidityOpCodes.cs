@@ -134,6 +134,21 @@ namespace SimpleBlockChain.Core.Compiler
         REVERT = 0xfd,
         SUICIDE = 0xff,
         DUP1 = 0x80,
-        RETURN = 0xf3
+        DUP2 = 0x81,
+        DUP3 = 0x82,
+        DUP4 = 0x83,
+        DUP5 = 0x84,
+        SWAP1 = 0x90,
+        SWAP2 = 0x91,
+        SWAP3 = 0x92,
+        SWAP4 = 0x93,
+        SWAP5 = 0x94,
+        SWAP6 = 0x95,
+        SWAP7 = 0x96,
+        SWAP8 = 0x97,
+        SWAP9 = 0x98,
+        SWAP10 = 0x99,
+        RETURN = 0xf3,
+        CALL = 0xf1
     }
 }

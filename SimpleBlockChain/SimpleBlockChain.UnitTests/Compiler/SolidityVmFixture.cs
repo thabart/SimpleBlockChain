@@ -694,31 +694,70 @@ namespace SimpleBlockChain.UnitTests.Compiler
         [TestMethod]
         public void WhenExecuteContract()
         {
+            var address = new DataWord(_adr.FromHexString().ToArray());
+            var callValue = new DataWord("0DE0B6B3A7640000".FromHexString().ToArray());
+            IEnumerable<byte> msgData = ("f3593cd0").FromHexString().ToList();
+            var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
+            var vm = new SolidityVm();
             // string code = "606060405261010c806100126000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063f3593cd01461003957610037565b005b61004660048050506100b4565b60405180806020018281038252838181518152602001915080519060200190808383829060006004602084601f0104600302600f01f150905090810190601f1680156100a65780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6020604051908101604052806000815260200150604060405190810160405280600b81526020017f68656c6c6f20776f726c640000000000000000000000000000000000000000008152602001509050610109565b9056";
-            string code = "606060405260938060106000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063b3de648b146037576035565b005b604b60048080359060200190919050506061565b6040518082815260200191505060405180910390f35b60006000600191508150600090505b82811015608c5781600202915081505b80806001019150506070565b5b5091905056";
+            // string code = "606060405260938060106000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063b3de648b146037576035565b005b604b60048080359060200190919050506061565b6040518082815260200191505060405180910390f35b60006000600191508150600090505b82811015608c5781600202915081505b80806001019150506070565b5b5091905056";
+            // string code = "606060405260938060106000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063b3de648b146037576035565b005b604b60048080359060200190919050506061565b6040518082815260200191505060405180910390f35b60006000600191508150600090505b82811015608c5781600202915081505b80806001019150506070565b5b5091905056";
+            string code = "606060405261010c806100126000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063f3593cd01461003957610037565b005b61004660048050506100b4565b60405180806020018281038252838181518152602001915080519060200190808383829060006004602084601f0104600302600f01f150905090810190601f1680156100a65780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6020604051908101604052806000815260200150604060405190810160405280600b81526020017f68656c6c6f20776f726c640000000000000000000000000000000000000000008152602001509050610109565b9056";
             var payload = code.FromHexString().ToList();
-            var program = new SolidityProgram(payload, _pgInvoke);
+            var program = new SolidityProgram(payload, pgInvoke);
 
-            _vm.Step(program); // PUSH1 0x60
-            _vm.Step(program); // PUSH1 0x40 
-            _vm.Step(program); // MSTORE 
-            _vm.Step(program); // PUSH2 0x010c 
-            _vm.Step(program); // DUP1
-            _vm.Step(program); // PUSH2 0x0012 
-            _vm.Step(program); // PUSH1 0x00  
-            _vm.Step(program); // CODECOPY
-            _vm.Step(program); // PUSH1 0x00
-            _vm.Step(program); // RETURN
+            while(!program.IsStopped())
+            {
+                vm.Step(program);
+            }
 
-            var hReturn = program.GetResult().GetHReturn(); // GET THE CODE OF THE CONTRACT !
-            var secondProg = new SolidityProgram(hReturn, _pgInvoke);
+            var hReturn = program.GetResult().GetHReturn(); // GET THE CONTRACT.
+            var secondProg = new SolidityProgram(hReturn, pgInvoke);
 
-            _vm.Step(secondProg); // PUSH1 0x60 
-            _vm.Step(secondProg); // PUSH1 0x40 
-            _vm.Step(secondProg); // MSTORE
-            _vm.Step(secondProg); // PUSH1 0x00
-            _vm.Step(secondProg); // CALLDATALOAD
-            _vm.Step(secondProg); // PUSH29 0x0100000000000000000000000000000000000000000000000000000000 
+            while(!secondProg.IsStopped())
+            {
+                vm.Step(secondProg);
+            }
+
+            /*
+            vm.Step(secondProg); // PUSH1 0x60 
+            vm.Step(secondProg); // PUSH1 0x40 
+            vm.Step(secondProg); // MSTORE
+            vm.Step(secondProg); // PUSH1 0x00
+            vm.Step(secondProg); // CALLDATALOAD
+            vm.Step(secondProg); // PUSH29 0x0100000000000000000000000000000000000000000000000000000000
+            vm.Step(secondProg); // SWAP1
+            vm.Step(secondProg); // DIV
+            vm.Step(secondProg); // DUP1
+            vm.Step(secondProg); // PUSH4 0xf3593cd0
+            vm.Step(secondProg); // EQ
+            vm.Step(secondProg); // PUSH2 0x0039
+            vm.Step(secondProg); // JUMPI 
+            vm.Step(secondProg); // JUMPDEST
+            vm.Step(secondProg); // PUSH2 0x0046  
+            vm.Step(secondProg); // PUSH1 0x04
+            vm.Step(secondProg); // DUP1 
+            vm.Step(secondProg); // POP 
+            vm.Step(secondProg); // POP
+            vm.Step(secondProg); // PUSH2 0x00b4 
+            vm.Step(secondProg); // JUMP 
+            vm.Step(secondProg); // JUMPDEST 
+            vm.Step(secondProg); // PUSH1 0x20  
+            vm.Step(secondProg); // PUSH1 0x40 
+            vm.Step(secondProg); // MLOAD 
+            vm.Step(secondProg); // SWAP1 
+            vm.Step(secondProg); // DUP2   
+            vm.Step(secondProg); // ADD   
+            vm.Step(secondProg); // PUSH1 0x40   
+            vm.Step(secondProg); // MSTORE  
+            vm.Step(secondProg); // DUP1  
+            vm.Step(secondProg); // PUSH1 0x00   
+            vm.Step(secondProg); // DUP2 
+            vm.Step(secondProg); // MSTORE  
+            vm.Step(secondProg); // PUSH1 0x20  
+            */
+
+            var res = secondProg.GetResult().GetHReturn(); // GET THE CONTRACT.
             string s = "";
         }
     }

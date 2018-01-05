@@ -10,6 +10,11 @@ namespace SimpleBlockChain.Core.Compiler
         public static byte[] EMPTY_BYTE_ARRAY = new byte[0];
         private static int CHUNK_SIZE = 1024;
         private static int WORD_SIZE = 32;
+        
+        public DataWord ReadWord(int address)
+        {
+            return new DataWord(Read(address, 32));
+        }
 
         public byte[] Read(int address, int size)
         {

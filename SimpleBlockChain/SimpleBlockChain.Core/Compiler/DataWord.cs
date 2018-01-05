@@ -1,14 +1,17 @@
 ﻿using Org.BouncyCastle.Math;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace SimpleBlockChain.Core.Compiler
 {
-    public class DataWord
+    public class DataWord : ICloneable
     {
         private byte[] _data;
         public static DataWord ZERO = new DataWord(new byte[32]);
-        public static DataWord ZERO_EMPTY_ARRAY = new DataWord(new byte[0]); 
+        public static DataWord ZERO_EMPTY_ARRAY = new DataWord(new byte[0]);
+        public static BigInteger _2_256 = BigInteger.ValueOf(2).Pow(256);
+        public static BigInteger MAX_VALUE = _2_256.Subtract(BigInteger.One);
 
         public DataWord()
         {
@@ -30,6 +33,43 @@ namespace SimpleBlockChain.Core.Compiler
 
             result.AddRange(data);
             _data = result.ToArray();
+        }
+        
+        public void Mul(DataWord word)
+        {
+            BigInteger result = GetValue().Multiply(word.GetValue());
+            _data = ByteUtil.CopyToArray(result.And(MAX_VALUE));
+        }
+
+        public void Sub(DataWord word)
+        {
+            BigInteger result = GetValue().Subtract(word.GetValue());
+            _data = ByteUtil.CopyToArray(result.And(MAX_VALUE));
+        }
+
+        public void Add(DataWord word)
+        {
+            byte[] result = new byte[32];
+            for (int i = 31, overflow = 0; i >= 0; i--)
+            {
+                int v = (_data[i] & 0xff) + (word.GetData()[i] & 0xff) + overflow;
+                result[i] = (byte)v;
+                overflow = v >> 8;
+            }
+
+            _data = result;
+        }
+
+        public void Div(DataWord word)
+        {
+            if (word.IsZero())
+            {
+                this.And(ZERO);
+                return;
+            }
+
+            BigInteger result = GetValue().Divide(word.GetValue());
+            _data = ByteUtil.CopyToArray(result.And(MAX_VALUE));
         }
 
         public DataWord And(DataWord w2)
@@ -55,13 +95,10 @@ namespace SimpleBlockChain.Core.Compiler
 
         public int GetIntValueSafe()
         {
-            return GetInt();
-            /*
-            int bytesOccupied = bytesOccupied();
-            int intValue = intValue();
-            if (bytesOccupied > 4 || intValue < 0) return Integer.MAX_VALUE;
+            int bytesOccupied = GetBytesOccupied();
+            int intValue = GetInt();
+            if (bytesOccupied > 4 || intValue < 0) { return int.MaxValue; }
             return intValue;
-            */
         }
 
         public DataWord Or(DataWord w2)
@@ -107,6 +144,13 @@ namespace SimpleBlockChain.Core.Compiler
         {
             return new BigInteger(_data);
         }
+        
+        public int GetBytesOccupied()
+        {
+            int firstNonZero = ByteUtil.FirstNonZeroByte(_data);
+            if (firstNonZero == -1) { return 0; }
+            return 31 - firstNonZero + 1;
+        }
 
         private byte[] GetDataWithoutFixSize()
         {
@@ -123,6 +167,11 @@ namespace SimpleBlockChain.Core.Compiler
 
             var result = _data.ToList().Skip(startIndex).ToArray();
             return result;
+        }
+
+        public object Clone()
+        {
+            return new DataWord(_data);
         }
     }
 }

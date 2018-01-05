@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SimpleBlockChain.Core.Compiler
@@ -8,9 +9,10 @@ namespace SimpleBlockChain.Core.Compiler
         private readonly ICollection<byte> _ops;
         private readonly SolidityProgramInvoke _progInvoke;
         private int _pc;
-        private List<DataWord> _stack;
+        private SolidityStack _stack;
         private SolidityMemory _memory;
         private SolidityProgramResult _result;
+        private SolidityProgramPreCompile programPrecompile;
         private bool _stopped;
 
         public SolidityProgram(ICollection<byte> ops, SolidityProgramInvoke progInvoke)
@@ -18,7 +20,7 @@ namespace SimpleBlockChain.Core.Compiler
             _ops = ops;
             _progInvoke = progInvoke;
             _pc = 0;
-            _stack = new List<DataWord>();
+            _stack = new SolidityStack();
             _memory = new SolidityMemory();
             _result = new SolidityProgramResult();
             _stopped = false;
@@ -46,45 +48,30 @@ namespace SimpleBlockChain.Core.Compiler
 
         public int VerifyJumpDest(DataWord nextPC)
         {
-            /*
-            if (nextPC.bytesOccupied() > 4)
+            if (nextPC.GetBytesOccupied() > 4)
             {
-                throw Program.Exception.badJumpDestination(-1);
+                throw new InvalidOperationException("Bad jump destination");
             }
 
             int ret = nextPC.GetInt();
-            if (!GetProgramPrecompile().hasJumpDest(ret))
+            if (!GetProgramPrecompile().HasJumpDest(ret))
             {
-                throw Program.Exception.badJumpDestination(ret);
+                throw new InvalidOperationException("Bad jump destination");
             }
-            return ret;
-            */
-            return 0;
-        }
 
-        /*
-        public ProgramPrecompile GetProgramPrecompile()
+            return ret;
+        }
+        
+        public SolidityProgramPreCompile GetProgramPrecompile()
         {
             if (programPrecompile == null)
             {
-                if (codeHash != null && commonConfig.precompileSource() != null)
-                {
-                    programPrecompile = commonConfig.precompileSource().get(codeHash);
-                }
-
-                if (programPrecompile == null)
-                {
-                    programPrecompile = ProgramPrecompile.compile(ops);
-
-                    if (codeHash != null && commonConfig.precompileSource() != null)
-                    {
-                        commonConfig.precompileSource().put(codeHash, programPrecompile);
-                    }
-                }
+                programPrecompile = SolidityProgramPreCompile.Compile(_ops.ToArray());
             }
+
             return programPrecompile;
         }
-        */
+
         public ICollection<byte> GetCode()
         {
             return _ops;
@@ -125,16 +112,19 @@ namespace SimpleBlockChain.Core.Compiler
             _stack.Add(data);
         }
 
-        public List<DataWord> GetStack()
+        public SolidityStack GetStack()
         {
             return _stack;
         }
 
+        public DataWord LoadMemory(DataWord addr)
+        {
+            return _memory.ReadWord(addr.GetInt());
+        }
+
         public DataWord StackPop()
         {
-            var result = _stack.Last();
-            _stack.Remove(_stack.Last());
-            return result;
+            return _stack.Pop();
         }
 
         public byte[] GetMemory()

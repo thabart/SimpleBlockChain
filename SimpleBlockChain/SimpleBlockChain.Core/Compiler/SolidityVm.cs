@@ -43,7 +43,21 @@ namespace SimpleBlockChain.Core.Compiler
             { SolidityOpCodes.PUSH30, 30 },
             { SolidityOpCodes.PUSH31, 31 },
             { SolidityOpCodes.PUSH32, 32 },
-            { SolidityOpCodes.DUP1, 1 }
+            { SolidityOpCodes.DUP1, 1 },
+            { SolidityOpCodes.DUP2, 2 },
+            { SolidityOpCodes.DUP3, 3 },
+            { SolidityOpCodes.DUP4, 4 },
+            { SolidityOpCodes.DUP5, 5 },
+            { SolidityOpCodes.SWAP1, 2 },
+            { SolidityOpCodes.SWAP2, 3 },
+            { SolidityOpCodes.SWAP3, 4 },
+            { SolidityOpCodes.SWAP4, 5 },
+            { SolidityOpCodes.SWAP5, 6 },
+            { SolidityOpCodes.SWAP6, 7 },
+            { SolidityOpCodes.SWAP7, 8 },
+            { SolidityOpCodes.SWAP8, 9 },
+            { SolidityOpCodes.SWAP9, 10 },
+            { SolidityOpCodes.SWAP10, 11 }
         };
 
         public void Step(SolidityProgram program)
@@ -91,6 +105,10 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.PUSH30:
                 case SolidityOpCodes.PUSH31:
                 case SolidityOpCodes.PUSH32:
+                    if (opCode == SolidityOpCodes.PUSH32)
+                    {
+                        string sss = "";
+                    }
                     program.Step();
                     var nPush = _sizeSolidityCodes[opCode.Value];
                     var data = program.Sweep(nPush);
@@ -263,14 +281,27 @@ namespace SimpleBlockChain.Core.Compiler
                     if (!cond.IsZero())
                     {
                         int nextPC = program.VerifyJumpDest(pos);
+                        program.SetPc(nextPC);
                     }
                     else
                     {
                         program.Step();
                     }
                     break;
+                case SolidityOpCodes.JUMP:
+                    var jumpW1 = program.StackPop();
+                    var nextPc = program.VerifyJumpDest(jumpW1);
+                    program.SetPc(nextPc);
+                    break;
+                case SolidityOpCodes.JUMPDEST:
+                    program.Step();
+                    break;
                 case SolidityOpCodes.DUP1:
-                    var n = _sizeSolidityCodes[opCode.Value];
+                case SolidityOpCodes.DUP2:
+                case SolidityOpCodes.DUP3:
+                case SolidityOpCodes.DUP4:
+                case SolidityOpCodes.DUP5:
+                    var n = _sizeSolidityCodes[opCode.Value] - _sizeSolidityCodes[SolidityOpCodes.DUP1] + 1;
                     var dup1W1 = stack[stack.Count() - n];
                     program.StackPush(dup1W1);
                     program.Step();
@@ -297,6 +328,66 @@ namespace SimpleBlockChain.Core.Compiler
                     program.SetHReturn(hReturn);
                     program.Step();
                     program.Stop();
+                    break;
+                case SolidityOpCodes.SWAP1:
+                case SolidityOpCodes.SWAP2:
+                case SolidityOpCodes.SWAP3:
+                case SolidityOpCodes.SWAP4:
+                case SolidityOpCodes.SWAP5:
+                case SolidityOpCodes.SWAP6:
+                case SolidityOpCodes.SWAP7:
+                case SolidityOpCodes.SWAP8:
+                case SolidityOpCodes.SWAP9:
+                case SolidityOpCodes.SWAP10:
+                    var sn = _sizeSolidityCodes[opCode.Value] - _sizeSolidityCodes[SolidityOpCodes.SWAP1] + 2;
+                    stack.Swap(stack.Count() - 1, stack.Count() - sn);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.DIV:
+                    var dW1 = program.StackPop();
+                    var dW2 = program.StackPop();
+                    dW1.Div(dW2);
+                    program.StackPush(dW1);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.POP:
+                    program.StackPop();
+                    program.Step();
+                    break;
+                case SolidityOpCodes.MLOAD:
+                    var mloadW1 = program.StackPop();
+                    var memoryW2 = program.LoadMemory(mloadW1);
+                    program.StackPush(memoryW2);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.ADD:
+                    var addW1 = program.StackPop();
+                    var addW2 = program.StackPop();
+                    addW1.Add(addW2);
+                    program.StackPush(addW1);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.SUB:
+                    var subW1 = program.StackPop();
+                    var subW2 = program.StackPop();
+                    subW1.Add(subW2);
+                    program.StackPush(subW1);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.MUL:
+                    var mulW1 = program.StackPop();
+                    var mulW2 = program.StackPop();
+                    mulW1.Add(mulW2);
+                    program.StackPush(mulW1);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.CALL:
+                    // MESSAGE CALL INTO ACCOUNT.
+                    program.StackPop();
+                    program.StackPop();
+                    program.StackPop();
+                    program.StackPop();
+                    program.Step();
                     break;
             }
         }
