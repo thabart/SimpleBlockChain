@@ -828,6 +828,82 @@ namespace SimpleBlockChain.UnitTests.Compiler
         }
 
         [TestMethod]
+        public void WhenMSTORE1()
+        {
+            string code = "611234600052";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();            
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000001234");
+        }
+
+        [TestMethod]
+        public void WhenMSTORE2()
+        {
+            string code = "611234600052615566602052";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000001234" +
+                "0000000000000000000000000000000000000000000000000000000000005566");
+        }
+        
+        [TestMethod]
+        public void WhenMSTORE3()
+        {
+            string code = "611234600052615566602052618888600052";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000008888" +
+                "0000000000000000000000000000000000000000000000000000000000005566");
+        }
+
+        [TestMethod]
+        public void WhenMSTORE4()
+        {
+            string code = "61123460A052";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000001234");
+        }
+
+        [TestMethod]
         public void WhenExecuteContract()
         {
             // HEX => OPCODES : https://etherscan.io/opcode-tool
