@@ -9,7 +9,7 @@ namespace SimpleBlockChain.Core.Compiler
     {
         private static readonly BigInteger BG_32 = BigInteger.ValueOf(32);
 
-        private Dictionary<SolidityOpCodes, int> _sizeSolidityCodes = new Dictionary<SolidityOpCodes, int>
+        public static Dictionary<SolidityOpCodes, int> SizeSolidityCodes = new Dictionary<SolidityOpCodes, int>
         {
             { SolidityOpCodes.PUSH1, 1 },
             { SolidityOpCodes.PUSH2, 2 },
@@ -110,7 +110,7 @@ namespace SimpleBlockChain.Core.Compiler
                         string sss = "";
                     }
                     program.Step();
-                    var nPush = _sizeSolidityCodes[opCode.Value];
+                    var nPush = SizeSolidityCodes[opCode.Value];
                     var data = program.Sweep(nPush);
                     program.StackPush(data);
                     break;
@@ -301,7 +301,7 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.DUP3:
                 case SolidityOpCodes.DUP4:
                 case SolidityOpCodes.DUP5:
-                    var n = _sizeSolidityCodes[opCode.Value] - _sizeSolidityCodes[SolidityOpCodes.DUP1] + 1;
+                    var n = SizeSolidityCodes[opCode.Value] - SizeSolidityCodes[SolidityOpCodes.DUP1] + 1;
                     var dup1W1 = stack[stack.Count() - n];
                     program.StackPush(dup1W1);
                     program.Step();
@@ -339,7 +339,7 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.SWAP8:
                 case SolidityOpCodes.SWAP9:
                 case SolidityOpCodes.SWAP10:
-                    var sn = _sizeSolidityCodes[opCode.Value] - _sizeSolidityCodes[SolidityOpCodes.SWAP1] + 2;
+                    var sn = SizeSolidityCodes[opCode.Value] - SizeSolidityCodes[SolidityOpCodes.SWAP1] + 2;
                     stack.Swap(stack.Count() - 1, stack.Count() - sn);
                     program.Step();
                     break;
@@ -387,6 +387,12 @@ namespace SimpleBlockChain.Core.Compiler
                     program.StackPop();
                     program.StackPop();
                     program.StackPop();
+                    program.Step();
+                    break;
+                case SolidityOpCodes.NOT:
+                    var notW1 = program.StackPop();
+                    notW1.BNot();
+                    program.StackPush(notW1);
                     program.Step();
                     break;
             }

@@ -3,7 +3,6 @@ using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Extensions;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace SimpleBlockChain.UnitTests.Compiler
 {
@@ -692,8 +691,146 @@ namespace SimpleBlockChain.UnitTests.Compiler
         }
 
         [TestMethod]
+        public void WhenNot1()
+        {
+            string code = "600119";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(pop == "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE");
+        }
+
+        [TestMethod]
+        public void WhenNot2()
+        {
+            string code = "61A00319";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(pop == "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5FFC");
+        }
+
+        [TestMethod]
+        public void WhenNot3()
+        {
+            string code = "600019";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(pop == "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+        }
+
+        [TestMethod]
+        public void WhenPop1()
+        {
+            string code = "61000060016200000250";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000000001");
+        }
+
+        [TestMethod]
+        public void WhenPop2()
+        {
+            string code = "6100006001620000025050";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000000000");
+        }
+
+        [TestMethod]
+        public void WhenDups()
+        {
+            for(int i = 1; i <= 5; i++)
+            {
+                WhenDup(i);
+            }
+        }
+
+        private void WhenDup(int n)
+        {
+            var code = "";
+            var operation = (byte)((byte)SolidityOpCodes.DUP1 + n - 1);
+            for (int i = 0; i < n; i++)
+            {
+                code += "60" + (12 + i);
+            }
+
+            var payload = code.FromHexString().ToList();
+            payload.Add(operation);
+            var program = new SolidityProgram(payload, _pgInvoke);
+            var expected = "0000000000000000000000000000000000000000000000000000000000000012";
+            var expectedLength = n + 1;
+            for (int i = 0; i < expectedLength; i++) {
+                _vm.Step(program);
+            }
+            
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(pop == expected);
+        }
+
+        [TestMethod]
+        public void WhenSwaps()
+        {
+            for(var i = 1; i <= 10; i++)
+            {
+                WhenSwap(i);
+            }
+        }
+
+        private void WhenSwap(int n)
+        {
+            var code = "";
+            var operation = (byte)((byte)SolidityOpCodes.SWAP1 + n - 1);
+            var top = (new DataWord(new byte[] { (byte)(0x10 + n) })).GetData().ToHexString().ToUpper();
+            for (int i = n; i > -1; --i)
+            {
+                code += "60" + (new byte[] { (byte)(0x10 + i) }).ToHexString();
+            }
+
+            var payload = code.FromHexString().ToList();
+            payload.Add(operation);
+            var program = new SolidityProgram(payload, _pgInvoke);
+            for (int i = 0; i < n + 2; ++i)
+            {
+                _vm.Step(program);
+            }
+
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(pop == top);
+        }
+
+        [TestMethod]
         public void WhenExecuteContract()
         {
+            // HEX => OPCODES : https://etherscan.io/opcode-tool
             var address = new DataWord(_adr.FromHexString().ToArray());
             var callValue = new DataWord("0DE0B6B3A7640000".FromHexString().ToArray());
             IEnumerable<byte> msgData = ("f3593cd0").FromHexString().ToList();
@@ -718,44 +855,6 @@ namespace SimpleBlockChain.UnitTests.Compiler
             {
                 vm.Step(secondProg);
             }
-
-            /*
-            vm.Step(secondProg); // PUSH1 0x60 
-            vm.Step(secondProg); // PUSH1 0x40 
-            vm.Step(secondProg); // MSTORE
-            vm.Step(secondProg); // PUSH1 0x00
-            vm.Step(secondProg); // CALLDATALOAD
-            vm.Step(secondProg); // PUSH29 0x0100000000000000000000000000000000000000000000000000000000
-            vm.Step(secondProg); // SWAP1
-            vm.Step(secondProg); // DIV
-            vm.Step(secondProg); // DUP1
-            vm.Step(secondProg); // PUSH4 0xf3593cd0
-            vm.Step(secondProg); // EQ
-            vm.Step(secondProg); // PUSH2 0x0039
-            vm.Step(secondProg); // JUMPI 
-            vm.Step(secondProg); // JUMPDEST
-            vm.Step(secondProg); // PUSH2 0x0046  
-            vm.Step(secondProg); // PUSH1 0x04
-            vm.Step(secondProg); // DUP1 
-            vm.Step(secondProg); // POP 
-            vm.Step(secondProg); // POP
-            vm.Step(secondProg); // PUSH2 0x00b4 
-            vm.Step(secondProg); // JUMP 
-            vm.Step(secondProg); // JUMPDEST 
-            vm.Step(secondProg); // PUSH1 0x20  
-            vm.Step(secondProg); // PUSH1 0x40 
-            vm.Step(secondProg); // MLOAD 
-            vm.Step(secondProg); // SWAP1 
-            vm.Step(secondProg); // DUP2   
-            vm.Step(secondProg); // ADD   
-            vm.Step(secondProg); // PUSH1 0x40   
-            vm.Step(secondProg); // MSTORE  
-            vm.Step(secondProg); // DUP1  
-            vm.Step(secondProg); // PUSH1 0x00   
-            vm.Step(secondProg); // DUP2 
-            vm.Step(secondProg); // MSTORE  
-            vm.Step(secondProg); // PUSH1 0x20  
-            */
 
             var res = secondProg.GetResult().GetHReturn(); // GET THE CONTRACT.
             string s = "";

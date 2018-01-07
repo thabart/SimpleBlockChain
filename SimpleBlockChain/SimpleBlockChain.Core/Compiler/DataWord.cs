@@ -47,6 +47,17 @@ namespace SimpleBlockChain.Core.Compiler
             _data = ByteUtil.CopyToArray(result.And(MAX_VALUE));
         }
 
+        public void BNot()
+        {
+            if (IsZero())
+            {
+                _data = ByteUtil.CopyToArray(MAX_VALUE);
+                return;
+            }
+
+            _data = ByteUtil.CopyToArray(MAX_VALUE.Subtract(GetValue()));
+        }
+
         public void Add(DataWord word)
         {
             byte[] result = new byte[32];
