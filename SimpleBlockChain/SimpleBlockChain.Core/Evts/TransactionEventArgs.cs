@@ -4,14 +4,14 @@ namespace SimpleBlockChain.Core.Evts
 {
     internal class TransactionEventArgs
     {
-        private readonly BcBaseTransaction _transaction;
+        private readonly BaseTransaction _transaction;
 
-        public TransactionEventArgs(BcBaseTransaction transaction)
+        public TransactionEventArgs(BaseTransaction transaction)
         {
             _transaction = transaction;
         }
 
-        public BcBaseTransaction Data
+        public BaseTransaction Data
         {
             get
             {

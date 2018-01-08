@@ -147,14 +147,14 @@ namespace SimpleBlockChain.Core.Blocks
                 if (_db.TryGet(string.Format(TRANSACTION_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
                     var kvp = BcBaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.NoneCoinbase);
-                    transactions.Add(kvp.Key);
+                    transactions.Add(kvp.Key as BcBaseTransaction);
                     continue;
                 }
 
                 if (_db.TryGet(string.Format(TRANSACTION_CB_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
                     var kvp = BcBaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.Coinbase);
-                    transactions.Add(kvp.Key);
+                    transactions.Add(kvp.Key as BcBaseTransaction);
                     continue;
                 }
             }
@@ -286,7 +286,7 @@ namespace SimpleBlockChain.Core.Blocks
                     return null;
                 }
 
-                return kvp.Key;
+                return kvp.Key as BcBaseTransaction;
             });
 
             var res = callback(false);

@@ -23,13 +23,13 @@ namespace SimpleBlockChain.Core.Transactions
 
         public BcBaseTransaction() { }
 
-        public BcBaseTransaction(uint version, uint lockTime) : base(version, lockTime)
+        public BcBaseTransaction(uint version, uint lockTime) : base(version, lockTime, TransactionCategories.Monetary)
         {
             TransactionIn = new List<BaseTransactionIn>();
             TransactionOut = new List<TransactionOut>();
         }
 
-        public static KeyValuePair<BcBaseTransaction, int> Deserialize(IEnumerable<byte> payload, TransactionTypes type)
+        public static KeyValuePair<BaseTransaction, int> Deserialize(IEnumerable<byte> payload, TransactionTypes type)
         {
             BcBaseTransaction result = null;
             switch(type)
@@ -45,7 +45,8 @@ namespace SimpleBlockChain.Core.Transactions
 
             int currentStartIndex = 0;
             result.Version = BitConverter.ToUInt32(payload.Take(4).ToArray(), 0);
-            currentStartIndex = 4;
+            result.Category = (TransactionCategories)payload.ElementAt(4);
+            currentStartIndex = 5;
             var transactionInCompactSize = CompactSize.Deserialize(payload.Skip(currentStartIndex).ToArray());
             currentStartIndex += transactionInCompactSize.Value;
             if (transactionInCompactSize.Key.Size > 0)
@@ -69,7 +70,7 @@ namespace SimpleBlockChain.Core.Transactions
 
             result.LockTime = BitConverter.ToUInt32(payload.Skip(currentStartIndex).Take(4).ToArray(), 0);
             currentStartIndex += 4;
-            return new KeyValuePair<BcBaseTransaction, int>(result, currentStartIndex);
+            return new KeyValuePair<BaseTransaction, int>(result, currentStartIndex);
         }
 
         public override IEnumerable<byte> Serialize()
@@ -77,6 +78,7 @@ namespace SimpleBlockChain.Core.Transactions
             // https://bitcoin.org/en/developer-reference#raw-transaction-format
             var result = new List<byte>();
             result.AddRange(BitConverter.GetBytes(Version));
+            result.Add((byte)TransactionCategories.Monetary);
             var inputCompactSize = new CompactSize();
             inputCompactSize.Size = (ulong)TransactionIn.Count();
             result.AddRange(inputCompactSize.Serialize());

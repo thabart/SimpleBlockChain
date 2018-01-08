@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Blocks;
+using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Scripts;
 using SimpleBlockChain.Core.Stores;
@@ -10,7 +11,9 @@ namespace SimpleBlockChain.Core.Validators
 {
     public interface ITransactionValidator
     {
+        void Check(BaseTransaction transaction);
         void Check(BcBaseTransaction transaction);
+        void Check(SmartContractTransaction transaction);
     }
 
     internal class TransactionValidator : ITransactionValidator
@@ -22,6 +25,23 @@ namespace SimpleBlockChain.Core.Validators
         {
             _blockChainStore = blockChainStore;
             _scriptInterpreter = scriptInterpreter;
+        }
+
+        public void Check(BaseTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            var bcTx = transaction as BcBaseTransaction;
+            if (bcTx != null)
+            {
+                Check(bcTx);
+                return;
+            }
+
+            Check(transaction as SmartContractTransaction);
         }
 
         public void Check(BcBaseTransaction transaction)
@@ -87,6 +107,65 @@ namespace SimpleBlockChain.Core.Validators
                 {
                     throw new ValidationException(ErrorCodes.TransactionOutputExceedInput);
                 }
+            }
+        }
+
+        public void Check(SmartContractTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            if (transaction.From == null)
+            {
+                throw new ArgumentNullException(nameof(transaction.From));
+            }
+
+            if (transaction.Data == null)
+            {
+                throw new ArgumentNullException(nameof(transaction.Data));
+            }
+
+            var blockChain = _blockChainStore.GetBlockChain();
+            if (transaction.From.Count() != 20)
+            {
+                throw new ValidationException(ErrorCodes.FromInvalidLength);
+            }
+            
+            if (transaction.To.Count() != 20)
+            {
+                throw new ValidationException(ErrorCodes.ToInvalidLength);
+            }
+
+            var vm = new SolidityVm();
+            SolidityProgram program = null;
+            var defaultCallValue = new DataWord(new byte[] { 0x00 });
+            if (transaction.To == null)
+            {
+                program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue)); // INTERPRETE THE CONTRACT.
+                try
+                {
+                    while (!program.IsStopped())
+                    {
+                        program.Step();
+                    }
+
+                    var hReturn = program.GetResult().GetHReturn();
+                    if (hReturn == null || !hReturn.Any())
+                    {
+                        throw new ValidationException(ErrorCodes.SmartContractNotValid);
+                    }
+                }
+                catch(Exception)
+                {
+                    throw new ValidationException(ErrorCodes.SmartContractNotValid);
+                }
+            }
+            else
+            {
+                // EXECUTE THE CONTRACT.
+                // program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue));
             }
         }
     }

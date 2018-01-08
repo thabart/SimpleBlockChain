@@ -1,5 +1,4 @@
-﻿using SimpleBlockChain.Core.Blocks;
-using SimpleBlockChain.Core.Extensions;
+﻿using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
@@ -9,14 +8,14 @@ namespace SimpleBlockChain.Core
 {
     public class MemoryPoolRecord
     {
-        public MemoryPoolRecord(BcBaseTransaction transaction, DateTime insertTime, int blockHeight)
+        public MemoryPoolRecord(BaseTransaction transaction, DateTime insertTime, int blockHeight)
         {
             Transaction = transaction;
             InsertTime = insertTime;
             BlockHeight = blockHeight;
         }
 
-        public BcBaseTransaction Transaction { get; set; }
+        public BaseTransaction Transaction { get; set; }
         public DateTime InsertTime { get; set; }
         public int Height { get; set; }
         public int BlockHeight { get; set; }
@@ -54,7 +53,7 @@ namespace SimpleBlockChain.Core
             return _instance;
         }
 
-        public void AddTransaction(BcBaseTransaction transaction, int blockHeight)
+        public void AddTransaction(BaseTransaction transaction, int blockHeight)
         {
             if (transaction == null)
             {
@@ -115,8 +114,8 @@ namespace SimpleBlockChain.Core
                 throw new ArgumentNullException(nameof(memPoolRecord.Transaction));
             }
 
-            var transaction = memPoolRecord.Transaction;
-            if (transaction.TransactionOut != null && transaction.TransactionOut.Any())
+            var transaction = memPoolRecord.Transaction as BcBaseTransaction;
+            if (transaction != null && transaction.TransactionOut != null && transaction.TransactionOut.Any())
             {
                 var txs = _transactions.Where(t =>
                 {
@@ -222,7 +221,8 @@ namespace SimpleBlockChain.Core
             }
 
             var referencedTx = GetUnspentMemoryRecord(txId);
-            if (referencedTx == null || index >= referencedTx.Transaction.TransactionOut.Count())
+            BcBaseTransaction transaction = null;
+            if (referencedTx == null || (transaction = referencedTx.Transaction as BcBaseTransaction) == null || index >= transaction.TransactionOut.Count())
             {
                 return null;
             }
@@ -248,10 +248,16 @@ namespace SimpleBlockChain.Core
                 return null;
             }
 
-            return memoryPoolRecord.Transaction.TransactionOut.ElementAt((int)index);
+            var transaction = memoryPoolRecord.Transaction as BcBaseTransaction;
+            if (transaction == null)
+            {
+                return null;
+            }
+
+            return transaction.TransactionOut.ElementAt((int)index);
         }
 
-        public void Remove(BcBaseTransaction transaction)
+        public void Remove(BaseTransaction transaction)
         {
             if (transaction == null)
             {

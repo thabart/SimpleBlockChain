@@ -31,20 +31,7 @@ namespace SimpleBlockChain.Core.Evts
             }
         }
 
-        public void Broadcast(SmartContractTransaction transaction)
-        {
-            if (transaction ==  null)
-            {
-                throw new ArgumentNullException(nameof(transaction));
-            }
-
-            if (NewSmartContractTransactionEvt != null)
-            {
-                NewSmartContractTransactionEvt(this, new SmartContractTransactionEventArgs(transaction));
-            }
-        }
-
-        public void Broadcast(BcBaseTransaction transaction)
+        public void Broadcast(BaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -59,6 +46,5 @@ namespace SimpleBlockChain.Core.Evts
 
         public event EventHandler<BlockEventArgs> NewBlockEvt;
         public event EventHandler<TransactionEventArgs> NewTransactionEvt;
-        public event EventHandler<SmartContractTransactionEventArgs> NewSmartContractTransactionEvt;
     }
 }

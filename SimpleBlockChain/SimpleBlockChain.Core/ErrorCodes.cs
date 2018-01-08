@@ -31,5 +31,8 @@
         public const string NotCorrectType = "not_correct_type";
         public const string NoResult = "no_result";
         public const string AlreadySpentInMemoryPool = "already_spent_in_memory_pool";
+        public const string FromInvalidLength = "from_invalid_length";
+        public const string ToInvalidLength = "to_invalid_length";
+        public const string SmartContractNotValid = "smart_contract_not_valid";
     }
 }

@@ -150,10 +150,11 @@ namespace SimpleBlockChain.Core.Nodes
                             var jTxContentObj = new JObject();
                             var depends = new List<string>();
                             transaction.GetDepends(depends);
+                            var bcTx = transaction.Transaction as BcBaseTransaction;
                             var arrDepends = JArray.FromObject(depends);
                             jTxContentObj.Add("size", transaction.Transaction.Serialize().Count());
-                            jTxContentObj.Add("fee", _transactionHelper.GetFee(transaction.Transaction, _network));
-                            jTxContentObj.Add("modifiedfee", _transactionHelper.GetFee(transaction.Transaction, _network));
+                            jTxContentObj.Add("fee", bcTx == null ? 0 : _transactionHelper.GetFee(bcTx, _network));
+                            jTxContentObj.Add("modifiedfee", bcTx == null ? 0 : _transactionHelper.GetFee(bcTx, _network));
                             jTxContentObj.Add("time", transaction.InsertTime.ToUnixTime());
                             jTxContentObj.Add("height", transaction.BlockHeight);
                             jTxContentObj.Add("startingpriority", null);
@@ -276,7 +277,13 @@ namespace SimpleBlockChain.Core.Nodes
                             {
                                 if (unconfirmedTransaction.Transaction != null)
                                 {
-                                    foreach (var unconfirmedUTXO in unconfirmedTransaction.Transaction.TransactionOut.Where(t => t is TransactionOut).Select(t => t as TransactionOut))
+                                    var lBcTx = unconfirmedTransaction.Transaction as BcBaseTransaction;
+                                    if (lBcTx == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    foreach (var unconfirmedUTXO in lBcTx.TransactionOut.Where(t => t is TransactionOut).Select(t => t as TransactionOut))
                                     {
                                         var bcAdr = walletBlockChainAddrs.FirstOrDefault(wph => unconfirmedUTXO.Script.ContainsPublicKeyHash(wph.bca.PublicKeyHash));
                                         if (bcAdr == null)
@@ -286,10 +293,10 @@ namespace SimpleBlockChain.Core.Nodes
 
                                         var record = new JObject();
                                         record.Add("txid", unconfirmedTransaction.Transaction.GetTxId().ToHexString());
-                                        record.Add("vout", unconfirmedTransaction.Transaction.TransactionOut.IndexOf(unconfirmedUTXO));
+                                        record.Add("vout", lBcTx.TransactionOut.IndexOf(unconfirmedUTXO));
+                                        record.Add("amount", unconfirmedUTXO.Value);
                                         record.Add("address", bcAdr.hash);
                                         record.Add("scriptPubKey", unconfirmedUTXO.Script.Serialize().ToHexString());
-                                        record.Add("amount", unconfirmedUTXO.Value);
                                         record.Add("confirmations", 0);
                                         record.Add("spendable", true);
                                         record.Add("solvable", true);
@@ -386,7 +393,13 @@ namespace SimpleBlockChain.Core.Nodes
                         var bcAddrs = wallet.Addresses.Select(addr => BlockChainAddress.Deserialize(addr.Hash));
                         foreach(var memTx in transactions)
                         {
-                            var balance = _transactionHelper.CalculateBalance(memTx.Transaction, bcAddrs, _network);
+                            var mBcTx = memTx.Transaction as BcBaseTransaction;
+                            if (mBcTx == null)
+                            {
+                                continue;
+                            }
+
+                            var balance = _transactionHelper.CalculateBalance(mBcTx, bcAddrs, _network);
                             unconfirmedBalance += balance;
                         }
                     }
@@ -585,15 +598,16 @@ namespace SimpleBlockChain.Core.Nodes
                     
                     try
                     {
-                        // MemoryPool.Instance().AddTransaction(tx, blockChain.GetCurrentBlockHeight());
+                        _transactionValidator.Check(smartContractTx);
+                        MemoryPool.Instance().AddTransaction(smartContractTx, blockChain.GetCurrentBlockHeight());
                         P2PConnectorEventStore.Instance().Broadcast(smartContractTx);
                         response["result"] = smartContractTx.GetTxId().ToHexString();
                         return response;
                     }
                     catch (ValidationException ex)
                     {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
                     }
-                    break;
                 case Constants.RpcOperations.ScCall: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_call
                     if (parameters == null || !parameters.Any())
                     {

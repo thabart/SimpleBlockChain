@@ -10,6 +10,12 @@ namespace SimpleBlockChain.Core.Compiler
         private DataWord _address;
         private DataWord _callValue;
 
+        public SolidityProgramInvoke(DataWord address, DataWord callValue)
+        {
+            _address = address;
+            _callValue = callValue;
+        }
+
         public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, DataWord address, DataWord callValue)
         {
             _msgDataRaw = msgDataRaw;

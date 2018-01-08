@@ -9,9 +9,11 @@ namespace SimpleBlockChain.Core.Helpers
     public interface ITransactionHelper
     {
         long GetMinFee();
-        long GetReward(BcBaseTransaction transaction);
+        long GetReward(BaseTransaction transaction);
         long CalculateBalance(BcBaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
+        long GetFee(BaseTransaction transaction, Networks network);
         long GetFee(BcBaseTransaction transaction, Networks network);
+        long GetFee(SmartContractTransaction transaction, Networks network);
         TransactionOut GetTransactionIn(BcBaseTransaction transaction, Networks network);
         TransactionOut GetTransactionIn(BcBaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
     }
@@ -31,7 +33,7 @@ namespace SimpleBlockChain.Core.Helpers
             return (long)Math.Ceiling(((DEFAULT_TX_SIZE / (double)1000) * Constants.DEFAULT_MIN_TX_FEE));
         }
 
-        public long GetReward(BcBaseTransaction transaction)
+        public long GetReward(BaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -82,6 +84,27 @@ namespace SimpleBlockChain.Core.Helpers
             }
 
             return txOut.Value;
+        }
+
+        public long GetFee(BaseTransaction transaction, Networks network)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            var tx = transaction as BcBaseTransaction;
+            if (tx != null)
+            {
+                return GetFee(tx, network);
+            }
+
+            return GetFee(transaction as SmartContractTransaction, network);
+        }
+
+        public long GetFee(SmartContractTransaction transaction, Networks network)
+        {
+            return 1;
         }
 
         public long GetFee(BcBaseTransaction transaction, Networks network)
