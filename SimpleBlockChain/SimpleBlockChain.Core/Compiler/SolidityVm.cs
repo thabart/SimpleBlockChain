@@ -2,6 +2,7 @@
 using SimpleBlockChain.Core.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace SimpleBlockChain.Core.Compiler
@@ -72,6 +73,17 @@ namespace SimpleBlockChain.Core.Compiler
             var currentOpCode = program.GetCurrentOpCode();
             var opCode = solidityOpCode.GetCode(currentOpCode);
             var stack = program.GetStack();
+
+            Trace.WriteLine("Operation " + Enum.GetName(typeof(SolidityOpCodes), opCode) + " "+program.GetPc());
+            Trace.WriteLine("Stack: ");
+            foreach (var s in program.GetStack())
+            {
+                Trace.WriteLine(s.GetData().ToHexString());
+            }
+
+            Trace.WriteLine("Memory: ");
+            Trace.WriteLine(program.GetMemory().ToHexString());
+
             switch (opCode)
             {
                 case SolidityOpCodes.PUSH1:
@@ -377,23 +389,29 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.SUB:
                     var subW1 = program.StackPop();
                     var subW2 = program.StackPop();
-                    subW1.Add(subW2);
+                    subW1.Sub(subW2);
                     program.StackPush(subW1);
                     program.Step();
                     break;
                 case SolidityOpCodes.MUL:
                     var mulW1 = program.StackPop();
                     var mulW2 = program.StackPop();
-                    mulW1.Add(mulW2);
+                    mulW1.Mul(mulW2);
                     program.StackPush(mulW1);
                     program.Step();
                     break;
-                case SolidityOpCodes.CALL:
-                    // MESSAGE CALL INTO ACCOUNT.
+                case SolidityOpCodes.CALL: // CONTINUE TO DEVELOP METHOD CALL.
                     program.StackPop();
-                    program.StackPop();
-                    program.StackPop();
-                    program.StackPop();
+                    var codeAddress = program.StackPop();
+                    var cv = program.StackPop();
+
+                    DataWord inDataOffs = program.StackPop();
+                    DataWord inDataSize = program.StackPop();
+                    DataWord outDataOffs = program.StackPop();
+                    DataWord outDataSize = program.StackPop();
+
+                    program.MemoryExpand(outDataOffs, outDataSize);
+
                     program.Step();
                     break;
                 case SolidityOpCodes.NOT:

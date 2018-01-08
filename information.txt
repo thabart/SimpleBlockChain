@@ -22,3 +22,6 @@ type: "P2PKH"
 network: "MainNet"
 
 Get runtime bytes : solc.exe --bin-runtime
+Get the tools : https://ethereum.github.io/go-ethereum/downloads/
+
+Command : evm --debug --code <code> --input <input> run

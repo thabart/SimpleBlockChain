@@ -33,6 +33,11 @@ namespace SimpleBlockChain.Core.Compiler
             return _ops.ElementAt(_pc);
         }
 
+        public int GetPc()
+        {
+            return _pc;
+        }
+
         public void SetPc(int pc)
         {
             _pc = pc;
@@ -124,6 +129,14 @@ namespace SimpleBlockChain.Core.Compiler
         public void StackPush(DataWord data)
         {
             _stack.Add(data);
+        }
+
+        public void MemoryExpand(DataWord outDataOffs, DataWord outDataSize)
+        {
+            if (!outDataSize.IsZero())
+            {
+                _memory.Extend(outDataOffs.GetInt(), outDataSize.GetInt());
+            }
         }
 
         public SolidityStack GetStack()

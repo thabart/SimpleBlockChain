@@ -1004,26 +1004,37 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var callValue = new DataWord("00".FromHexString().ToArray());
             IEnumerable<byte> msgData = ("6d4ce63c").FromHexString().ToList();
             var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
-            var vm = new SolidityVm();
-            var code = "6060604052601b8060106000396000f3606060405260e060020a60003504636d4ce63c81146000575b9056";
+            var vm = new SolidityVm();           
+            var code = "60606040526000357c0100000000000000000000000000000000000000000000000000000000900480636d4ce63c146037576035565b005b604260048050506058565b6040518082815260200191505060405180910390f35b6000600390506062565b9056";
             var payload = code.FromHexString().ToList();
-            var program = new SolidityProgram(payload, pgInvoke);
-            while(!program.IsStopped())
-            {
-                vm.Step(program);
-            }
-
-            var hReturn = program.GetResult().GetHReturn(); // GET THE CONTRACT.
-            var s2 = hReturn.ToHexString();
-            var secondProg = new SolidityProgram(hReturn, pgInvoke);
-
+            var secondProg = new SolidityProgram(payload, pgInvoke);
             while(!secondProg.IsStopped())
             {
                 vm.Step(secondProg);
             }
 
-            var res = secondProg.GetResult().GetHReturn().ToHexString(); // GET THE CONTRACT.
-            string s = "";
+            var res = secondProg.GetResult().GetHReturn().ToHexString();
+            Assert.IsTrue(res == "0000000000000000000000000000000000000000000000000000000000000003"); // RETURN THE NUMBER 3.
+        }
+
+        [TestMethod]
+        public void WhenExecuteComplexContract2()
+        {
+            var address = new DataWord(_adr.FromHexString().ToArray());
+            var callValue = new DataWord("00".FromHexString().ToArray());
+            IEnumerable<byte> msgData = ("6d4ce63c").FromHexString().ToList();
+            var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
+            var vm = new SolidityVm();
+            var code = "60606040526000357c0100000000000000000000000000000000000000000000000000000000900480636d4ce63c1461003957610037565b005b61004660048050506100b4565b60405180806020018281038252838181518152602001915080519060200190808383829060006004602084601f0104600302600f01f150905090810190601f1680156100a65780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6020604051908101604052806000815260200150604060405190810160405280600b81526020017f68656c6c6f20776f726c640000000000000000000000000000000000000000008152602001509050610109565b9056";
+            var payload = code.FromHexString().ToList();
+            var secondProg = new SolidityProgram(payload, pgInvoke);
+            while (!secondProg.IsStopped())
+            {
+                vm.Step(secondProg);
+            }
+
+            var res = secondProg.GetResult().GetHReturn().ToHexString();
+            Assert.IsTrue(res == "0000000000000000000000000000000000000000000000000000000000000003"); // RETURN THE NUMBER 3.
         }
 
         /*
