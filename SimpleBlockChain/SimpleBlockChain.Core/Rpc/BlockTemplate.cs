@@ -10,9 +10,9 @@ namespace SimpleBlockChain.Core.Rpc
 {
     public class BlockTemplate
     {
-        public BaseTransaction CoinBaseTx { get; set; }
+        public BcBaseTransaction CoinBaseTx { get; set; }
         public IEnumerable<byte> PreviousBlockHash { get; set; }
-        public IEnumerable<BaseTransaction> Transactions { get; set; }
+        public IEnumerable<BcBaseTransaction> Transactions { get; set; }
         public double Expires { get; set; }
         public int Height { get; set; }
         public string LongPollId { get; set; }
@@ -39,7 +39,7 @@ namespace SimpleBlockChain.Core.Rpc
                     if (coinBaseTxnDataObj.TryGetValue("data", out coinBaseTxnDataToken))
                     {
                         var data = coinBaseTxnDataToken.ToString().FromHexString();
-                        result.CoinBaseTx = BaseTransaction.Deserialize(data, TransactionTypes.Coinbase).Key;
+                        result.CoinBaseTx = BcBaseTransaction.Deserialize(data, TransactionTypes.Coinbase).Key;
                     }
                 }
             }
@@ -56,10 +56,10 @@ namespace SimpleBlockChain.Core.Rpc
                 var transactionsArr = transactionsToken as JArray;
                 if (transactionsArr != null)
                 {
-                    var transactions = new List<BaseTransaction>();
+                    var transactions = new List<BcBaseTransaction>();
                     foreach(var transactionObj in transactionsArr)
                     {
-                        transactions.Add(BaseTransaction.Deserialize(transactionObj.ToString().FromHexString(), TransactionTypes.NoneCoinbase).Key);
+                        transactions.Add(BcBaseTransaction.Deserialize(transactionObj.ToString().FromHexString(), TransactionTypes.NoneCoinbase).Key);
                     }
 
                     result.Transactions = transactions;

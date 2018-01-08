@@ -140,20 +140,20 @@ namespace SimpleBlockChain.Core.Blocks
             }
             
             var txIdsPayload = utf8BlockTxIds.Split(TXID_SEPARATOR);
-            var transactions = new List<BaseTransaction>();
+            var transactions = new List<BcBaseTransaction>();
             foreach(var txIdPayload in txIdsPayload)
             {
                 string utf8Transaction = string.Empty;
                 if (_db.TryGet(string.Format(TRANSACTION_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
-                    var kvp = BaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.NoneCoinbase);
+                    var kvp = BcBaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.NoneCoinbase);
                     transactions.Add(kvp.Key);
                     continue;
                 }
 
                 if (_db.TryGet(string.Format(TRANSACTION_CB_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
-                    var kvp = BaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.Coinbase);
+                    var kvp = BcBaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.Coinbase);
                     transactions.Add(kvp.Key);
                     continue;
                 }
@@ -263,14 +263,14 @@ namespace SimpleBlockChain.Core.Blocks
             return GetTransaction(txId) != null;
         }
 
-        public BaseTransaction GetTransaction(IEnumerable<byte> txId)
+        public BcBaseTransaction GetTransaction(IEnumerable<byte> txId)
         {
             if (txId == null)
             {
                 throw new ArgumentNullException(nameof(txId));
             }
 
-            var callback = new Func<bool, BaseTransaction>((isCoinBased) =>
+            var callback = new Func<bool, BcBaseTransaction>((isCoinBased) =>
             {
                 var k = isCoinBased ? TRANSACTION_CB_ELT : TRANSACTION_ELT;
                 string result;
@@ -280,8 +280,8 @@ namespace SimpleBlockChain.Core.Blocks
                 }
 
                 var payload = Convert.FromBase64String(result);
-                var kvp = BaseTransaction.Deserialize(payload, isCoinBased ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase);
-                if (kvp.Equals(default(KeyValuePair<BaseTransaction, int>)) && kvp.Key != null)
+                var kvp = BcBaseTransaction.Deserialize(payload, isCoinBased ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase);
+                if (kvp.Equals(default(KeyValuePair<BcBaseTransaction, int>)) && kvp.Key != null)
                 {
                     return null;
                 }

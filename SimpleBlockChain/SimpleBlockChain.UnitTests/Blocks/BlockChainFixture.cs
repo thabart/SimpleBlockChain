@@ -85,7 +85,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             block.Transactions.Add(coinBaseTransaction);
             block.Transactions.Add(noneCoinBaseTransaction);
             var a = noneCoinBaseTransaction.Serialize().ToArray();
-            var b = BaseTransaction.Deserialize(a, TransactionTypes.NoneCoinbase);
+            var b = BcBaseTransaction.Deserialize(a, TransactionTypes.NoneCoinbase);
             block.UpdateMerkleRoot();
             blockChain.AddBlock(block);
             var secondBlock = blockChain.GetBlock(1);
@@ -158,7 +158,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             block.Transactions.Add(noneCoinBaseTransaction);
             block.Transactions.Add(otherCoinBaseTransaction);
             var a = noneCoinBaseTransaction.Serialize().ToArray();
-            var b = BaseTransaction.Deserialize(a, TransactionTypes.NoneCoinbase);
+            var b = BcBaseTransaction.Deserialize(a, TransactionTypes.NoneCoinbase);
             block.UpdateMerkleRoot();
             blockChain.AddBlock(block);
             var unspentTransactions = blockChain.GetUnspentTransactions();

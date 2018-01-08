@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SimpleBlockChain.Core.Transactions
 {
-    public class NoneCoinbaseTransaction : BaseTransaction
+    public class NoneCoinbaseTransaction : BcBaseTransaction
     {
         public NoneCoinbaseTransaction() { }
 
@@ -66,7 +66,7 @@ namespace SimpleBlockChain.Core.Transactions
             return result;
         }
 
-        public override int CompareTo(BaseTransaction obj)
+        public override int CompareTo(BcBaseTransaction obj)
         {
             var noneCoinBaseTransaction = obj as NoneCoinbaseTransaction;
             if (noneCoinBaseTransaction == null)

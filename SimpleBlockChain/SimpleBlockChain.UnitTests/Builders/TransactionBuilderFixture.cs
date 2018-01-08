@@ -21,7 +21,7 @@ namespace SimpleBlockChain.UnitTests.Builders
                 .AddOutput(20, Script.CreateP2PKHScript(ba.PublicKeyHash))
                 .Build();
             var serializedTransaction = transaction.Serialize();
-            var deserializedTransaction = BaseTransaction.Deserialize(serializedTransaction, TransactionTypes.NoneCoinbase);
+            var deserializedTransaction = BcBaseTransaction.Deserialize(serializedTransaction, TransactionTypes.NoneCoinbase);
         }
 
         [TestMethod]

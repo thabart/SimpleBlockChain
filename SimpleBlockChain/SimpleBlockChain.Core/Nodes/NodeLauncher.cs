@@ -129,7 +129,7 @@ namespace SimpleBlockChain.Core.Nodes
             _p2pNetworkConnector.Broadcast(message);
         }
 
-        public void Broadcast(BaseTransaction transaction)
+        public void Broadcast(BcBaseTransaction transaction)
         {
             if (transaction == null)
             {

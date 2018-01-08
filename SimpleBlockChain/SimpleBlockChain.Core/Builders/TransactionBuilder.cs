@@ -12,18 +12,18 @@ namespace SimpleBlockChain.Core.Builders
         TransactionBuilder AddOutput(long value, Script script);
         TransactionBuilder SetTime(UInt32 value);
         TransactionBuilder SetBlockNumber(UInt32 value);
-        BaseTransaction Build();
+        BcBaseTransaction Build();
     }
 
     public class TransactionBuilder : ITransactionBuilder
     {
-        protected BaseTransaction Transaction;
+        protected BcBaseTransaction Transaction;
 
         public TransactionBuilder()
         {
         }
 
-        public TransactionBuilder(BaseTransaction transaction)
+        public TransactionBuilder(BcBaseTransaction transaction)
         {
             Transaction = transaction;
         }
@@ -67,7 +67,7 @@ namespace SimpleBlockChain.Core.Builders
             return this;
         }
 
-        public BaseTransaction Build()
+        public BcBaseTransaction Build()
         {
             return Transaction;
         }

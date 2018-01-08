@@ -4,6 +4,7 @@ using SimpleBlockChain.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SimpleBlockChain.UnitTests.Compiler
 {
@@ -1034,8 +1035,11 @@ namespace SimpleBlockChain.UnitTests.Compiler
                 vm.Step(secondProg);
             }
 
-            var res = secondProg.GetResult().GetHReturn().ToHexString();
-            Assert.IsTrue(res == "0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000b68656c6c6f20776f726c64000000000000000000000000000000000000000000"); // RETURN THE NUMBER 3.
+            var hResult = secondProg.GetResult().GetHReturn();
+            var res = hResult.ToHexString();
+            Assert.IsTrue(res == "0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000b68656c6c6f20776f726c64000000000000000000000000000000000000000000");
+            var output = Encoding.ASCII.GetString(hResult).Replace("\0", "").Replace("\v", "");
+            string s = "";
         }
 
         /*

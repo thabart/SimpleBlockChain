@@ -9,11 +9,11 @@ namespace SimpleBlockChain.Core.Helpers
     public interface ITransactionHelper
     {
         long GetMinFee();
-        long GetReward(BaseTransaction transaction);
-        long CalculateBalance(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
-        long GetFee(BaseTransaction transaction, Networks network);
-        TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network);
-        TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
+        long GetReward(BcBaseTransaction transaction);
+        long CalculateBalance(BcBaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
+        long GetFee(BcBaseTransaction transaction, Networks network);
+        TransactionOut GetTransactionIn(BcBaseTransaction transaction, Networks network);
+        TransactionOut GetTransactionIn(BcBaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network);
     }
 
     internal class TransactionHelper : ITransactionHelper
@@ -31,7 +31,7 @@ namespace SimpleBlockChain.Core.Helpers
             return (long)Math.Ceiling(((DEFAULT_TX_SIZE / (double)1000) * Constants.DEFAULT_MIN_TX_FEE));
         }
 
-        public long GetReward(BaseTransaction transaction)
+        public long GetReward(BcBaseTransaction transaction)
         {
             if (transaction == null)
             {
@@ -41,7 +41,7 @@ namespace SimpleBlockChain.Core.Helpers
             return (long)Math.Ceiling(((transaction.Serialize().Count() / (double)1000) * Constants.DEFAULT_MIN_TX_FEE));
         }
 
-        public long CalculateBalance(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
+        public long CalculateBalance(BcBaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
         {
             if (transaction == null)
             {
@@ -84,7 +84,7 @@ namespace SimpleBlockChain.Core.Helpers
             return txOut.Value;
         }
 
-        public long GetFee(BaseTransaction transaction, Networks network)
+        public long GetFee(BcBaseTransaction transaction, Networks network)
         {
             if (transaction == null)
             {
@@ -105,7 +105,7 @@ namespace SimpleBlockChain.Core.Helpers
             return result;
         }
 
-        public TransactionOut GetTransactionIn(BaseTransaction transaction, Networks network)
+        public TransactionOut GetTransactionIn(BcBaseTransaction transaction, Networks network)
         {
             if (transaction == null)
             {
@@ -147,7 +147,7 @@ namespace SimpleBlockChain.Core.Helpers
             return null;
         }
 
-        public TransactionOut GetTransactionIn(BaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
+        public TransactionOut GetTransactionIn(BcBaseTransaction transaction, IEnumerable<BlockChainAddress> bcAddrs, Networks network)
         {
             if (transaction == null)
             {

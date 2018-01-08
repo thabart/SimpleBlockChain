@@ -38,10 +38,10 @@ namespace SimpleBlockChain.Core.Connectors
             instance.NewPeerEvt += ListenPeer;
             P2PConnectorEventStore.Instance().NewBlockEvt += BroadcastNewBlock;
             P2PConnectorEventStore.Instance().NewTransactionEvt += BroadcastNewTransaction;
+            P2PConnectorEventStore.Instance().NewSmartContractTransactionEvt += NewSmartContractTransactionEvt;
         }
 
         public bool IsRunning { get; private set; }
-
         public event EventHandler ConnectEvent;
         public event EventHandler DisconnectEvent;
 
@@ -59,7 +59,15 @@ namespace SimpleBlockChain.Core.Connectors
             await DiscoverNodes();
         }
 
-        public void Broadcast(BaseTransaction transaction, IEnumerable<byte> excludedIp = null)
+        public void Broadcast(SmartContractTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+        }
+
+        public void Broadcast(BcBaseTransaction transaction, IEnumerable<byte> excludedIp = null)
         {
             if (transaction == null)
             {
@@ -392,6 +400,19 @@ namespace SimpleBlockChain.Core.Connectors
             }
 
             Broadcast(e.Data);
+        }
+        
+        private void NewSmartContractTransactionEvt(object sender, SmartContractTransactionEventArgs e)
+        {
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            if (e.Data == null)
+            {
+                throw new ArgumentNullException(nameof(e.Data));
+            }
         }
 
         private void RemovePeer(object sender, IpAddressEventArgs ipAdr)

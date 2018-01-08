@@ -348,7 +348,7 @@ namespace SimpleBlockChain.Core.Nodes
                         }
                     }
 
-                    var kvp = BaseTransaction.Deserialize(txPayload, transactionType);
+                    var kvp = BcBaseTransaction.Deserialize(txPayload, transactionType);
                     try
                     {
                         var tx = kvp.Key;
@@ -488,7 +488,113 @@ namespace SimpleBlockChain.Core.Nodes
 
                     response["result"] = txG.Serialize().ToHexString();
                     return response;
-                case Constants.RpcOperations.CallSmartContract: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_call
+                case Constants.RpcOperations.ScSendTransaction: https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sendtransaction
+                    if (parameters == null || !parameters.Any())
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The from & data are not specified");
+                    }
+
+                    if (parameters.Count() < 2)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The data is not specified");
+                    }
+
+                    IEnumerable<byte> fromPayload = null;
+                    IEnumerable<byte> dataPayload = null;
+                    IEnumerable<byte> toPayload = null;
+                    double gas  = 0,
+                        gasPrice = 0,
+                        scValue = 0;
+                    int scNonce = 0;
+                    try
+                    {
+                        fromPayload = parameters.First().FromHexString();
+                    }
+                    catch(Exception)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The from cannot be decoded");
+                    }
+
+                    try
+                    {
+                        dataPayload = parameters.ElementAt(1).FromHexString();
+                    }
+                    catch(Exception)
+                    {
+                        return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The data cannot be decoded");
+                    }
+
+                    if (parameters.Count() >= 3)
+                    {
+                        try
+                        {
+                            toPayload = parameters.ElementAt(2).FromHexString();
+                        }
+                        catch (Exception)
+                        {
+                            return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The to cannot be decoded");
+                        }
+                    }
+
+                    if (parameters.Count() >= 4)
+                    {
+                        try
+                        {
+                            gas = double.Parse(parameters.ElementAt(3));
+                        }
+                        catch (Exception) { }
+                    }
+
+                    if (parameters.Count() >= 5)
+                    {
+                        try
+                        {
+                            gasPrice = double.Parse(parameters.ElementAt(4));
+                        }
+                        catch (Exception) { }
+                    }
+
+                    if (parameters.Count() >= 6)
+                    {
+                        try
+                        {
+                            scValue = double.Parse(parameters.ElementAt(5));
+                        }
+                        catch (Exception) { }
+                    }
+
+                    if (parameters.Count() >= 7)
+                    {
+                        try
+                        {
+                            scNonce = int.Parse(parameters.ElementAt(6));
+                        }
+                        catch (Exception) { }
+                    }
+
+                    var smartContractTx = new SmartContractTransaction
+                    {
+                        Data = dataPayload,
+                        From = fromPayload,
+                        To = toPayload,
+                        Gas = gas,
+                        GasPrice = gasPrice,
+                        Nonce = scNonce,
+                        Value = scValue
+                    };
+                    
+                    try
+                    {
+                        // MemoryPool.Instance().AddTransaction(tx, blockChain.GetCurrentBlockHeight());
+                        P2PConnectorEventStore.Instance().Broadcast(smartContractTx);
+                        response["result"] = smartContractTx.GetTxId().ToHexString();
+                        return response;
+                    }
+                    catch (ValidationException ex)
+                    {
+                    }
+                    break;
+                case Constants.RpcOperations.ScCall: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_call
                     if (parameters == null || !parameters.Any())
                     {
                         return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The method is not specified");

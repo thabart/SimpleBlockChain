@@ -79,7 +79,7 @@ namespace SimpleBlockChain.MiningSoft
 
         private static Block CalculateHeader(BlockTemplate blockTemplate, uint nonce, uint extraNonce, Networks network)
         {
-            var transactions = new List<BaseTransaction>();
+            var transactions = new List<BcBaseTransaction>();
             var coinBaseInTrans = blockTemplate.CoinBaseTx.TransactionIn[0] as TransactionInCoinbase;
             coinBaseInTrans.CoinBaseScript = BitConverter.GetBytes(extraNonce);
             transactions.Add(blockTemplate.CoinBaseTx);

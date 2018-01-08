@@ -9,14 +9,14 @@ namespace SimpleBlockChain.Core
 {
     public class MemoryPoolRecord
     {
-        public MemoryPoolRecord(BaseTransaction transaction, DateTime insertTime, int blockHeight)
+        public MemoryPoolRecord(BcBaseTransaction transaction, DateTime insertTime, int blockHeight)
         {
             Transaction = transaction;
             InsertTime = insertTime;
             BlockHeight = blockHeight;
         }
 
-        public BaseTransaction Transaction { get; set; }
+        public BcBaseTransaction Transaction { get; set; }
         public DateTime InsertTime { get; set; }
         public int Height { get; set; }
         public int BlockHeight { get; set; }
@@ -54,7 +54,7 @@ namespace SimpleBlockChain.Core
             return _instance;
         }
 
-        public void AddTransaction(BaseTransaction transaction, int blockHeight)
+        public void AddTransaction(BcBaseTransaction transaction, int blockHeight)
         {
             if (transaction == null)
             {
@@ -251,7 +251,7 @@ namespace SimpleBlockChain.Core
             return memoryPoolRecord.Transaction.TransactionOut.ElementAt((int)index);
         }
 
-        public void Remove(BaseTransaction transaction)
+        public void Remove(BcBaseTransaction transaction)
         {
             if (transaction == null)
             {

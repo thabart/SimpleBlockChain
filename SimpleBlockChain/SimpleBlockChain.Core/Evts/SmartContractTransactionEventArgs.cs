@@ -2,16 +2,16 @@
 
 namespace SimpleBlockChain.Core.Evts
 {
-    internal class TransactionEventArgs
+    internal class SmartContractTransactionEventArgs
     {
-        private readonly BcBaseTransaction _transaction;
+        private readonly SmartContractTransaction _transaction;
 
-        public TransactionEventArgs(BcBaseTransaction transaction)
+        public SmartContractTransactionEventArgs(SmartContractTransaction transaction)
         {
             _transaction = transaction;
         }
 
-        public BcBaseTransaction Data
+        public SmartContractTransaction Data
         {
             get
             {

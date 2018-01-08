@@ -11,7 +11,7 @@ namespace SimpleBlockChain.Core.Builders
 
         public NoneCoinbaseTransactionBuilder(uint version, uint lockTime) : base(new NoneCoinbaseTransaction(version, lockTime)) { }
 
-        public NoneCoinbaseTransactionBuilder Spend(BaseTransaction transaction, UInt32 index, IEnumerable<byte> signatureScript, uint sequence = 0xffffffff)
+        public NoneCoinbaseTransactionBuilder Spend(BcBaseTransaction transaction, UInt32 index, IEnumerable<byte> signatureScript, uint sequence = 0xffffffff)
         {
             if (transaction == null)
             {

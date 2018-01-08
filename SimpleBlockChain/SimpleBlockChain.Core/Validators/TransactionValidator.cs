@@ -10,7 +10,7 @@ namespace SimpleBlockChain.Core.Validators
 {
     public interface ITransactionValidator
     {
-        void Check(BaseTransaction transaction);
+        void Check(BcBaseTransaction transaction);
     }
 
     internal class TransactionValidator : ITransactionValidator
@@ -24,7 +24,7 @@ namespace SimpleBlockChain.Core.Validators
             _scriptInterpreter = scriptInterpreter;
         }
 
-        public void Check(BaseTransaction transaction)
+        public void Check(BcBaseTransaction transaction)
         {
             if (transaction == null)
             {

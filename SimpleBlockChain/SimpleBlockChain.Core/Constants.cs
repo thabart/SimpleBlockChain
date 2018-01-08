@@ -71,7 +71,8 @@ namespace SimpleBlockChain.Core
             public const string GetBlockHash = "getblockhash";
             public const string GetBlock = "getblock";
             public const string GetRawTransaction = "getrawtransaction";
-            public const string CallSmartContract = "callsmartcontract";
+            public const string ScSendTransaction = "sc_sendtransaction";
+            public const string ScCall = "sc_call";
         }
     }
 }

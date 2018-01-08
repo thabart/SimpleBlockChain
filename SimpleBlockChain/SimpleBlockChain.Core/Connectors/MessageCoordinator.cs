@@ -395,7 +395,7 @@ namespace SimpleBlockChain.Core.Connectors
             return null;
         }
 
-        private void AddTransaction(BaseTransaction transaction)
+        private void AddTransaction(BcBaseTransaction transaction)
         {
             if (transaction == null)
             {

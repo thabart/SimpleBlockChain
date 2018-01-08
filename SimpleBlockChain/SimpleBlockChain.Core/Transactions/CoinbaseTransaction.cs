@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SimpleBlockChain.Core.Transactions
 {
-    public class CoinbaseTransaction : BaseTransaction
+    public class CoinbaseTransaction : BcBaseTransaction
     {
         public CoinbaseTransaction() { }
 
@@ -49,7 +49,7 @@ namespace SimpleBlockChain.Core.Transactions
             TransactionIn = new List<BaseTransactionIn> { transactionIn };
         }
 
-        public override int CompareTo(BaseTransaction obj)
+        public override int CompareTo(BcBaseTransaction obj)
         {
             return -1;
         }
