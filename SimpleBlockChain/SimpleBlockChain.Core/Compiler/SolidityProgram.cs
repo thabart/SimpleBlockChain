@@ -12,6 +12,7 @@ namespace SimpleBlockChain.Core.Compiler
         private SolidityStack _stack;
         private SolidityMemory _memory;
         private SolidityProgramResult _result;
+        private SolidityStorage _storage;
         private SolidityProgramPreCompile programPrecompile;
         private bool _stopped;
 
@@ -23,6 +24,7 @@ namespace SimpleBlockChain.Core.Compiler
             _stack = new SolidityStack();
             _memory = new SolidityMemory();
             _result = new SolidityProgramResult();
+            _storage = new SolidityStorage();
             _stopped = false;
         }
 
@@ -77,6 +79,18 @@ namespace SimpleBlockChain.Core.Compiler
             return _ops;
         }
 
+        public void SaveStorage(DataWord w1, DataWord w2)
+        {
+            _storage.AddStorageRow(w1, w2);
+        }
+
+        public void SaveStorage(IEnumerable<byte> key, IEnumerable<byte> val)
+        {
+            var keyWord = new DataWord(key.ToArray());
+            var valWord = new DataWord(val.ToArray());
+            _storage.AddStorageRow(keyWord, valWord);
+        }
+
         public void Step()
         {
             SetPc(_pc + 1);
@@ -122,9 +136,19 @@ namespace SimpleBlockChain.Core.Compiler
             return _memory.ReadWord(addr.GetInt());
         }
 
+        public DataWord GetDataSize()
+        {
+            return _progInvoke.GetDataSize();
+        }
+
         public DataWord StackPop()
         {
             return _stack.Pop();
+        }
+
+        public DataWord GetStackElt(int i)
+        {
+            return _stack.ElementAt(i);
         }
 
         public byte[] GetMemory()

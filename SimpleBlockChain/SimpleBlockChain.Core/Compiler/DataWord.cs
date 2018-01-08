@@ -17,6 +17,8 @@ namespace SimpleBlockChain.Core.Compiler
         {
             _data = new byte[32];
         }
+        
+        public DataWord(int num) : this(BitConverter.GetBytes(num)) { }
 
         public DataWord(byte[] data)
         {
@@ -45,6 +47,12 @@ namespace SimpleBlockChain.Core.Compiler
         {
             BigInteger result = GetValue().Subtract(word.GetValue());
             _data = ByteUtil.CopyToArray(result.And(MAX_VALUE));
+        }
+
+        public void Exp(DataWord word)
+        {
+            var result = GetValue().ModPow(word.GetValue(), _2_256);
+            _data = ByteUtil.CopyToArray(result);
         }
 
         public void BNot()

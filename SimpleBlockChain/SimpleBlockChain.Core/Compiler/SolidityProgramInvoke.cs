@@ -32,6 +32,12 @@ namespace SimpleBlockChain.Core.Compiler
             _address = address;
         }
 
+        public DataWord GetDataSize()
+        {
+            int size = _msgDataRaw.Count();
+            return new DataWord(size);
+        }
+
         public IEnumerable<byte> GetDataCopy(DataWord offsetData, DataWord lengthData)
         {
             var offset = offsetData.GetValue().IntValue;

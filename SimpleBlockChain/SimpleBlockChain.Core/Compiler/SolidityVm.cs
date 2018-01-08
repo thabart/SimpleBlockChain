@@ -1,4 +1,5 @@
 ﻿using Org.BouncyCastle.Math;
+using SimpleBlockChain.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -172,6 +173,7 @@ namespace SimpleBlockChain.Core.Compiler
                     break;
                 case SolidityOpCodes.ISZERO:
                     var isZeroW1 = program.StackPop();
+                    // var isZeroW1 = stack.Last();
                     if (isZeroW1.IsZero())
                     {
                         isZeroW1.GetData()[31] = 1;
@@ -278,7 +280,7 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.JUMPI:
                     var pos = program.StackPop();
                     var cond = program.StackPop();
-                    if (!cond.IsZero())
+                    if (!cond.IsZero() && !pos.IsZero())
                     {
                         int nextPC = program.VerifyJumpDest(pos);
                         program.SetPc(nextPC);
@@ -322,12 +324,17 @@ namespace SimpleBlockChain.Core.Compiler
                     program.Step();
                     break;
                 case SolidityOpCodes.RETURN:
-                    DataWord retW1 = program.StackPop();
-                    DataWord retW2 = program.StackPop();
-                    byte[] hReturn = program.ChunkMemory(retW1.GetIntValueSafe(), retW2.GetIntValueSafe());
+                case SolidityOpCodes.REVERT:
+                    int retW1 = program.StackPop().GetIntValueSafe();
+                    int retW2 = program.StackPop().GetIntValueSafe();
+                    byte[] hReturn = program.ChunkMemory(retW1, retW2);
                     program.SetHReturn(hReturn);
                     program.Step();
                     program.Stop();
+                    if (opCode == SolidityOpCodes.REVERT)
+                    {
+                        program.GetResult().SetRevert();
+                    }
                     break;
                 case SolidityOpCodes.SWAP1:
                 case SolidityOpCodes.SWAP2:
@@ -393,6 +400,24 @@ namespace SimpleBlockChain.Core.Compiler
                     var notW1 = program.StackPop();
                     notW1.BNot();
                     program.StackPush(notW1);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.EXP:
+                    var expWord1 = program.StackPop();
+                    var expWord2 = program.StackPop();
+                    expWord1.Exp(expWord2);
+                    program.StackPush(expWord1);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.CALLDATASIZE:
+                    var dataSize = program.GetDataSize();
+                    program.StackPush(dataSize);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.SSTORE:
+                    var sstoreWord1 = program.StackPop();
+                    var sstoreWord2 = program.StackPop();
+                    program.SaveStorage(sstoreWord1, sstoreWord2);
                     program.Step();
                     break;
             }

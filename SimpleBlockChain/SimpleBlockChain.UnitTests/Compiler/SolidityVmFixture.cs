@@ -904,27 +904,117 @@ namespace SimpleBlockChain.UnitTests.Compiler
         }
 
         [TestMethod]
-        public void WhenExecuteContract()
+        public void WhenMLOAD1()
         {
+            string code = "600051";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000000000");
+            Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000000000");
+        }
+
+        [TestMethod]
+        public void WhenMLOAD2()
+        {
+            string code = "602251";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000000000");
+            Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000000000");
+        }
+
+        [TestMethod]
+        public void WhenMLOAD3()
+        {
+            string code = "602051";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000000000");
+            Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000000000");
+        }
+
+        [TestMethod]
+        public void WhenMLOAD4()
+        {
+            string code = "611234602052602051";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000001234");
+            Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000001234");
+        }
+
+        [TestMethod]
+        public void WhenMLOAD5()
+        {
+            string code = "611234602052601F51";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, _pgInvoke);
+
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+            _vm.Step(program);
+
+            var memory = program.GetMemory().ToHexString();
+            var pop = program.StackPop().GetData().ToHexString().ToUpper();
+            Assert.IsTrue(memory == "0000000000000000000000000000000000000000000000000000000000000000" +
+                "0000000000000000000000000000000000000000000000000000000000001234");
+            Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000000012");
+        }
+
+        [TestMethod]
+        public void WhenExecuteComplexContract1()
+        {
+            // Analyse the code : https://github.com/CoinCulture/evm-tools/blob/master/analysis/guide.md
             // HEX => OPCODES : https://etherscan.io/opcode-tool
+            // COMMAND : --bin-runtime : get the code as it would be in the contract after having been deployed.
             var address = new DataWord(_adr.FromHexString().ToArray());
-            var callValue = new DataWord("0DE0B6B3A7640000".FromHexString().ToArray());
-            IEnumerable<byte> msgData = ("f3593cd0").FromHexString().ToList();
+            var callValue = new DataWord("00".FromHexString().ToArray());
+            IEnumerable<byte> msgData = ("6d4ce63c").FromHexString().ToList();
             var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
             var vm = new SolidityVm();
-            // string code = "606060405261010c806100126000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063f3593cd01461003957610037565b005b61004660048050506100b4565b60405180806020018281038252838181518152602001915080519060200190808383829060006004602084601f0104600302600f01f150905090810190601f1680156100a65780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6020604051908101604052806000815260200150604060405190810160405280600b81526020017f68656c6c6f20776f726c640000000000000000000000000000000000000000008152602001509050610109565b9056";
-            // string code = "606060405260938060106000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063b3de648b146037576035565b005b604b60048080359060200190919050506061565b6040518082815260200191505060405180910390f35b60006000600191508150600090505b82811015608c5781600202915081505b80806001019150506070565b5b5091905056";
-            // string code = "606060405260938060106000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063b3de648b146037576035565b005b604b60048080359060200190919050506061565b6040518082815260200191505060405180910390f35b60006000600191508150600090505b82811015608c5781600202915081505b80806001019150506070565b5b5091905056";
-            string code = "606060405261010c806100126000396000f360606040526000357c010000000000000000000000000000000000000000000000000000000090048063f3593cd01461003957610037565b005b61004660048050506100b4565b60405180806020018281038252838181518152602001915080519060200190808383829060006004602084601f0104600302600f01f150905090810190601f1680156100a65780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6020604051908101604052806000815260200150604060405190810160405280600b81526020017f68656c6c6f20776f726c640000000000000000000000000000000000000000008152602001509050610109565b9056";
+            var code = "6060604052601b8060106000396000f3606060405260e060020a60003504636d4ce63c81146000575b9056";
             var payload = code.FromHexString().ToList();
             var program = new SolidityProgram(payload, pgInvoke);
-
             while(!program.IsStopped())
             {
                 vm.Step(program);
             }
 
             var hReturn = program.GetResult().GetHReturn(); // GET THE CONTRACT.
+            var s2 = hReturn.ToHexString();
             var secondProg = new SolidityProgram(hReturn, pgInvoke);
 
             while(!secondProg.IsStopped())
@@ -932,8 +1022,40 @@ namespace SimpleBlockChain.UnitTests.Compiler
                 vm.Step(secondProg);
             }
 
-            var res = secondProg.GetResult().GetHReturn(); // GET THE CONTRACT.
+            var res = secondProg.GetResult().GetHReturn().ToHexString(); // GET THE CONTRACT.
             string s = "";
         }
+
+        /*
+        [TestMethod]
+        public void WhenExecuteComplexContract2()
+        {
+            // HEX => OPCODES : https://etherscan.io/opcode-tool
+            var address = new DataWord(_adr.FromHexString().ToArray());
+            var callValue = new DataWord("0DE0B6B3A7640000".FromHexString().ToArray());
+            IEnumerable<byte> msgData = ("f3593cd0").FromHexString().ToList();
+            var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
+            var vm = new SolidityVm();
+            string code = "6103e75460005260006000511115630000004c576001600051036103e755600060006000600060007377045e71a7a2c50903d88e564cd72fab11e820516008600a5a0402f1630000004c00565b00";
+            var payload = code.FromHexString().ToList();
+            var program = new SolidityProgram(payload, pgInvoke);
+
+            while (!program.IsStopped())
+            {
+                vm.Step(program);
+            }
+
+            var hReturn = program.GetResult().GetHReturn(); // GET THE CONTRACT.
+            var secondProg = new SolidityProgram(hReturn, pgInvoke);
+
+            while (!secondProg.IsStopped())
+            {
+                vm.Step(secondProg);
+            }
+
+            var res = secondProg.GetResult().GetHReturn().ToHexString(); // GET THE CONTRACT.
+            string s = "";
+        }
+        */
     }
 }

@@ -20,3 +20,5 @@ public_key_hash: "728043158765227035182076977440459521482316376466"
 adr_hash : "12K5LnVWKCu9QGyB39uGAgVSAfBs33PKS96HSL93"
 type: "P2PKH"
 network: "MainNet"
+
+Get runtime bytes : solc.exe --bin-runtime
