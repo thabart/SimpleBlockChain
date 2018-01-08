@@ -411,6 +411,13 @@ namespace SimpleBlockChain.Core.Compiler
                     DataWord outDataSize = program.StackPop();
 
                     program.MemoryExpand(outDataOffs, outDataSize);
+                    var msg = new SolidityMessageCall(opCode.Value, null, codeAddress, cv, inDataOffs, inDataSize, outDataOffs, outDataSize);
+                    var contract = SolidityPrecompiledContract.GetContractForAddress(codeAddress);
+
+                    if (contract != null)
+                    {
+                        program.CallPrecompiledAddress(msg, contract);
+                    }
 
                     program.Step();
                     break;

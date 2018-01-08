@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -1034,7 +1035,7 @@ namespace SimpleBlockChain.UnitTests.Compiler
             }
 
             var res = secondProg.GetResult().GetHReturn().ToHexString();
-            Assert.IsTrue(res == "0000000000000000000000000000000000000000000000000000000000000003"); // RETURN THE NUMBER 3.
+            Assert.IsTrue(res == "0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000b68656c6c6f20776f726c64000000000000000000000000000000000000000000"); // RETURN THE NUMBER 3.
         }
 
         /*

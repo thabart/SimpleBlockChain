@@ -1,4 +1,5 @@
 ﻿using Org.BouncyCastle.Math;
+using SimpleBlockChain.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,11 @@ namespace SimpleBlockChain.Core.Compiler
         public DataWord()
         {
             _data = new byte[32];
+        }
+        
+        public DataWord(string code) : this(code.FromHexString().ToArray())
+        {
+
         }
         
         public DataWord(int num) : this(BitConverter.GetBytes(num)) { }
@@ -191,6 +197,22 @@ namespace SimpleBlockChain.Core.Compiler
         public object Clone()
         {
             return new DataWord(_data);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            var b = obj as DataWord;
+            if (b == null)
+            {
+                return false;
+            }
+
+            return GetData().SequenceEqual(b.GetData());
         }
     }
 }

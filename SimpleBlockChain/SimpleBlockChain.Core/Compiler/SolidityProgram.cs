@@ -205,5 +205,18 @@ namespace SimpleBlockChain.Core.Compiler
             _pc += n;
             return data;
         }
+
+        public void CallPrecompiledAddress(SolidityMessageCall msg, SolidityPrecompiledContract contract)
+        {
+            var data = ChunkMemory(msg.InDataOffs.GetInt(), msg.InDataSize.GetInt());
+            var contractOut = contract.Execute(data);
+            SaveMemory(msg.OutDataOffs.GetInt(), contractOut.Value);
+            StackPushOne();
+        }
+
+        public void StackPushOne()
+        {
+            StackPush(new DataWord(16777216));
+        }
     }
 }
