@@ -1,6 +1,5 @@
 ﻿using SimpleBlockChain.Core.Common;
 using SimpleBlockChain.Core.Evts;
-using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Messages;
 using SimpleBlockChain.Core.Messages.ControlMessages;
 using SimpleBlockChain.Core.Messages.DataMessages;

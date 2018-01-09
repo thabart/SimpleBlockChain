@@ -140,21 +140,14 @@ namespace SimpleBlockChain.Core.Blocks
             }
             
             var txIdsPayload = utf8BlockTxIds.Split(TXID_SEPARATOR);
-            var transactions = new List<BcBaseTransaction>();
+            var transactions = new List<BaseTransaction>();
             foreach(var txIdPayload in txIdsPayload)
             {
                 string utf8Transaction = string.Empty;
                 if (_db.TryGet(string.Format(TRANSACTION_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
-                    var kvp = BcBaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.NoneCoinbase);
-                    transactions.Add(kvp.Key as BcBaseTransaction);
-                    continue;
-                }
-
-                if (_db.TryGet(string.Format(TRANSACTION_CB_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
-                {
-                    var kvp = BcBaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction), TransactionTypes.Coinbase);
-                    transactions.Add(kvp.Key as BcBaseTransaction);
+                    var kvp = BaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction));
+                    transactions.Add(kvp.Key);
                     continue;
                 }
             }
@@ -263,38 +256,32 @@ namespace SimpleBlockChain.Core.Blocks
             return GetTransaction(txId) != null;
         }
 
-        public BcBaseTransaction GetTransaction(IEnumerable<byte> txId)
+        public BaseTransaction GetTransaction(IEnumerable<byte> txId)
         {
             if (txId == null)
             {
                 throw new ArgumentNullException(nameof(txId));
             }
 
-            var callback = new Func<bool, BcBaseTransaction>((isCoinBased) =>
+            var callback = new Func<BaseTransaction>(() =>
             {
-                var k = isCoinBased ? TRANSACTION_CB_ELT : TRANSACTION_ELT;
                 string result;
-                if (!_db.TryGet(string.Format(k, Convert.ToBase64String(txId.ToArray())), ReadOptions.Default, out result))
+                if (!_db.TryGet(string.Format(TRANSACTION_ELT, Convert.ToBase64String(txId.ToArray())), ReadOptions.Default, out result))
                 {
                     return null;
                 }
 
                 var payload = Convert.FromBase64String(result);
-                var kvp = BcBaseTransaction.Deserialize(payload, isCoinBased ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase);
-                if (kvp.Equals(default(KeyValuePair<BcBaseTransaction, int>)) && kvp.Key != null)
+                var kvp = BaseTransaction.Deserialize(payload);
+                if (kvp.Equals(default(KeyValuePair<BaseTransaction, int>)) && kvp.Key != null)
                 {
                     return null;
                 }
 
-                return kvp.Key as BcBaseTransaction;
+                return kvp.Key;
             });
 
-            var res = callback(false);
-            if (res == null)
-            {
-                res = callback(true);
-            }
-
+            var res = callback();
             return res;
         }
 
@@ -311,12 +298,12 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             var transaction = GetTransaction(txId);
-            if (transaction == null)
+            if (transaction == null || transaction.Category != TransactionCategories.Monetary)
             {
                 return null;
             }
 
-            return transaction.TransactionOut.ElementAtOrDefault(index);
+            return (transaction as BcBaseTransaction).TransactionOut.ElementAtOrDefault(index);
         }
 
         public void Dispose()
@@ -336,27 +323,24 @@ namespace SimpleBlockChain.Core.Blocks
             var hashHeader = Convert.ToBase64String(block.GetHashHeader());
             batch.Put(string.Format(BLOCK_KEY, hashHeader), Convert.ToBase64String(block.SerializeHeader()));
             var allTxIds = new List<IEnumerable<byte>>();
-            var allOutpoint = block.Transactions.Where(t => t is NoneCoinbaseTransaction).Select(t => (t.TransactionIn.First() as TransactionInNoneCoinbase).Outpoint);
+            var allOutpoint = block.Transactions.Where(t => t is NoneCoinbaseTransaction).Select(t => (((NoneCoinbaseTransaction)t).TransactionIn.First() as TransactionInNoneCoinbase).Outpoint);
             foreach (var transaction in block.Transactions)
             {
                 var currentTxId = transaction.GetTxId();
                 var base64TxId = Convert.ToBase64String(currentTxId.ToArray());
-                var cb = transaction as CoinbaseTransaction;
                 var arr = transaction.Serialize().ToArray();
-                if (cb != null)
+                batch.Put(string.Format(TRANSACTION_ELT, base64TxId), Convert.ToBase64String(arr));
+                var monetaryTransaction = transaction as BcBaseTransaction;
+                if (monetaryTransaction == null)
                 {
-                    batch.Put(string.Format(TRANSACTION_CB_ELT, base64TxId), Convert.ToBase64String(arr));
+                    continue;
                 }
-                else
+                
+                if (monetaryTransaction.TransactionOut != null)
                 {
-                    batch.Put(string.Format(TRANSACTION_ELT, base64TxId), Convert.ToBase64String(arr));
-                }
-
-                if (transaction.TransactionOut != null)
-                {
-                    foreach(var transactionOut in transaction.TransactionOut)
+                    foreach(var transactionOut in monetaryTransaction.TransactionOut)
                     {
-                        var index = transaction.TransactionOut.IndexOf(transactionOut);
+                        var index = monetaryTransaction.TransactionOut.IndexOf(transactionOut);
                         if (!allOutpoint.Any(o => o.Hash.SequenceEqual(transaction.GetTxId()) && o.Index == index))
                         {
                             batch.Put(string.Format(TX_OUT_UNSPENT_ELT, string.Format("{0}_{1}", base64TxId, index)), "empty");
@@ -364,9 +348,9 @@ namespace SimpleBlockChain.Core.Blocks
                     }
                 }
 
-                if (transaction.TransactionIn != null)
+                if (monetaryTransaction.TransactionIn != null)
                 {
-                    foreach (var transactionIn in transaction.TransactionIn)
+                    foreach (var transactionIn in monetaryTransaction.TransactionIn)
                     {
                         var tr = transactionIn as TransactionInNoneCoinbase;
                         if (tr == null)

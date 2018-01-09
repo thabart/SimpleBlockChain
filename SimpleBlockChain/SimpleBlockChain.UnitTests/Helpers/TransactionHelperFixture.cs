@@ -43,7 +43,7 @@ namespace SimpleBlockChain.UnitTests.Helpers
             blockChainStore.Switch(_network);
             var blockChain = blockChainStore.GetBlockChain(); // Get the genesis block.
             var genesisBlock = blockChain.GetCurrentBlock();
-            var firstTransaction = genesisBlock.Transactions.First();
+            var firstTransaction = genesisBlock.Transactions.First() as BcBaseTransaction;
             var firstTransactionOut = firstTransaction.TransactionOut.First();
             var genesisKey = KeyStore.GetGenesisKey();
             var genesisAdr = new BlockChainAddress(_scriptTypes, _network, genesisKey); // Create block chain address.
@@ -84,7 +84,7 @@ namespace SimpleBlockChain.UnitTests.Helpers
             blockChainStore.Switch(_network);
             var blockChain = blockChainStore.GetBlockChain(); // Get the genesis block.
             var genesisBlock = blockChain.GetCurrentBlock();
-            var firstTransaction = genesisBlock.Transactions.First();
+            var firstTransaction = genesisBlock.Transactions.First() as BcBaseTransaction;
             var firstTransactionOut = firstTransaction.TransactionOut.First();
             var genesisKey = KeyStore.GetGenesisKey();
             var genesisAdr = new BlockChainAddress(_scriptTypes, _network, genesisKey); // Create block chain address.

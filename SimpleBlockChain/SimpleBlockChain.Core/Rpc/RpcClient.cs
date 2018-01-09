@@ -20,12 +20,12 @@ namespace SimpleBlockChain.Core.Rpc
         Task<IEnumerable<RawMemoryPool>> GetRawMemPool(bool verboseOutput = false);
         Task<BlockTemplate> GetBlockTemplate();
         Task<bool> SubmitBlock(Block block);
-        Task<bool> SendRawTransaction(BcBaseTransaction transaction, bool allowHighFees = false, TransactionTypes type = TransactionTypes.NoneCoinbase);
+        Task<bool> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false, TransactionTypes type = TransactionTypes.NoneCoinbase);
         Task<long> GetUnconfirmedBalance();
         Task<Block> GetBlock(IEnumerable<byte> hash);
         Task<int> GetBlockCount();
         Task<IEnumerable<byte>> GetBlockHash(int height);
-        Task<BcBaseTransaction> GetRawTransaction(IEnumerable<byte> txId);
+        Task<BaseTransaction> GetRawTransaction(IEnumerable<byte> txId);
     }
 
     public class RpcClient : IRpcClient
@@ -136,7 +136,7 @@ namespace SimpleBlockChain.Core.Rpc
             return true;
         }
 
-        public async Task<bool> SendRawTransaction(BcBaseTransaction transaction, bool allowHighFees = false, TransactionTypes type = TransactionTypes.NoneCoinbase)
+        public async Task<bool> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false, TransactionTypes type = TransactionTypes.NoneCoinbase)
         {
             if (transaction == null)
             {
@@ -409,7 +409,7 @@ namespace SimpleBlockChain.Core.Rpc
             return payload;
         }
 
-        public async Task<BcBaseTransaction> GetRawTransaction(IEnumerable<byte> txId)
+        public async Task<BaseTransaction> GetRawTransaction(IEnumerable<byte> txId)
         {
             if (txId == null)
             {
@@ -452,21 +452,12 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             var payload = r.FromHexString();
-            BcBaseTransaction transaction = null;
+            BaseTransaction transaction = null;
             try
             {
-                transaction = BcBaseTransaction.Deserialize(payload, TransactionTypes.NoneCoinbase).Key;
+                transaction = BaseTransaction.Deserialize(payload).Key;
             }
             catch (Exception) { }
-            if (transaction == null)
-            {
-                try
-                {
-                    transaction = BcBaseTransaction.Deserialize(payload, TransactionTypes.Coinbase).Key;
-                }
-                catch (Exception) { }
-            }
-
             return transaction;
         }
 

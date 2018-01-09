@@ -146,17 +146,18 @@ namespace SimpleBlockChain.Core.Helpers
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
                 TransactionOut previousTxOut = null;
-                if (previousTx == null || previousTx.TransactionOut == null)
+                BcBaseTransaction monetaryTransaction = null;
+                if (previousTx == null || (monetaryTransaction = (previousTx as BcBaseTransaction)) == null || monetaryTransaction.TransactionOut == null)
                 {
                     previousTxOut = MemoryPool.Instance().GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
-                    if (previousTxOut == null)
+                    if (previousTxOut == null || (monetaryTransaction = (previousTx as BcBaseTransaction)) == null)
                     {
                         continue;
                     }
                 }
                 else
                 {
-                    previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
+                    previousTxOut = monetaryTransaction.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
                     if (previousTxOut == null || previousTxOut.Script == null)
                     {
                         continue;
@@ -195,17 +196,18 @@ namespace SimpleBlockChain.Core.Helpers
 
                 var previousTx = blockChain.GetTransaction(nCbtxIn.Outpoint.Hash);
                 TransactionOut previousTxOut = null;
-                if (previousTx == null || previousTx.TransactionOut == null)
+                BcBaseTransaction monetaryTransaction = null;
+                if (previousTx == null || (monetaryTransaction = (previousTx as BcBaseTransaction))  == null || monetaryTransaction.TransactionOut == null)
                 {
                     previousTxOut = memPool.GetUnspentTransaction(nCbtxIn.Outpoint.Hash, nCbtxIn.Outpoint.Index);
-                    if (previousTxOut == null)
+                    if (previousTxOut == null || (monetaryTransaction = (previousTx as BcBaseTransaction)) == null)
                     {
                         continue;
                     }
                 }
                 else
                 {
-                    previousTxOut = previousTx.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
+                    previousTxOut = monetaryTransaction.TransactionOut.ElementAtOrDefault((int)nCbtxIn.Outpoint.Index);
                 }
                 
                 if (previousTxOut == null || previousTxOut.Script == null || publicKeyHashes.All(publicKeyHash => !previousTxOut.Script.ContainsPublicKeyHash(publicKeyHash)))

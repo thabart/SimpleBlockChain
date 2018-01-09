@@ -40,7 +40,7 @@ namespace SimpleBlockChain.Core.Transactions
             switch(type)
             {
                 case TransactionCategories.Monetary:
-                    return BcBaseTransaction.Deserialize(payload, TransactionTypes.NoneCoinbase);
+                    return BcBaseTransaction.Deserialize(payload);
                 case TransactionCategories.SmartContract:
                     return SmartContractTransaction.Deserialize(payload);
             }

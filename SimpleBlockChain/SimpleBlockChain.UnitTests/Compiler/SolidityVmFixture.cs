@@ -1041,37 +1041,5 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var output = Encoding.ASCII.GetString(hResult).Replace("\0", "").Replace("\v", "");
             string s = "";
         }
-
-        /*
-        [TestMethod]
-        public void WhenExecuteComplexContract2()
-        {
-            // HEX => OPCODES : https://etherscan.io/opcode-tool
-            var address = new DataWord(_adr.FromHexString().ToArray());
-            var callValue = new DataWord("0DE0B6B3A7640000".FromHexString().ToArray());
-            IEnumerable<byte> msgData = ("f3593cd0").FromHexString().ToList();
-            var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
-            var vm = new SolidityVm();
-            string code = "6103e75460005260006000511115630000004c576001600051036103e755600060006000600060007377045e71a7a2c50903d88e564cd72fab11e820516008600a5a0402f1630000004c00565b00";
-            var payload = code.FromHexString().ToList();
-            var program = new SolidityProgram(payload, pgInvoke);
-
-            while (!program.IsStopped())
-            {
-                vm.Step(program);
-            }
-
-            var hReturn = program.GetResult().GetHReturn(); // GET THE CONTRACT.
-            var secondProg = new SolidityProgram(hReturn, pgInvoke);
-
-            while (!secondProg.IsStopped())
-            {
-                vm.Step(secondProg);
-            }
-
-            var res = secondProg.GetResult().GetHReturn().ToHexString(); // GET THE CONTRACT.
-            string s = "";
-        }
-        */
     }
 }

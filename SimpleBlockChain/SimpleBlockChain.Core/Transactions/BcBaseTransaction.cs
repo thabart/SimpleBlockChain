@@ -20,19 +20,30 @@ namespace SimpleBlockChain.Core.Transactions
     {
         public List<BaseTransactionIn> TransactionIn { get; protected set; } // tx_in
         public List<TransactionOut> TransactionOut { get; protected set; } // tx_out
+        public TransactionTypes TransactionType { get; private set; }
 
-        public BcBaseTransaction() { }
-
-        public BcBaseTransaction(uint version, uint lockTime) : base(version, lockTime, TransactionCategories.Monetary)
+        public BcBaseTransaction(TransactionTypes transactionType)
         {
+            TransactionType = transactionType;
             TransactionIn = new List<BaseTransactionIn>();
             TransactionOut = new List<TransactionOut>();
         }
 
-        public static KeyValuePair<BaseTransaction, int> Deserialize(IEnumerable<byte> payload, TransactionTypes type)
+        public BcBaseTransaction(uint version, uint lockTime, TransactionTypes transactionType) : base(version, lockTime, TransactionCategories.Monetary)
         {
+            TransactionType = transactionType;
+            TransactionIn = new List<BaseTransactionIn>();
+            TransactionOut = new List<TransactionOut>();
+        }
+
+        public static KeyValuePair<BaseTransaction, int> Deserialize(IEnumerable<byte> payload)
+        {
+            int currentStartIndex = 0;
+            var version = BitConverter.ToUInt32(payload.Take(4).ToArray(), 0);
+            var category = (TransactionCategories)payload.ElementAt(4);
+            var transactionType = (TransactionTypes)payload.ElementAt(5);
             BcBaseTransaction result = null;
-            switch(type)
+            switch (transactionType)
             {
                 case TransactionTypes.Coinbase:
                     result = new CoinbaseTransaction();
@@ -42,11 +53,9 @@ namespace SimpleBlockChain.Core.Transactions
                     break;
             }
 
-
-            int currentStartIndex = 0;
-            result.Version = BitConverter.ToUInt32(payload.Take(4).ToArray(), 0);
-            result.Category = (TransactionCategories)payload.ElementAt(4);
-            currentStartIndex = 5;
+            result.Version = version;
+            result.Category = category;
+            currentStartIndex = 6;
             var transactionInCompactSize = CompactSize.Deserialize(payload.Skip(currentStartIndex).ToArray());
             currentStartIndex += transactionInCompactSize.Value;
             if (transactionInCompactSize.Key.Size > 0)
@@ -79,6 +88,7 @@ namespace SimpleBlockChain.Core.Transactions
             var result = new List<byte>();
             result.AddRange(BitConverter.GetBytes(Version));
             result.Add((byte)TransactionCategories.Monetary);
+            result.Add((byte)TransactionType);
             var inputCompactSize = new CompactSize();
             inputCompactSize.Size = (ulong)TransactionIn.Count();
             result.AddRange(inputCompactSize.Serialize());

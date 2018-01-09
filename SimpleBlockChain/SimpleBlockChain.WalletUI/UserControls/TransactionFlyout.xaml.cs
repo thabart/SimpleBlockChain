@@ -45,12 +45,13 @@ namespace SimpleBlockChain.WalletUI.UserControls
             {
                 try
                 {
-                    var transaction = r.Result;
+                    BaseTransaction transaction = r.Result;
                     if (transaction == null)
                     {
                         return;
                     }
 
+                    var monetaryTransaction = transaction as BcBaseTransaction;
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         _viewModel.TxId = transaction.GetTxId().ToHexString();
@@ -66,13 +67,13 @@ namespace SimpleBlockChain.WalletUI.UserControls
                             }
                         }
 
-                        if (transaction.TransactionOut != null && transaction.TransactionOut.Any())
+                        if (monetaryTransaction != null && monetaryTransaction.TransactionOut != null && monetaryTransaction.TransactionOut.Any())
                         {
-                            foreach(var txOut in transaction.TransactionOut)
+                            foreach(var txOut in monetaryTransaction.TransactionOut)
                             {
                                 _viewModel.TxOuts.Add(new TxOutViewModel
                                 {
-                                    Index = transaction.TransactionOut.IndexOf(txOut),
+                                    Index = monetaryTransaction.TransactionOut.IndexOf(txOut),
                                     Value = txOut.Value,
                                     Script = txOut.Script.Serialize().ToHexString()
                                 });

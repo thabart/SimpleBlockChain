@@ -6,9 +6,9 @@ namespace SimpleBlockChain.Core.Transactions
 {
     public class NoneCoinbaseTransaction : BcBaseTransaction
     {
-        public NoneCoinbaseTransaction() { }
+        public NoneCoinbaseTransaction()  : base(TransactionTypes.NoneCoinbase) { }
 
-        public NoneCoinbaseTransaction(uint version, uint lockTime) : base(version, lockTime) { }
+        public NoneCoinbaseTransaction(uint version, uint lockTime) : base(version, lockTime, TransactionTypes.NoneCoinbase) { }
 
         public override KeyValuePair<List<BaseTransactionIn>, int> DeserializeInputs(IEnumerable<byte> payload, int size)
         {

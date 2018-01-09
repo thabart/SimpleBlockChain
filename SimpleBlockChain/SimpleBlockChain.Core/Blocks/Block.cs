@@ -18,7 +18,7 @@ namespace SimpleBlockChain.Core.Blocks
                 previousHashHeader = Enumerable.Repeat((byte)0x00, 32);
             }
 
-            Transactions = new List<BcBaseTransaction>();
+            Transactions = new List<BaseTransaction>();
             BlockHeader = new BlockHeader
             {
                 NBits = nBits,
@@ -28,7 +28,7 @@ namespace SimpleBlockChain.Core.Blocks
             };
         }
 
-        public Block(BlockHeader blockHeader, IList<BcBaseTransaction> transactions)
+        public Block(BlockHeader blockHeader, IList<BaseTransaction> transactions)
         {
             if (blockHeader == null)
             {
@@ -100,7 +100,7 @@ namespace SimpleBlockChain.Core.Blocks
             return result;
         }
 
-        public IList<BcBaseTransaction> Transactions { get; set; }
+        public IList<BaseTransaction> Transactions { get; set; }
 
         public static Block Deserialize(IEnumerable<byte> payload)
         {
@@ -111,15 +111,14 @@ namespace SimpleBlockChain.Core.Blocks
 
             var header = DeserializeBlockHeader(payload);
             int currentIndex = 80;
-            var transactionLst = new List<BcBaseTransaction>();
+            var transactionLst = new List<BaseTransaction>();
             var kvp = CompactSize.Deserialize(payload.Skip(80).ToArray());
             currentIndex += kvp.Value;
             if (kvp.Key.Size > 0)
             {
                 for(var i = 0; i < (int)kvp.Key.Size; i++)
                 {
-                    var type = i == 0 ? TransactionTypes.Coinbase : TransactionTypes.NoneCoinbase;
-                    var skvp = BcBaseTransaction.Deserialize(payload.Skip(currentIndex), type);
+                    var skvp = BaseTransaction.Deserialize(payload.Skip(currentIndex));
                     transactionLst.Add(skvp.Key);
                     currentIndex += skvp.Value;
                 }

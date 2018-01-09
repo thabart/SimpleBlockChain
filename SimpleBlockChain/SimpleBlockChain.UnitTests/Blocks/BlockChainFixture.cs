@@ -50,7 +50,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             var blockChainFactory = serviceProvider.GetService<IBlockChainFactory>();
             var blockChain = blockChainFactory.Build(_network); // Get the genesis block.
             var genesisBlock = blockChain.GetCurrentBlock();
-            var firstTransaction = genesisBlock.Transactions.First();
+            var firstTransaction = genesisBlock.Transactions.First() as BcBaseTransaction;
             var firstTransactionOut = firstTransaction.TransactionOut.First();
 
             var genesisKey = KeyStore.GetGenesisKey();
@@ -85,7 +85,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             block.Transactions.Add(coinBaseTransaction);
             block.Transactions.Add(noneCoinBaseTransaction);
             var a = noneCoinBaseTransaction.Serialize().ToArray();
-            var b = BcBaseTransaction.Deserialize(a, TransactionTypes.NoneCoinbase);
+            var b = BcBaseTransaction.Deserialize(a);
             block.UpdateMerkleRoot();
             blockChain.AddBlock(block);
             var secondBlock = blockChain.GetBlock(1);
@@ -116,7 +116,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             var blockChainFactory = serviceProvider.GetService<IBlockChainFactory>();
             var blockChain = blockChainFactory.Build(_network);
             var genesisBlock = blockChain.GetCurrentBlock();
-            var firstTransaction = genesisBlock.Transactions.First();
+            var firstTransaction = genesisBlock.Transactions.First() as BcBaseTransaction;
             var firstTransactionOut = firstTransaction.TransactionOut.First();
 
             var genesisKey = KeyStore.GetGenesisKey();
@@ -158,7 +158,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             block.Transactions.Add(noneCoinBaseTransaction);
             block.Transactions.Add(otherCoinBaseTransaction);
             var a = noneCoinBaseTransaction.Serialize().ToArray();
-            var b = BcBaseTransaction.Deserialize(a, TransactionTypes.NoneCoinbase);
+            var b = BcBaseTransaction.Deserialize(a);
             block.UpdateMerkleRoot();
             blockChain.AddBlock(block);
             var unspentTransactions = blockChain.GetUnspentTransactions();
@@ -176,7 +176,7 @@ namespace SimpleBlockChain.UnitTests.Blocks
             var blockChainFactory = serviceProvider.GetService<IBlockChainFactory>();
             var blockChain = blockChainFactory.Build(_network);
             var genesisBlock = blockChain.GetCurrentBlock();
-            var firstTransaction = genesisBlock.Transactions.First();
+            var firstTransaction = genesisBlock.Transactions.First() as BcBaseTransaction;
             var firstTransactionOut = firstTransaction.TransactionOut.First();
 
             var genesisKey = KeyStore.GetGenesisKey();

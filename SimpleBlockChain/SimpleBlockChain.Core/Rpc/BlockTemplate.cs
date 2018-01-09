@@ -4,7 +4,6 @@ using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace SimpleBlockChain.Core.Rpc
 {
@@ -12,7 +11,7 @@ namespace SimpleBlockChain.Core.Rpc
     {
         public BcBaseTransaction CoinBaseTx { get; set; }
         public IEnumerable<byte> PreviousBlockHash { get; set; }
-        public IEnumerable<BcBaseTransaction> Transactions { get; set; }
+        public IEnumerable<BaseTransaction> Transactions { get; set; }
         public double Expires { get; set; }
         public int Height { get; set; }
         public string LongPollId { get; set; }
@@ -39,7 +38,7 @@ namespace SimpleBlockChain.Core.Rpc
                     if (coinBaseTxnDataObj.TryGetValue("data", out coinBaseTxnDataToken))
                     {
                         var data = coinBaseTxnDataToken.ToString().FromHexString();
-                        result.CoinBaseTx = BcBaseTransaction.Deserialize(data, TransactionTypes.Coinbase).Key;
+                        result.CoinBaseTx = BaseTransaction.Deserialize(data).Key as BcBaseTransaction;
                     }
                 }
             }
@@ -56,10 +55,10 @@ namespace SimpleBlockChain.Core.Rpc
                 var transactionsArr = transactionsToken as JArray;
                 if (transactionsArr != null)
                 {
-                    var transactions = new List<BcBaseTransaction>();
+                    var transactions = new List<BaseTransaction>();
                     foreach(var transactionObj in transactionsArr)
                     {
-                        transactions.Add(BcBaseTransaction.Deserialize(transactionObj.ToString().FromHexString(), TransactionTypes.NoneCoinbase).Key);
+                        transactions.Add(BaseTransaction.Deserialize(transactionObj.ToString().FromHexString()).Key);
                     }
 
                     result.Transactions = transactions;

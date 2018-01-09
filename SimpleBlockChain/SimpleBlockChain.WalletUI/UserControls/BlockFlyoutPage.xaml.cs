@@ -76,12 +76,13 @@ namespace SimpleBlockChain.WalletUI.UserControls
                         foreach (var tx in block.Transactions)
                         {
                             var txId = tx.GetTxId().ToHexString();
+                            var monetaryTransaction = tx as BcBaseTransaction;
                             var record = new BlockTransactionViewModel
                             {
                                 TxId = txId,
                                 IsCoinBase = tx is CoinbaseTransaction,
-                                Value = tx.TransactionOut.Sum(t => t.Value),
-                                NbTransactionsOut = tx.TransactionOut.Count()
+                                Value = monetaryTransaction == null ? 0 : monetaryTransaction.TransactionOut.Sum(t => t.Value),
+                                NbTransactionsOut = monetaryTransaction == null ? 0 : monetaryTransaction.TransactionOut.Count()
                             };
 
                             _viewModel.Transactions.Add(record);

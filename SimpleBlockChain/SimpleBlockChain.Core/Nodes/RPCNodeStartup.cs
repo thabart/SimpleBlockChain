@@ -341,21 +341,12 @@ namespace SimpleBlockChain.Core.Nodes
 
                     var txPayload = parameters.First().FromHexString();
                     var allowHighFees = false;
-                    TransactionTypes transactionType = TransactionTypes.NoneCoinbase;
                     if (parameters.Count() >= 2)
                     {
                         if (bool.TryParse(parameters.ElementAt(1), out allowHighFees)) { }
                     }
 
-                    if (parameters.Count() >= 3)
-                    {
-                        if (parameters.ElementAt(2).ToLower() == "coinbase")
-                        {
-                            transactionType = TransactionTypes.Coinbase;
-                        }
-                    }
-
-                    var kvp = BcBaseTransaction.Deserialize(txPayload, transactionType);
+                    var kvp = BcBaseTransaction.Deserialize(txPayload);
                     try
                     {
                         var tx = kvp.Key;
