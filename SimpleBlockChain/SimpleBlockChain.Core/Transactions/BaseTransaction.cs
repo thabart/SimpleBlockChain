@@ -73,8 +73,10 @@ namespace SimpleBlockChain.Core.Transactions
                 return -1;
             }
 
-            return CompareTo(baseTrans);
+            return CompareToImpl(baseTrans);
         }
+
+        public abstract int CompareToImpl(BaseTransaction obj);
 
         public override bool Equals(object obj)
         {

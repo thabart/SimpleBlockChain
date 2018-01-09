@@ -184,8 +184,6 @@ namespace SimpleBlockChain.Core.Transactions
             return GetTransactionOut(adrHash) != null;
         }
 
-        public abstract int CompareTo(BcBaseTransaction obj);
-
         public JObject SerializeJson()
         {
             var result = new JObject();

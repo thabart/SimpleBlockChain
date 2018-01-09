@@ -107,5 +107,10 @@ namespace SimpleBlockChain.Core.Transactions
             var hash = HashFactory.Crypto.SHA3.CreateKeccak256();
             return hash.ComputeBytes(encoded).GetBytes().Take(20);
         }
+
+        public override int CompareToImpl(BaseTransaction obj)
+        {
+            return -1;
+        }
     }
 }

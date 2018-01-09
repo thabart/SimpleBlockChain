@@ -66,7 +66,7 @@ namespace SimpleBlockChain.Core.Transactions
             return result;
         }
 
-        public override int CompareTo(BcBaseTransaction obj)
+        public override int CompareToImpl(BaseTransaction obj)
         {
             var noneCoinBaseTransaction = obj as NoneCoinbaseTransaction;
             if (noneCoinBaseTransaction == null)

@@ -90,6 +90,11 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 
         private void ExecuteSelectBlock()
         {
+            if (SelectedBlock == null)
+            {
+                return;
+            }
+
             if (SelectBlockEvt != null)
             {
                 SelectBlockEvt(this, new BlockEventArgs(SelectedBlock.Hash));
