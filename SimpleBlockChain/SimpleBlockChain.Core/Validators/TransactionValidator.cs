@@ -19,11 +19,13 @@ namespace SimpleBlockChain.Core.Validators
     internal class TransactionValidator : ITransactionValidator
     {
         private readonly IBlockChainStore _blockChainStore;
+        private readonly ISmartContractStore _smartContractStore;
         private readonly IScriptInterpreter _scriptInterpreter;
 
-        public TransactionValidator(IBlockChainStore blockChainStore, IScriptInterpreter scriptInterpreter)
+        public TransactionValidator(IBlockChainStore blockChainStore, ISmartContractStore smartContractStore, IScriptInterpreter scriptInterpreter)
         {
             _blockChainStore = blockChainStore;
+            _smartContractStore = smartContractStore;
             _scriptInterpreter = scriptInterpreter;
         }
 
@@ -128,6 +130,7 @@ namespace SimpleBlockChain.Core.Validators
             }
 
             var blockChain = _blockChainStore.GetBlockChain();
+            var smartContracts = _smartContractStore.GetSmartContracts();
             if (transaction.From.Count() != 20)
             {
                 throw new ValidationException(ErrorCodes.FromInvalidLength);
@@ -139,11 +142,10 @@ namespace SimpleBlockChain.Core.Validators
             }
 
             var vm = new SolidityVm();
-            SolidityProgram program = null;
             var defaultCallValue = new DataWord(new byte[] { 0x00 });
             if (transaction.To == null)
             {
-                program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue)); // INTERPRETE THE CONTRACT.
+                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue)); // TRY TO GET THE CONTRACT.
                 try
                 {
                     while (!program.IsStopped())
@@ -164,8 +166,11 @@ namespace SimpleBlockChain.Core.Validators
             }
             else
             {
-                // EXECUTE THE CONTRACT.
-                // program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue));
+                var smartContract = smartContracts.GetSmartContract(transaction.To);
+                if (smartContract == null)
+                {
+                    throw new ValidationException(ErrorCodes.SmartContractDoesntExist);
+                }
             }
         }
     }

@@ -34,5 +34,7 @@
         public const string FromInvalidLength = "from_invalid_length";
         public const string ToInvalidLength = "to_invalid_length";
         public const string SmartContractNotValid = "smart_contract_not_valid";
+        public const string SmartContractDoesntExist = "smart_contract_not_exist";
+        public const string ErrorExecutionContract = "error_execution_contract";
     }
 }

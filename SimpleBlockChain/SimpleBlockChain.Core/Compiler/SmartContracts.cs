@@ -16,6 +16,14 @@ namespace SimpleBlockChain.Core.Compiler
         private readonly Networks _network;
         private DB _db;
         private const string _databaseFile = "sc_{0}.dat";
+        private IEnumerable<SmartContract> _embeddedContracts = new List<SmartContract>
+        {
+            new SmartContract
+            {
+                Address = "0000000000000000000000000000000000000001".FromHexString(),
+                Code = "60606040526000357c0100000000000000000000000000000000000000000000000000000000900480636d4ce63c1461003957610037565b005b61004660048050506100b4565b60405180806020018281038252838181518152602001915080519060200190808383829060006004602084601f0104600302600f01f150905090810190601f1680156100a65780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6020604051908101604052806000815260200150604060405190810160405280600b81526020017f68656c6c6f20776f726c640000000000000000000000000000000000000000008152602001509050610109565b9056".FromHexString()
+            }
+        };
 
         private const string SMART_CONTRACT = "SMART_CONTRACT";
         private const string SMART_CONTRACT_ELT = SMART_CONTRACT + "_{0}";
@@ -29,6 +37,7 @@ namespace SimpleBlockChain.Core.Compiler
             _network = network;
             var options = new Options { CreateIfMissing = true };
             _db = new DB(GetDbFile(), options);
+            Init();
         }
 
         public bool AddBlock(Block block)
@@ -50,7 +59,7 @@ namespace SimpleBlockChain.Core.Compiler
             }
 
             string result = string.Empty;
-            if (_db.TryGet(string.Format(SMART_CONTRACT_ELT, smartContractAddress.ToHexString()), ReadOptions.Default, out result))
+            if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, smartContractAddress.ToHexString()), ReadOptions.Default, out result))
             {
                 return null;
             }
@@ -70,7 +79,7 @@ namespace SimpleBlockChain.Core.Compiler
             }
 
             string result = string.Empty;
-            if (_db.TryGet(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), ReadOptions.Default, out result))
+            if (!_db.TryGet(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), ReadOptions.Default, out result))
             {
                 return null;
             }
@@ -114,6 +123,18 @@ namespace SimpleBlockChain.Core.Compiler
 
             _db.Write(batch, WriteOptions.Default);
         }
+        
+        public void Persist(SmartContract smartContract)
+        {
+            if (smartContract == null)
+            {
+                throw new ArgumentNullException(nameof(smartContract));
+            }
+
+            var batch = new WriteBatch();
+            batch.Put(string.Format(SMART_CONTRACT_ELT, smartContract.Address.ToHexString()), smartContract.Code.ToHexString());
+            _db.Write(batch, WriteOptions.Default);
+        }
 
         public void Dispose()
         {
@@ -126,7 +147,7 @@ namespace SimpleBlockChain.Core.Compiler
             return Path.Combine(path, string.Format(_databaseFile, GetDirectoryName(_network)));
         }
 
-        private static string GetDirectoryName(Networks networkEnum)
+        public static string GetDirectoryName(Networks networkEnum)
         {
             var network = "mainnet";
             switch (networkEnum)
@@ -140,6 +161,18 @@ namespace SimpleBlockChain.Core.Compiler
             }
 
             return network;
+        }
+
+        private void Init()
+        {
+            foreach(var embeddedContract in _embeddedContracts)
+            {
+                string result = string.Empty;
+                if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, embeddedContract.Address.ToHexString()), ReadOptions.Default, out result))
+                {
+                    Persist(embeddedContract);
+                }
+            }
         }
     }
 }
