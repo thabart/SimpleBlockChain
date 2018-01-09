@@ -1,4 +1,5 @@
 ﻿using LevelDB;
+using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Transactions;
 using System;
@@ -450,6 +451,32 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             return network;
+        }
+
+        private void Execute(SmartContractTransaction transaction)
+        {
+            if (transaction == null)
+            {
+                throw new ArgumentNullException(nameof(transaction));
+            }
+
+            var defaultCallValue = new DataWord(new byte[] { 0x00 });
+            if (transaction.To == null) // CREATE SMART CONTRACT.
+            {
+                var solidityVm = new SolidityVm();
+                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue));
+                while(!program.IsStopped())
+                {
+                    program.Step();
+                }
+
+                var contractCode = program.GetResult().GetHReturn();
+                // CREATE SMART CONTRACT + 
+            }
+            else
+            {
+
+            }
         }
     }
 }

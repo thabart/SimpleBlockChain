@@ -22,14 +22,16 @@ namespace SimpleBlockChain.Core.Connectors
     internal class MessageCoordinator : IMessageCoordinator
     {
         private readonly IBlockChainStore _blockChainStore;
+        private readonly ISmartContractStore _smartContractStore;
         private readonly IBlockValidator _blockValidator;
         private readonly ITransactionValidator _transactionValidator;
         private readonly MessageParser _messageParser;
         private readonly PeersRepository _peersStorage;
 
-        public MessageCoordinator(IBlockChainStore blockChainStore, IBlockValidator blockValidator, ITransactionValidator transactionValidator)
+        public MessageCoordinator(IBlockChainStore blockChainStore, ISmartContractStore smartContractStore, IBlockValidator blockValidator, ITransactionValidator transactionValidator)
         {
             _blockChainStore = blockChainStore;
+            _smartContractStore = smartContractStore;
             _blockValidator = blockValidator;
             _transactionValidator = transactionValidator;
             _messageParser = new MessageParser();
@@ -39,6 +41,7 @@ namespace SimpleBlockChain.Core.Connectors
         public Message Receive(Message message, PeerConnector peer, P2PNetworkConnector p2pNetworkConnector)
         {
             var blockChain = _blockChainStore.GetBlockChain();
+            var smartContract = _smartContractStore.GetSmartContracts();
             if (message.GetCommandName() == Constants.MessageNames.Version) // RETURNS VERSION.
             {
                 var msg = message as VersionMessage;
@@ -131,6 +134,7 @@ namespace SimpleBlockChain.Core.Connectors
                 var msg = message as BlockMessage;
                 _blockValidator.Check(msg.Block);
                 blockChain.AddBlock(msg.Block);
+                smartContract.AddBlock(msg.Block);
                 if (msg.Block.Transactions != null)
                 {
                     MemoryPool.Instance().Remove(msg.Block.Transactions.Select(tx => tx.GetTxId()));

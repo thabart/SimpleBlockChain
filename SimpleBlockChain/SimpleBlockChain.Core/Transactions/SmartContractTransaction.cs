@@ -1,4 +1,7 @@
-﻿using SimpleBlockChain.Core.Common;
+﻿using HashLib;
+using SimpleBlockChain.Core.Common;
+using SimpleBlockChain.Core.Encoding;
+using SimpleBlockChain.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,6 +94,18 @@ namespace SimpleBlockChain.Core.Transactions
             result.LockTime = BitConverter.ToUInt32(payload.Skip(currentStartIndex).Take(4).ToArray(), 0);
             currentStartIndex += 4;
             return new KeyValuePair<BaseTransaction, int>(result, currentStartIndex);
+        }
+
+        public IEnumerable<byte> GetSmartContractAddress()
+        {
+            List<string> result = new List<string>
+            {
+                From.ToHexString(),
+                Nonce.ToString()
+            };
+            var encoded = RlpEncoding.Encode(result);
+            var hash = HashFactory.Crypto.SHA3.CreateKeccak256();
+            return hash.ComputeBytes(encoded).GetBytes().Take(20);
         }
     }
 }

@@ -23,6 +23,13 @@ namespace SimpleBlockChain.Core.Extensions
             return sb.ToString();
         }
 
+        public static ArraySegment<T> Slice<T>(this ArraySegment<T> source, int start, int? end = null)
+        {
+            start += source.Offset;
+            var count = end.HasValue ? end.Value : Math.Abs(start - source.Array.Length);
+            return new ArraySegment<T>(source.Array, start, count);
+        }
+
         public static IEnumerable<byte> FromHexString(this string hex)
         {
             if (string.IsNullOrWhiteSpace(hex))

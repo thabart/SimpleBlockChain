@@ -31,7 +31,9 @@ namespace SimpleBlockChain.Core
             serviceCollection.AddTransient<IScriptInterpreter, ScriptInterpreter>();
             serviceCollection.AddTransient<ITransactionHelper, TransactionHelper>();
             serviceCollection.AddTransient<IMessageCoordinator, MessageCoordinator>();
+            serviceCollection.AddTransient<ISmartContractFactory, SmartContractFactory>();
             serviceCollection.AddSingleton<IBlockChainStore, BlockChainStore>();
+            serviceCollection.AddSingleton<ISmartContractStore, SmartContractStore>();
             return serviceCollection;
         }
     }
