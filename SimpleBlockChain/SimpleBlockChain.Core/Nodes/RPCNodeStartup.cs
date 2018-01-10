@@ -161,6 +161,8 @@ namespace SimpleBlockChain.Core.Nodes
                     return CallSmartContract(parameters, id, response);
                 case Constants.RpcOperations.CompileSolidity: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_compilesolidity
                     return CompileSolidity(parameters, id, response);
+                case Constants.RpcOperations.GetCompilers:
+                    return GetCompilers(response);
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");
@@ -834,6 +836,14 @@ namespace SimpleBlockChain.Core.Nodes
 
             result.Add("info", info);
             response["result"] = result;
+            return response;
+        }
+
+        public JObject GetCompilers(JObject response)
+        {
+            var compilers = new JArray();
+            compilers.Add("solidity");
+            response["result"] = compilers;
             return response;
         }
 

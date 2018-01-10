@@ -11,13 +11,16 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private string _smartContract;
         private ICommand _callContractCommand;
         private ICommand _compileContractCommand;
+        private ICommand _publishContractCommand;
         public event EventHandler CallContractEvt;
         public event EventHandler CompileContractEvt;
+        public event EventHandler PublishContractEvt;
 
         public SmartContractViewModel()
         {
             _callContractCommand = new RelayCommand(p => CallSmartContractExecute(), p => CanExecuteCallSmartContract());
             _compileContractCommand = new RelayCommand(p => CompileContractExecute(), p => CanCompileContract());
+            _publishContractCommand = new RelayCommand(p => PublishContractExecute(), p => CanPublishContract());
         }
 
         public string SmartContractAddress
@@ -100,6 +103,19 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
 
         private bool CanCompileContract()
+        {
+            return true;
+        }
+
+        private void PublishContractExecute()
+        {
+            if (PublishContractEvt != null)
+            {
+                PublishContractEvt(this, EventArgs.Empty);
+            }
+        }
+
+        private bool CanPublishContract()
         {
             return true;
         }

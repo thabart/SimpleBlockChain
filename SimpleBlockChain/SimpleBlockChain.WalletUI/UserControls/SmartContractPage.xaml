@@ -53,7 +53,10 @@
                 <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Solidity contract</Label>
                 <TextBox AcceptsReturn="True" TextWrapping="Wrap" Margin="{StaticResource ControlMargin}" MinHeight="100" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContract, Mode=TwoWay}"></TextBox>
                 <!-- Submit the contract -->
-                <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CompileContractCommand}">Compile contract</Button>
+                <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                    <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CompileContractCommand}">Compile contract</Button>
+                    <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=PublishContractEvt}">Publish contract</Button>
+                </StackPanel>                
             </Grid>
             <!-- Solidity contract -->
         </StackPanel>

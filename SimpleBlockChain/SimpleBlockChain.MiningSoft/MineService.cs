@@ -1,8 +1,6 @@
 ﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Blocks;
-using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Crypto;
-using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Rpc;
@@ -10,7 +8,6 @@ using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 
 namespace SimpleBlockChain.MiningSoft
@@ -37,7 +34,7 @@ namespace SimpleBlockChain.MiningSoft
 
         public void Start()
         {
-            Mine(null);
+            Mine();
         }
 
         public void Stop()
@@ -49,31 +46,34 @@ namespace SimpleBlockChain.MiningSoft
             }
         }
 
-        private void Mine(object sender)
+        private void Mine()
         {
             try
             {
                 var blockTemplate = _rpcClient.GetBlockTemplate().Result;
                 if (blockTemplate == null)
                 {
-                    _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
+                    Thread.Sleep(DEFAULT_MINE_INTERVAL);
+                    Mine();
                 }
                 else
                 {
                     var block = CalculateHeader(blockTemplate, 0, 0, _network);
                     if (block == null)
                     {
-                        Mine(null);
+                        Mine();
                     }
 
-                    var b = _rpcClient.SubmitBlock(block).Result;
-                    _timer = new Timer(Mine, _autoEvent, DEFAULT_MINE_INTERVAL, DEFAULT_MINE_INTERVAL);
+                    var b = _rpcClient.SubmitBlock(block).Result; // SUBMIT THE BLOCK & WAIT THE BLOCK IS MINED.
+                    Thread.Sleep(DEFAULT_MINE_INTERVAL);
+                    Mine();
                 }
             }
             catch(Exception)
             {
                 Console.WriteLine("RPC ERROR");
-                Mine(sender);
+                Thread.Sleep(DEFAULT_MINE_INTERVAL);
+                Mine();
             }
         }
 

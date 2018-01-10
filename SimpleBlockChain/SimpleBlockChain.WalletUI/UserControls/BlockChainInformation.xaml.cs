@@ -83,12 +83,14 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
             var rpcClient = new RpcClient(authenticatedWallet.Network);
             var startIndex = _currentPage * BLOCKS_PER_PAGE;
+            /*
             var lastIndex = startIndex + (BLOCKS_PER_PAGE - 1);
             if (lastIndex > (_currentNbBlocks - 1))
             {
                 lastIndex = _currentNbBlocks;
             }
-
+            */
+            var lastIndex = _currentNbBlocks;
             Application.Current.Dispatcher.Invoke(() =>
             {
                 _viewModel.Blocks.Clear();

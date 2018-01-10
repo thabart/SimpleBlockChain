@@ -6,8 +6,6 @@ using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,6 +28,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             if (_viewModel == null) { return; }
             _viewModel.CallContractEvt -= CallContract;
             _viewModel.CompileContractEvt -= CompileContract;
+            _viewModel.PublishContractEvt -= PublishContract;
             _viewModel = null;
         }
 
@@ -38,6 +37,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             _viewModel = new SmartContractViewModel();
             _viewModel.CallContractEvt += CallContract;
             _viewModel.CompileContractEvt += CompileContract;
+            _viewModel.PublishContractEvt += PublishContract;
             DataContext = _viewModel;
         }
 
@@ -143,6 +143,20 @@ namespace SimpleBlockChain.WalletUI.UserControls
                     Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to build the solidity contract"));
                 }
             });
+        }
+
+        private void PublishContract(object sender, EventArgs e)
+        {
+            if (_viewModel == null) { return; }
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                MainWindowStore.Instance().DisplayError("You're not authenticated");
+                return;
+            }
+
+
+            throw new NotImplementedException();
         }
     }
 }
