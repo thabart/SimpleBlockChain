@@ -31,6 +31,9 @@ namespace SimpleBlockChain.Core.Compiler
         private const string SMART_CONTRACT_TX = "SMART_CONTRACT_TX";
         private const string SMART_CONTRACT_TX_ELT = SMART_CONTRACT_TX + "_{0}";
 
+        private const string SMART_CONTRACT_STORE = "SMART_CONTRACT_STORE";
+        private const string SMART_CONTRACT_STORE_ELT = SMART_CONTRACT_STORE + "_{0}_{1}";
+
         internal SmartContracts(IAssemblyHelper assemblyHelper, Networks network)
         {
             _assemblyHelper = assemblyHelper;
@@ -87,6 +90,66 @@ namespace SimpleBlockChain.Core.Compiler
             return result.FromHexString();
         }
 
+        public DataWord GetStorageRow(IEnumerable<byte> scAddr, DataWord key)
+        {
+            if (scAddr == null)
+            {
+                throw new ArgumentNullException(nameof(scAddr));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            
+            var result = string.Empty;
+            var scAddrHex = scAddr.ToHexString();
+            var keyHex = key.GetData().ToHexString();
+            if (!_db.TryGet(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), ReadOptions.Default, out result))
+            {
+                return null;
+            }
+
+            return new DataWord(result.FromHexString().ToArray());
+        }
+
+        public bool AddStorageRow(IEnumerable<byte> scAddr, DataWord key, DataWord value)
+        {
+            if (scAddr == null)
+            {
+                throw new ArgumentNullException(nameof(scAddr));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+
+            string result = string.Empty;
+            var scAddrHex = scAddr.ToHexString();
+            var keyHex = key.GetData().ToHexString();
+            var valueHex = value.GetData().ToHexString();
+            if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, scAddrHex), ReadOptions.Default, out result))
+            {
+                return false;
+            }
+
+            result = string.Empty;
+            if (_db.TryGet(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), ReadOptions.Default, out result))
+            {
+                _db.Delete(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex));
+            }
+
+            _db.Put(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), valueHex);
+            return true;
+        }
+
         private void Persist(Block block)
         {
             if (block == null)
@@ -107,7 +170,7 @@ namespace SimpleBlockChain.Core.Compiler
                 if (smartContractTransaction.To == null)
                 {
                     var solidityVm = new SolidityVm();
-                    var program = new SolidityProgram(smartContractTransaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(smartContractTransaction.From.ToArray()), defaultCallValue));
+                    var program = new SolidityProgram(smartContractTransaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(smartContractTransaction.From.ToArray()), defaultCallValue, this));
                     while(!program.IsStopped())
                     {
                         program.Step();

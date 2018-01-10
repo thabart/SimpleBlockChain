@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Stores;
@@ -18,7 +19,9 @@ namespace SimpleBlockChain.Core.Nodes
         private readonly IBlockValidator _blockValidator;
         private IWebHost _host;
 
-        internal RPCNode(IWalletRepository walletRepository, Networks network, ISmartContractStore smartContractStore, IBlockChainStore blockChainStore, ITransactionHelper transactionHelper, ITransactionValidator transactionValidator, IBlockValidator blockValidator)
+        internal RPCNode(IWalletRepository walletRepository, Networks network, ISmartContractStore smartContractStore, 
+            IBlockChainStore blockChainStore, ITransactionHelper transactionHelper, ITransactionValidator transactionValidator,
+            IBlockValidator blockValidator)
         {
             _walletRepository = walletRepository;
             _network = network;
@@ -31,7 +34,8 @@ namespace SimpleBlockChain.Core.Nodes
 
         public void Start()
         {
-            var rpcNodeStartup = new RPCNodeStartup(_walletRepository, _network, _blockChainStore, _smartContractStore, _transactionHelper, _transactionValidator, _blockValidator);
+            var rpcNodeStartup = new RPCNodeStartup(_walletRepository, _network, _blockChainStore, 
+                _smartContractStore, _transactionHelper, _transactionValidator, _blockValidator);
             _host = new WebHostBuilder().UseKestrel()
                 .UseUrls($"http://localhost:{PortsHelper.GetRPCPort(_network)}")
                 .Configure((app) =>

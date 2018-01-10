@@ -1,9 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using HashLib;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Factories;
+using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Stores;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace SimpleBlockChain.UnitTests.Compiler
@@ -14,15 +23,20 @@ namespace SimpleBlockChain.UnitTests.Compiler
         private SolidityProgramInvoke _pgInvoke;
         private SolidityVm _vm;
         private static string _adr = "77045E71A7A2C50903D88E564CD72FAB11E82051";
+        private Mock<IAssemblyHelper> _assemblyHelperMock;
+        private const Networks _network = Networks.MainNet;
 
         [TestInitialize]
         public void Init()
         {
+            var serviceProvider = BuildServiceProvider();
+            var smartContractStore = serviceProvider.GetService<ISmartContractStore>();
             var address = new DataWord(_adr.FromHexString().ToArray());
             var callValue = new DataWord("0DE0B6B3A7640000".FromHexString().ToArray());
             IEnumerable<byte> msgData = ("00000000000000000000000000000000000000000000000000000000000000A1" +
                 "00000000000000000000000000000000000000000000000000000000000000B1").FromHexString().ToList();
-            _pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
+            var scAddress = "0000000000000000000000000000000000000001".FromHexString();
+            _pgInvoke = new SolidityProgramInvoke(msgData, scAddress, address, callValue, smartContractStore.GetSmartContracts());
             _vm = new SolidityVm();
         }
 
@@ -996,16 +1010,21 @@ namespace SimpleBlockChain.UnitTests.Compiler
             Assert.IsTrue(pop == "0000000000000000000000000000000000000000000000000000000000000012");
         }
 
+        #region Complex contracts
+
         [TestMethod]
         public void WhenExecuteComplexContract1()
         {
             // Analyse the code : https://github.com/CoinCulture/evm-tools/blob/master/analysis/guide.md
             // HEX => OPCODES : https://etherscan.io/opcode-tool
             // COMMAND : --bin-runtime : get the code as it would be in the contract after having been deployed.
+            var serviceProvider = BuildServiceProvider();
+            var smartContractStore = serviceProvider.GetService<ISmartContractStore>();
             var address = new DataWord(_adr.FromHexString().ToArray());
             var callValue = new DataWord("00".FromHexString().ToArray());
             IEnumerable<byte> msgData = ("6d4ce63c").FromHexString().ToList();
-            var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
+            var scAddress = "0000000000000000000000000000000000000001".FromHexString();
+            var pgInvoke = new SolidityProgramInvoke(msgData, scAddress, address, callValue, smartContractStore.GetSmartContracts());
             var vm = new SolidityVm();           
             var code = "60606040526000357c0100000000000000000000000000000000000000000000000000000000900480636d4ce63c146037576035565b005b604260048050506058565b6040518082815260200191505060405180910390f35b6000600390506062565b9056";
             var payload = code.FromHexString().ToList();
@@ -1022,10 +1041,13 @@ namespace SimpleBlockChain.UnitTests.Compiler
         [TestMethod]
         public void WhenExecuteComplexContract2()
         {
+            var serviceProvider = BuildServiceProvider();
+            var smartContractStore = serviceProvider.GetService<ISmartContractStore>();
             var address = new DataWord(_adr.FromHexString().ToArray());
             var callValue = new DataWord("00".FromHexString().ToArray());
             IEnumerable<byte> msgData = ("6d4ce63c").FromHexString().ToList();
-            var pgInvoke = new SolidityProgramInvoke(msgData, address, callValue);
+            var scAddress = "0000000000000000000000000000000000000001".FromHexString();
+            var pgInvoke = new SolidityProgramInvoke(msgData, scAddress, address, callValue, smartContractStore.GetSmartContracts());
             var vm = new SolidityVm();
             var code = "60606040526000357c0100000000000000000000000000000000000000000000000000000000900480636d4ce63c1461003957610037565b005b61004660048050506100b4565b60405180806020018281038252838181518152602001915080519060200190808383829060006004602084601f0104600302600f01f150905090810190601f1680156100a65780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6020604051908101604052806000815260200150604060405190810160405280600b81526020017f68656c6c6f20776f726c640000000000000000000000000000000000000000008152602001509050610109565b9056";
             var payload = code.FromHexString().ToList();
@@ -1039,7 +1061,79 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var res = hResult.ToHexString();
             Assert.IsTrue(res == "0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000b68656c6c6f20776f726c64000000000000000000000000000000000000000000");
             var output = Encoding.ASCII.GetString(hResult).Replace("\0", "").Replace("\v", "");
-            string s = "";
+        }
+
+        [TestMethod]
+        public void WhenExecuteComplexContract3()
+        {
+            RemoveSmartContracts(); // REMOVE THE SMART CONTRACTS.
+
+            var serviceProvider = BuildServiceProvider(); // GET THE DEPENDENCIES.
+
+            var smartContractStore = serviceProvider.GetService<ISmartContractStore>();
+            smartContractStore.Switch(Core.Networks.MainNet);
+
+            var operationSignature = "set(uint256)"; // CREATE SET PARAMETER.
+            var hash = HashFactory.Crypto.SHA3.CreateKeccak256();
+            var operationPayload = hash.ComputeBytes(Encoding.ASCII.GetBytes(operationSignature)).GetBytes().Take(4);
+            var operationPayloadStr = operationPayload.ToHexString();
+            var parameterPayload = (new DataWord(69)).GetData();
+            var setMsgData = new List<byte>();
+            setMsgData.AddRange(operationPayload);
+            setMsgData.AddRange(parameterPayload);
+
+            operationSignature = "get()"; // CREATE GET PARAMETER.
+            var getMsgData = hash.ComputeBytes(Encoding.ASCII.GetBytes(operationSignature)).GetBytes().Take(4);
+
+            var address = new DataWord(_adr.FromHexString().ToArray());
+            var callValue = new DataWord("00".FromHexString().ToArray());
+            var scAddress = "0000000000000000000000000000000000000001".FromHexString();
+            var setPgInvoke = new SolidityProgramInvoke(setMsgData, scAddress, address, callValue, smartContractStore.GetSmartContracts());
+            var getPgInvoke = new SolidityProgramInvoke(getMsgData, scAddress, address, callValue, smartContractStore.GetSmartContracts());
+            var vm = new SolidityVm();
+            var code = "60606040526000357c01000000000000000000000000000000000000000000000000000000009004806360fe47b11460415780636d4ce63c14605757603f565b005b605560048080359060200190919050506078565b005b606260048050506086565b6040518082815260200191505060405180910390f35b806000600050819055505b50565b600060006000505490506094565b9056";
+            var payload = code.FromHexString().ToList();
+            var setProg = new SolidityProgram(payload, setPgInvoke);
+            var getProg = new SolidityProgram(payload, getPgInvoke);
+
+            while (!setProg.IsStopped()) // SET THE VALUE 69.
+            {
+                vm.Step(setProg, true);
+            }
+
+            while (!getProg.IsStopped()) // GET THE VALUE 69
+            {
+                vm.Step(getProg, true);
+            }
+
+            var hResult = getProg.GetResult().GetHReturn().ToHexString();
+            Assert.IsTrue(hResult == "0000000000000000000000000000000000000000000000000000000000000045");
+        }
+
+        #endregion
+        
+        private void RemoveSmartContracts()
+        {
+            var assm = Assembly.LoadFrom("SimpleBlockChain.Core.dll");
+            var path = Path.Combine(Path.GetDirectoryName(assm.Location), string.Format("sc_{0}.dat", SmartContracts.GetDirectoryName(_network)));
+            if (!Directory.Exists(path))
+            {
+                return;
+            }
+
+            Directory.Delete(path, true);
+        }
+
+        private IServiceProvider BuildServiceProvider()
+        {
+            var serviceCollection = new ServiceCollection();
+            _assemblyHelperMock = new Mock<IAssemblyHelper>();
+            var assm = Assembly.LoadFrom("SimpleBlockChain.Core.dll");
+            _assemblyHelperMock.Setup(a => a.GetEntryAssembly()).Returns(assm);
+            serviceCollection.AddTransient<ISmartContractFactory, SmartContractFactory>();
+            serviceCollection.AddTransient<ISmartContractStore, SmartContractStore>();
+            serviceCollection.AddSingleton<IAssemblyHelper>(_assemblyHelperMock.Object);
+            return serviceCollection.BuildServiceProvider();
         }
     }
 }

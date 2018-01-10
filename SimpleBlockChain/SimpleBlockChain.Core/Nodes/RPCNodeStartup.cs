@@ -777,7 +777,8 @@ namespace SimpleBlockChain.Core.Nodes
                 }
 
                 var defaultCallValue = new DataWord(new byte[] { 0x00 });
-                var program = new SolidityProgram(smartContract.Code.ToList(), new SolidityProgramInvoke(callDataPayload, fromAddr, defaultCallValue));
+                var program = new SolidityProgram(smartContract.Code.ToList(), new SolidityProgramInvoke(callDataPayload, 
+                    smartContract.Address, fromAddr, defaultCallValue, _smartContractStore.GetSmartContracts()));
                 var vm = new SolidityVm();
                 while (!program.IsStopped())
                 {

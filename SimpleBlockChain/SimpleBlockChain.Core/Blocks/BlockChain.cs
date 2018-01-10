@@ -1,6 +1,7 @@
 ﻿using LevelDB;
 using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace SimpleBlockChain.Core.Blocks
     {
         private readonly IAssemblyHelper _assemblyHelper;
         private readonly Networks _network;
+        private readonly ISmartContractStore _smartContractStore;
         private const string _databaseFile = "db_{0}.dat";
         private DB _db;
         private int _currentBlockHeight = 0;
@@ -38,10 +40,11 @@ namespace SimpleBlockChain.Core.Blocks
 
         private const char TXID_SEPARATOR = ',';
 
-        internal BlockChain(IAssemblyHelper assemblyHelper, Networks network)
+        internal BlockChain(IAssemblyHelper assemblyHelper, Networks network, ISmartContractStore smartContractStore)
         {
             _assemblyHelper = assemblyHelper;
             _network = network;
+            _smartContractStore = smartContractStore;
             var options = new Options { CreateIfMissing = true };
             _db = new DB(GetDbFile(), options);
             string result = null;
@@ -464,7 +467,7 @@ namespace SimpleBlockChain.Core.Blocks
             if (transaction.To == null) // CREATE SMART CONTRACT.
             {
                 var solidityVm = new SolidityVm();
-                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue));
+                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(transaction.From.ToArray()), defaultCallValue, _smartContractStore.GetSmartContracts()));
                 while(!program.IsStopped())
                 {
                     program.Step();

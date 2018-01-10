@@ -62,7 +62,7 @@ namespace SimpleBlockChain.Core.Compiler
             { SolidityOpCodes.SWAP10, 11 }
         };
 
-        public void Step(SolidityProgram program)
+        public void Step(SolidityProgram program, bool trace = false)
         {
             if (program == null) // http://solidity.readthedocs.io/en/develop/assembly.html
             {
@@ -74,17 +74,18 @@ namespace SimpleBlockChain.Core.Compiler
             var opCode = solidityOpCode.GetCode(currentOpCode);
             var stack = program.GetStack();
 
-            /*
-            Trace.WriteLine("Operation " + Enum.GetName(typeof(SolidityOpCodes), opCode) + " "+program.GetPc());
-            Trace.WriteLine("Stack: ");
-            foreach (var s in program.GetStack())
+            if (trace)
             {
-                Trace.WriteLine(s.GetData().ToHexString());
-            }
+                Trace.WriteLine("Operation " + Enum.GetName(typeof(SolidityOpCodes), opCode) + " " + program.GetPc());
+                Trace.WriteLine("Stack: ");
+                foreach (var s in program.GetStack())
+                {
+                    Trace.WriteLine(s.GetData().ToHexString());
+                }
 
-            Trace.WriteLine("Memory: ");
-            Trace.WriteLine(program.GetMemory().ToHexString());
-            */
+                Trace.WriteLine("Memory: ");
+                Trace.WriteLine(program.GetMemory().ToHexString());
+            }
 
             switch (opCode)
             {
@@ -450,6 +451,12 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.STOP:
                     program.SetHReturn(SolidityMemory.EMPTY_BYTE_ARRAY);
                     program.Stop();
+                    break;
+                case SolidityOpCodes.SLOAD:
+                    var sLoadKey = program.StackPop();
+                    var sLoadVal = program.StorageLoad(sLoadKey);
+                    program.StackPush(sLoadVal);
+                    program.Step();
                     break;
             }
         }

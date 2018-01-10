@@ -5,22 +5,43 @@ namespace SimpleBlockChain.Core.Compiler
 {
     public class SolidityProgramInvoke
     {
+        private readonly SmartContracts _smartContracts;
         private static int _size = 32;
         private IEnumerable<byte> _msgDataRaw;
-        private DataWord _address;
+        private IEnumerable<byte> _smartContractAddress;
+        private DataWord _ownerAddress;
         private DataWord _callValue;
 
-        public SolidityProgramInvoke(DataWord address, DataWord callValue)
+        public SolidityProgramInvoke(IEnumerable<byte> smartContractAddress, DataWord ownerAddress, DataWord callValue, SmartContracts smartContracts)
         {
-            _address = address;
+            _smartContractAddress = smartContractAddress;
+            _ownerAddress = ownerAddress;
             _callValue = callValue;
+            _smartContracts = smartContracts;
         }
 
-        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, DataWord address, DataWord callValue)
+        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, IEnumerable<byte> smartContractAddress, DataWord ownerAddress, DataWord callValue, SmartContracts smartContracts)
         {
             _msgDataRaw = msgDataRaw;
-            _address = address;
+            _smartContractAddress = smartContractAddress;
+            _ownerAddress = ownerAddress;
             _callValue = callValue;
+            _smartContracts = smartContracts;
+        }
+
+        public SmartContracts GetStorage()
+        {
+            return _smartContracts;
+        }
+
+        public IEnumerable<byte> GetSmartContractAddress()
+        {
+            return _smartContractAddress;
+        }
+
+        public void SetSmartContractAddress(IEnumerable<byte> smartContractAddress)
+        {
+            _smartContractAddress = smartContractAddress;
         }
 
         public DataWord GetCallValue()
@@ -30,12 +51,12 @@ namespace SimpleBlockChain.Core.Compiler
 
         public DataWord GetOwnerAddress()
         {
-            return _address;
+            return _ownerAddress;
         }
 
         public void SetOwnerAddress(DataWord address)
         {
-            _address = address;
+            _ownerAddress = address;
         }
 
         public DataWord GetDataSize()

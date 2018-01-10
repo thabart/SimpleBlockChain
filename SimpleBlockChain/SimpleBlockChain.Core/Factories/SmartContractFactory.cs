@@ -1,5 +1,6 @@
 ﻿using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Stores;
 
 namespace SimpleBlockChain.Core.Factories
 {

@@ -7,6 +7,7 @@ using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;
+using SimpleBlockChain.Core.Stores;
 using System;
 using System.IO;
 using System.Linq;
@@ -26,11 +27,12 @@ namespace SimpleBlockChain.UnitTests.Compiler
             const string operationSignature = "get()";
             var hash = HashFactory.Crypto.SHA3.CreateKeccak256();
             var msgData = hash.ComputeBytes(System.Text.Encoding.ASCII.GetBytes(operationSignature)).GetBytes().Take(4);
-            var pgInvoke = new SolidityProgramInvoke(msgData, new DataWord(), new DataWord());
-            RemoveSmartContracts();
             var serviceProvider = BuildServiceProvider();
             var smartContractFactory = serviceProvider.GetService<ISmartContractFactory>();
             var smartContracts = smartContractFactory.Build(_network);
+            var smartContractStore = serviceProvider.GetService<ISmartContractStore>();
+            var pgInvoke = new SolidityProgramInvoke(msgData, new byte[0], new DataWord(), new DataWord(), smartContractStore.GetSmartContracts());
+            RemoveSmartContracts();
 
             var contract = smartContracts.GetSmartContract("0000000000000000000000000000000000000001".FromHexString());
             
@@ -53,6 +55,7 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var assm = Assembly.LoadFrom("SimpleBlockChain.Core.dll");
             _assemblyHelperMock.Setup(a => a.GetEntryAssembly()).Returns(assm);
             serviceCollection.AddTransient<ISmartContractFactory, SmartContractFactory>();
+            serviceCollection.AddTransient<ISmartContractStore, SmartContractStore>();
             serviceCollection.AddSingleton<IAssemblyHelper>(_assemblyHelperMock.Object);
             return serviceCollection.BuildServiceProvider();
         }

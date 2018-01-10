@@ -1,5 +1,6 @@
 ﻿using Org.BouncyCastle.Math;
 using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,15 @@ namespace SimpleBlockChain.Core.Compiler
 
         }
         
-        public DataWord(int num) : this(BitConverter.GetBytes(num)) { }
+        public DataWord(int num) : this(ByteBuffer.Allocate(4).PutInt(num)) {  }
+
+        public DataWord(ByteBuffer byteBuffer)
+        {
+            var buffer = new byte[32];
+            var data = byteBuffer.GetArray();
+            Array.Copy(data, 0, buffer, 32 - data.Length, data.Length);
+            _data = buffer;
+        }
 
         public DataWord(byte[] data)
         {

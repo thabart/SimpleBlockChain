@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SimpleBlockChain.Core.Builders;
+using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Connectors;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.Core.Helpers;

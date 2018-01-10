@@ -140,7 +140,7 @@ namespace SimpleBlockChain.Core.Validators
                     throw new ArgumentNullException(nameof(transaction.Data));
                 }
 
-                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue)); // TRY TO GET THE CONTRACT.
+                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(transaction.From.ToArray()), defaultCallValue, _smartContractStore.GetSmartContracts())); // TRY TO GET THE CONTRACT.
                 try
                 {
                     while (!program.IsStopped())

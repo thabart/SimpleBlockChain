@@ -12,7 +12,6 @@ namespace SimpleBlockChain.Core.Compiler
         private SolidityStack _stack;
         private SolidityMemory _memory;
         private SolidityProgramResult _result;
-        private SolidityStorage _storage;
         private SolidityProgramPreCompile programPrecompile;
         private bool _stopped;
 
@@ -24,7 +23,6 @@ namespace SimpleBlockChain.Core.Compiler
             _stack = new SolidityStack();
             _memory = new SolidityMemory();
             _result = new SolidityProgramResult();
-            _storage = new SolidityStorage();
             _stopped = false;
         }
 
@@ -86,14 +84,22 @@ namespace SimpleBlockChain.Core.Compiler
 
         public void SaveStorage(DataWord w1, DataWord w2)
         {
-            _storage.AddStorageRow(w1, w2);
+            var scAddr = _progInvoke.GetSmartContractAddress();
+            _progInvoke.GetStorage().AddStorageRow(scAddr, w1, w2);
         }
 
         public void SaveStorage(IEnumerable<byte> key, IEnumerable<byte> val)
         {
+            var scAddr = _progInvoke.GetSmartContractAddress();
             var keyWord = new DataWord(key.ToArray());
             var valWord = new DataWord(val.ToArray());
-            _storage.AddStorageRow(keyWord, valWord);
+            _progInvoke.GetStorage().AddStorageRow(scAddr, keyWord, valWord);
+        }
+
+        public DataWord StorageLoad(DataWord keyWord)
+        {
+            var scAddr = _progInvoke.GetSmartContractAddress();
+            return _progInvoke.GetStorage().GetStorageRow(scAddr, keyWord);
         }
 
         public void Step()
