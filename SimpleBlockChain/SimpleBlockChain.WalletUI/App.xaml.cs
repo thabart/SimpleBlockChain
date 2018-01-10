@@ -32,6 +32,7 @@ namespace SimpleBlockChain.WalletUI
             serviceCollection.AddTransient<BlockChainInformation>();
             serviceCollection.AddTransient<WalletInformation>();
             serviceCollection.AddTransient<MemoryPoolInformation>();
+            serviceCollection.AddTransient<SmartContractPage>();
 
             serviceCollection.AddTransient<HomePageViewModel>();
             serviceCollection.AddTransient<CreateWalletViewModel>();

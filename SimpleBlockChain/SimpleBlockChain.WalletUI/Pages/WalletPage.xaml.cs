@@ -22,6 +22,7 @@ namespace SimpleBlockChain.WalletUI.Pages
         private readonly WalletInformation _walletInformation;
         private readonly BlockChainInformation _blockChainInformation;
         private readonly MemoryPoolInformation _memoryPoolInformation;
+        private readonly SmartContractPage _smartContractPage;
         private WalletPageViewModel _viewModel;
         private NodeLauncher _nodeLauncher;
         private Timer _timer;
@@ -29,11 +30,14 @@ namespace SimpleBlockChain.WalletUI.Pages
         private readonly BackgroundWorker _refreshUiBackgroundWorker;
         private readonly INodeLauncherFactory _nodeLauncherFactory;
 
-        public WalletPage(INodeLauncherFactory nodeLauncherFactory, WalletInformation walletInformation, BlockChainInformation blockChainInformation, MemoryPoolInformation memoryPoolInformation)
+        public WalletPage(INodeLauncherFactory nodeLauncherFactory, WalletInformation walletInformation,
+            BlockChainInformation blockChainInformation, MemoryPoolInformation memoryPoolInformation,
+            SmartContractPage smartContractPage)
         {
             _walletInformation = walletInformation;
             _blockChainInformation = blockChainInformation;
             _memoryPoolInformation = memoryPoolInformation;
+            _smartContractPage = smartContractPage;
             _nodeLauncherFactory = nodeLauncherFactory;
             _autoEvent = new AutoResetEvent(false);
             _refreshUiBackgroundWorker = new BackgroundWorker();
@@ -80,9 +84,15 @@ namespace SimpleBlockChain.WalletUI.Pages
                 Header = "Memory POOL",
                 Content = _memoryPoolInformation
             };
+            var smartContractTab = new TabItem
+            {
+                Header = "Smart contract",
+                Content = _smartContractPage
+            };
             this.tabControl.Items.Add(walletInformationTab);
             this.tabControl.Items.Add(blocksTab);
             this.tabControl.Items.Add(memoryPoolTab);
+            this.tabControl.Items.Add(smartContractTab);
         }
 
         private void NetworkSwitch(object sender, NetworkEventHandler e)

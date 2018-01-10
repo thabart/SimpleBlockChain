@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="SimpleBlockChain.WalletUI.UserControls.SmartContractPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SimpleBlockChain.WalletUI.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <Thickness x:Key="ColumnMargin">10 5 10 5</Thickness>
+        <Thickness x:Key="ControlMargin">0 5 0 0</Thickness>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <!-- Call a contract -->
+        <StackPanel Grid.Column="0">
+            <Label>Call a contract (without transaction)</Label>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <!-- Smart Contract address -->
+                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Contract address</Label>
+                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContractAddress, Mode=TwoWay}"></TextBox>
+                <!-- Smart Contract callvalue -->
+                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Call value</Label>
+                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=SmartContractCallValue, Mode=TwoWay}"></TextBox>
+                <!-- Submit button -->
+                <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CallContractCommand}">Send</Button>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

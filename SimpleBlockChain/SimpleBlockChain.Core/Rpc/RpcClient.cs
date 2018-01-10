@@ -26,6 +26,7 @@ namespace SimpleBlockChain.Core.Rpc
         Task<int> GetBlockCount();
         Task<IEnumerable<byte>> GetBlockHash(int height);
         Task<BaseTransaction> GetRawTransaction(IEnumerable<byte> txId);
+        Task<string> CallSmartContract(SmartContractTransactionParameter scTransaction);
     }
 
     public class RpcClient : IRpcClient
@@ -459,6 +460,56 @@ namespace SimpleBlockChain.Core.Rpc
             }
             catch (Exception) { }
             return transaction;
+        }
+
+        public async Task<string> CallSmartContract(SmartContractTransactionParameter scTransaction)
+        {
+            if (scTransaction == null)
+            {
+                throw new ArgumentNullException(nameof(scTransaction));
+            }
+
+            if (scTransaction.To == null)
+            {
+                throw new ArgumentNullException(nameof(scTransaction.To));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(scTransaction.To.ToHexString());
+            jParams.Add(scTransaction.From.ToHexString());
+            jParams.Add(scTransaction.Data.ToHexString());
+            jParams.Add(scTransaction.Gas);
+            jParams.Add(scTransaction.GasPrice);
+            jParams.Add(scTransaction.Value);
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.ScCall);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.Value<string>("result");
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            return r;
         }
 
         public static bool TryGetError(JObject jObj, out string errorCode)

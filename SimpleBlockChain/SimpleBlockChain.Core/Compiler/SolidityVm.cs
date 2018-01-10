@@ -74,6 +74,7 @@ namespace SimpleBlockChain.Core.Compiler
             var opCode = solidityOpCode.GetCode(currentOpCode);
             var stack = program.GetStack();
 
+            /*
             Trace.WriteLine("Operation " + Enum.GetName(typeof(SolidityOpCodes), opCode) + " "+program.GetPc());
             Trace.WriteLine("Stack: ");
             foreach (var s in program.GetStack())
@@ -83,6 +84,7 @@ namespace SimpleBlockChain.Core.Compiler
 
             Trace.WriteLine("Memory: ");
             Trace.WriteLine(program.GetMemory().ToHexString());
+            */
 
             switch (opCode)
             {

@@ -775,11 +775,11 @@ namespace SimpleBlockChain.Core.Nodes
                 }
 
                 var defaultCallValue = new DataWord(new byte[] { 0x00 });
-                var program = new SolidityProgram(smartContract.Code.ToList(), new SolidityProgramInvoke(callToPayload, fromAddr, defaultCallValue));
+                var program = new SolidityProgram(smartContract.Code.ToList(), new SolidityProgramInvoke(callDataPayload, fromAddr, defaultCallValue));
                 var vm = new SolidityVm();
                 while (!program.IsStopped())
                 {
-                    program.Step();
+                    vm.Step(program);
                 }
 
                 var result = program.GetResult().GetHReturn().ToHexString();

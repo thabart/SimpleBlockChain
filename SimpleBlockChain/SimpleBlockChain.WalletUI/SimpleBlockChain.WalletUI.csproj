@@ -329,6 +329,9 @@
     <Compile Include="UserControls\MemoryPoolInformation.xaml.cs">
       <DependentUpon>MemoryPoolInformation.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\SmartContractPage.xaml.cs">
+      <DependentUpon>SmartContractPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\TransactionFlyout.xaml.cs">
       <DependentUpon>TransactionFlyout.xaml</DependentUpon>
     </Compile>
@@ -343,6 +346,7 @@
     <Compile Include="ViewModels\HomePageViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\MemoryPoolInformationViewModel.cs" />
+    <Compile Include="ViewModels\SmartContractViewModel.cs" />
     <Compile Include="ViewModels\TransactionFlyoutViewModel.cs" />
     <Compile Include="ViewModels\WalletInformationViewModel.cs" />
     <Compile Include="ViewModels\WalletPageViewModel.cs" />
@@ -385,6 +389,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\MemoryPoolInformation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\SmartContractPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

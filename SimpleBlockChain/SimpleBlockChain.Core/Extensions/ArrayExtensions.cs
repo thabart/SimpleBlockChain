@@ -34,7 +34,7 @@ namespace SimpleBlockChain.Core.Extensions
         {
             if (string.IsNullOrWhiteSpace(hex))
             {
-                throw new ArgumentNullException(nameof(hex));
+                return null;
             }
 
             return Enumerable.Range(0, hex.Length)

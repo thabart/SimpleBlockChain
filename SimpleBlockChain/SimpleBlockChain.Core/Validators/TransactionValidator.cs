@@ -119,32 +119,27 @@ namespace SimpleBlockChain.Core.Validators
                 throw new ArgumentNullException(nameof(transaction));
             }
 
-            if (transaction.From == null)
-            {
-                throw new ArgumentNullException(nameof(transaction.From));
-            }
-
-            if (transaction.Data == null)
-            {
-                throw new ArgumentNullException(nameof(transaction.Data));
-            }
-
             var blockChain = _blockChainStore.GetBlockChain();
             var smartContracts = _smartContractStore.GetSmartContracts();
-            if (transaction.From.Count() != 20)
-            {
-                throw new ValidationException(ErrorCodes.FromInvalidLength);
-            }
-            
-            if (transaction.To.Count() != 20)
-            {
-                throw new ValidationException(ErrorCodes.ToInvalidLength);
-            }
-
             var vm = new SolidityVm();
             var defaultCallValue = new DataWord(new byte[] { 0x00 });
             if (transaction.To == null)
             {
+                if (transaction.From == null)
+                {
+                    throw new ArgumentNullException(nameof(transaction.From));
+                }
+
+                if (transaction.From.Count() != 20)
+                {
+                    throw new ValidationException(ErrorCodes.FromInvalidLength);
+                }
+
+                if (transaction.Data == null)
+                {
+                    throw new ArgumentNullException(nameof(transaction.Data));
+                }
+
                 var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new DataWord(transaction.From.ToArray()), defaultCallValue)); // TRY TO GET THE CONTRACT.
                 try
                 {
@@ -166,6 +161,11 @@ namespace SimpleBlockChain.Core.Validators
             }
             else
             {
+                if (transaction.To.Count() != 20)
+                {
+                    throw new ValidationException(ErrorCodes.ToInvalidLength);
+                }
+
                 var smartContract = smartContracts.GetSmartContract(transaction.To);
                 if (smartContract == null)
                 {

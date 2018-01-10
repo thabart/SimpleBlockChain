@@ -24,7 +24,7 @@ namespace SimpleBlockChain.Core.Nodes
         private P2PNode _p2pNode;
         private RPCNode _rpcNode;
 
-        internal NodeLauncher(Networks network, ServiceFlags serviceFlag, IRpcNodeFactory rpcNodeFactory, IBlockChainStore blockChainStore, IMessageCoordinator messageCoordinator)
+        internal NodeLauncher(Networks network, ServiceFlags serviceFlag, IRpcNodeFactory rpcNodeFactory, IBlockChainStore blockChainStore, IMessageCoordinator messageCoordinator, ISmartContractStore smartContractStore)
         {
             _network = network;
             _serviceFlag = serviceFlag;
@@ -34,6 +34,7 @@ namespace SimpleBlockChain.Core.Nodes
             _p2pNode = new P2PNode(_network, _serviceFlag, _p2pNetworkConnector, messageCoordinator);
             _rpcNode = rpcNodeFactory.Build(_network);
             blockChainStore.Switch(network);
+            smartContractStore.Switch(network);
             _blockChain = blockChainStore.GetBlockChain();
         }
 
