@@ -40,11 +40,17 @@ namespace SimpleBlockChain.WalletUI
             PART_ForwardButton.Click += PART_ForwardButton_Click;
             MainWindowStore.Instance().DisplayFlyoutEvt += DisplayFlyout;
             MainWindowStore.Instance().DisplayErrorEvt += DisplayError;
+            MainWindowStore.Instance().DisplayMessageEvt += DisplayMessage;
         }
 
         private void DisplayError(object sender, ErrorEventArgs e)
         {
             _viewModel.DisplayError(e.Data);
+        }
+
+        private void DisplayMessage(object sender, MessageEventArgs e)
+        {
+            _viewModel.DisplayMessage(e.Data);
         }
 
         private void DisplayFlyout(object sender, FlyoutEventArgs e)

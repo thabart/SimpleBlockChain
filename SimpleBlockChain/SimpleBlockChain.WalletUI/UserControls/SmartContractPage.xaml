@@ -38,5 +38,24 @@
                 <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CallContractCommand}">Send</Button>
             </Grid>
         </StackPanel>
+        <StackPanel Grid.Column="1">
+            <Label>Compile a contract</Label>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <!-- Smart Contract -->
+                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Solidity contract</Label>
+                <TextBox AcceptsReturn="True" TextWrapping="Wrap" Margin="{StaticResource ControlMargin}" MinHeight="100" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContract, Mode=TwoWay}"></TextBox>
+                <!-- Submit the contract -->
+                <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CompileContractCommand}">Compile contract</Button>
+            </Grid>
+            <!-- Solidity contract -->
+        </StackPanel>
     </Grid>
 </UserControl>

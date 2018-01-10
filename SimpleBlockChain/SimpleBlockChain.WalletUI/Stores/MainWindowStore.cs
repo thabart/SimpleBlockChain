@@ -21,6 +21,7 @@ namespace SimpleBlockChain.WalletUI.Stores
 
         public event EventHandler<FlyoutEventArgs> DisplayFlyoutEvt;
         public event EventHandler<ErrorEventArgs> DisplayErrorEvt;
+        public event EventHandler<MessageEventArgs> DisplayMessageEvt;
 
         public void DisplayFlyout(UserControl flyout, Position position, double minWidth)
         {
@@ -44,6 +45,19 @@ namespace SimpleBlockChain.WalletUI.Stores
             if (DisplayErrorEvt != null)
             {
                 DisplayErrorEvt(this, new ErrorEventArgs(message));
+            }
+        }
+
+        public void DisplayMessage(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            if (DisplayMessageEvt != null)
+            {
+                DisplayMessageEvt(this, new MessageEventArgs(message));
             }
         }
     }

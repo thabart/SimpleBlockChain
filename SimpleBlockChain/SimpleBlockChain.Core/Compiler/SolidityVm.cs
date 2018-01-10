@@ -447,6 +447,10 @@ namespace SimpleBlockChain.Core.Compiler
                     program.SaveStorage(sstoreWord1, sstoreWord2);
                     program.Step();
                     break;
+                case SolidityOpCodes.STOP:
+                    program.SetHReturn(SolidityMemory.EMPTY_BYTE_ARRAY);
+                    program.Stop();
+                    break;
             }
         }
     }

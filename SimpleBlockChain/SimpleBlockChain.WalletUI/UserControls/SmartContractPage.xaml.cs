@@ -7,6 +7,8 @@ using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -27,6 +29,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
         {
             if (_viewModel == null) { return; }
             _viewModel.CallContractEvt -= CallContract;
+            _viewModel.CompileContractEvt -= CompileContract;
             _viewModel = null;
         }
 
@@ -34,6 +37,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
         {
             _viewModel = new SmartContractViewModel();
             _viewModel.CallContractEvt += CallContract;
+            _viewModel.CompileContractEvt += CompileContract;
             DataContext = _viewModel;
         }
 
@@ -87,8 +91,57 @@ namespace SimpleBlockChain.WalletUI.UserControls
             var rpcClient = new RpcClient(authenticatedWallet.Network);
             rpcClient.CallSmartContract(smartContractTransactionParameter).ContinueWith((t) =>
             {
-                Trace.WriteLine(t);
-                string s;
+                try
+                {
+                    var smartContractResult = t.Result;
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(string.Format("Result of the operation : {0}", smartContractResult)));
+                }
+                catch(AggregateException)
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to call the contract"));
+                }
+            });
+        }
+
+        private void CompileContract(object sender, EventArgs e)
+        {
+            if (_viewModel == null) { return; }
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                MainWindowStore.Instance().DisplayError("You're not authenticated");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_viewModel.SmartContract))
+            {
+                MainWindowStore.Instance().DisplayError("The solidity contract should be filled in");
+                return;
+            }
+
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.CompileSolidity(_viewModel.SmartContract).ContinueWith((t) =>
+            {
+                try
+                {
+                    var compilationResult = t.Result;
+                    var builder = new StringBuilder();
+                    builder.Append("BUILD RESULT");
+                    builder.AppendLine();
+                    foreach(var info in compilationResult.Infos)
+                    {
+                        builder.Append("Code: " + info.Code);
+                        builder.AppendLine();
+                        builder.Append("ABI : " + info.AbiDefinition.ToString());
+                        builder.AppendLine();
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(builder.ToString()));
+                }
+                catch (AggregateException)
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to build the solidity contract"));
+                }
             });
         }
     }

@@ -21,5 +21,15 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 
             _dialogCoordinator.ShowMessageAsync(this, "Error", message);
         }
+
+        public void DisplayMessage(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            _dialogCoordinator.ShowMessageAsync(this, "Message", message);
+        }
     }
 }

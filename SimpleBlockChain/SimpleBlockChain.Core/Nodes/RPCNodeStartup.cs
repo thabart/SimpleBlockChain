@@ -159,6 +159,8 @@ namespace SimpleBlockChain.Core.Nodes
                     return SendSmartContractTransaction(parameters, id, response);
                 case Constants.RpcOperations.ScCall: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_call
                     return CallSmartContract(parameters, id, response);
+                case Constants.RpcOperations.CompileSolidity: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_compilesolidity
+                    return CompileSolidity(parameters, id, response);
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");
@@ -794,6 +796,44 @@ namespace SimpleBlockChain.Core.Nodes
             {
                 return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ErrorCodes.ErrorExecutionContract);
             }
+        }
+
+        public JObject CompileSolidity(IEnumerable<string> parameters, string id, JObject response)
+        {
+            if (parameters == null || !parameters.Any())
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The source is not specified");
+            }
+
+            var contract = parameters.First();
+            IEnumerable<SolidityCompilerResult> compilationResult;
+            try
+            {
+                compilationResult = SolidityCompiler.Compile(contract);
+            }
+            catch
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_PARSE_ERROR, "the contract cannot be parsed");
+            }
+
+
+            var result = new JObject();
+            result.Add("language", "Solidity");
+            result.Add("languageVersion", "0");
+            result.Add("compilerVersion", "1.7.3");
+            result.Add("source", contract);
+            var info = new JArray();
+            foreach(var compilationR in compilationResult)
+            {
+                var record = new JObject();
+                record.Add("abiDefinition", compilationR.AbiCode);
+                record.Add("code", compilationR.Payload);
+                info.Add(record);
+            }
+
+            result.Add("info", info);
+            response["result"] = result;
+            return response;
         }
 
         #endregion

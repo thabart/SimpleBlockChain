@@ -73,6 +73,7 @@ namespace SimpleBlockChain.Core
             public const string GetRawTransaction = "getrawtransaction";
             public const string ScSendTransaction = "sc_sendtransaction";
             public const string ScCall = "sc_call";
+            public const string CompileSolidity = "compile_solidity";
         }
     }
 }

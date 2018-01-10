@@ -315,6 +315,7 @@
     <Compile Include="Events\BlockEventArgs.cs" />
     <Compile Include="Events\ErrorEventArgs.cs" />
     <Compile Include="Events\FlyoutEventArgs.cs" />
+    <Compile Include="Events\MessageEventArgs.cs" />
     <Compile Include="Events\NetworkEventHandler.cs" />
     <Compile Include="MainWin.xaml.cs">
       <DependentUpon>MainWin.xaml</DependentUpon>

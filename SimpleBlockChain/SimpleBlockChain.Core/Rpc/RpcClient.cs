@@ -27,6 +27,7 @@ namespace SimpleBlockChain.Core.Rpc
         Task<IEnumerable<byte>> GetBlockHash(int height);
         Task<BaseTransaction> GetRawTransaction(IEnumerable<byte> txId);
         Task<string> CallSmartContract(SmartContractTransactionParameter scTransaction);
+        Task<CompileSolidityResponse> CompileSolidity(string contract);
     }
 
     public class RpcClient : IRpcClient
@@ -510,6 +511,72 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             return r;
+        }
+
+        public async Task<CompileSolidityResponse> CompileSolidity(string contract)
+        {
+            if (string.IsNullOrWhiteSpace(contract))
+            {
+                throw new ArgumentNullException(nameof(contract));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(contract);
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.CompileSolidity);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.GetValue("result").ToString();
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            var resultObj = JObject.Parse(r);
+            var result = new CompileSolidityResponse
+            {
+                CompilerVersion = resultObj.GetValue("compilerVersion").ToString(),
+                Language = resultObj.GetValue("language").ToString(),
+                LanguageVersion = resultObj.GetValue("languageVersion").ToString(),
+                Source = resultObj.Value<string>("source")
+            };
+            var infoLst = JArray.Parse(resultObj.GetValue("info").ToString());
+            var lstInfo = new List<CompileSolidityResponseInfo>();
+            foreach(JToken info in infoLst)
+            {
+                var infoObj = info as JObject;
+                if (infoObj == null)
+                {
+                    continue;
+                }
+
+                lstInfo.Add(new CompileSolidityResponseInfo
+                {
+                    AbiDefinition = JArray.Parse(infoObj.GetValue("abiDefinition").ToString()),
+                    Code = infoObj.GetValue("code").ToString()
+                });
+            }
+
+            result.Infos = lstInfo;
+            return result;
         }
 
         public static bool TryGetError(JObject jObj, out string errorCode)
