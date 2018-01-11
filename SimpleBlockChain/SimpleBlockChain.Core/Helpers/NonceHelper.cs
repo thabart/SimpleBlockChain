@@ -23,5 +23,11 @@ namespace SimpleBlockChain.Core.Helpers
             short hi = (short)random.Next(4, 0x10000);
             return  BitConverter.ToUInt32(buffer, 0);
         }
+
+        public static int GetNonceInt32()
+        {
+            var random = new Random();
+            return random.Next(0, int.MaxValue);
+        }
     }
 }

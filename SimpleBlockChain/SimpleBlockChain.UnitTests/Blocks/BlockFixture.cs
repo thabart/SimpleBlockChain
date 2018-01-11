@@ -87,6 +87,24 @@ namespace SimpleBlockChain.UnitTests.Blocks
             Assert.IsTrue(true);
         }
 
+        [TestMethod]
+        public void WhenSerializeAndDeserializeBlockWithOneSContract()
+        {
+            var smartContractTransaction = new SmartContractTransaction
+            {
+                Data = new byte[4] { 9, 8, 7, 4 },
+                From = new byte[3] { 1, 2, 3 },
+                Nonce = 988
+            };
+            var block = new Block(null, NBits, NonceHelper.GetNonceUInt32());
+            block.Transactions.Add(smartContractTransaction);
+            var exceptedBlockHeader = block.GetHashHeader();
+            var serializedBlock = block.Serialize();
+            var deserializedBlock = Block.Deserialize(serializedBlock);
+            var blockHeader = deserializedBlock.GetHashHeader();
+            Assert.IsTrue(blockHeader.SequenceEqual(exceptedBlockHeader));
+        }
+
         private static BlockChainAddress BuildBlockChainAddress()
         {
             var network = Networks.MainNet;

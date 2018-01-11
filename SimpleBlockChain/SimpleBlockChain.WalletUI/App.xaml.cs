@@ -13,6 +13,7 @@ using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Factories;
 using SimpleBlockChain.WalletUI.UserControls;
+using SimpleBlockChain.WalletUI.Helpers;
 
 namespace SimpleBlockChain.WalletUI
 {
@@ -38,6 +39,9 @@ namespace SimpleBlockChain.WalletUI
             serviceCollection.AddTransient<CreateWalletViewModel>();
             serviceCollection.AddTransient<WalletPageViewModel>();
             serviceCollection.AddTransient<WalletInformationViewModel>();
+
+            serviceCollection.AddTransient<IWalletHelper, WalletHelper>();
+
             serviceCollection.AddSingleton<IDialogCoordinator>(DialogCoordinator.Instance);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             using (var serviceScope = serviceProvider.GetRequiredService<IServiceScopeFactory>().CreateScope())

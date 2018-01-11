@@ -2,22 +2,28 @@
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
+using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.WalletUI.Helpers;
 using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using SimpleBlockChain.Core.Helpers;
 
 namespace SimpleBlockChain.WalletUI.UserControls
 {
     public partial class SmartContractPage : UserControl
     {
+        private readonly IWalletHelper _walletHelper;
         private SmartContractViewModel _viewModel;
 
-        public SmartContractPage()
+        public SmartContractPage(IWalletHelper walletHelper)
         {
+            _walletHelper = walletHelper;
             InitializeComponent();
             Loaded += Load;
             Unloaded += Unload;
@@ -115,7 +121,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
             if (string.IsNullOrWhiteSpace(_viewModel.SmartContract))
             {
-                MainWindowStore.Instance().DisplayError("The solidity contract should be filled in");
+                MainWindowStore.Instance().DisplayError("The solidity contract must be filled in");
                 return;
             }
 
@@ -155,8 +161,41 @@ namespace SimpleBlockChain.WalletUI.UserControls
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(_viewModel.SmartContract))
+            {
+                MainWindowStore.Instance().DisplayError("The solidity contract must be filled in");
+                return;
+            }
+            
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.CompileSolidity(_viewModel.SmartContract).ContinueWith((t) =>
+            {
+                try
+                {
+                    var compilationResult = t.Result;
+                    if (compilationResult.Infos == null || !compilationResult.Infos.Any())
+                    {
+                        return;
+                    }
 
-            throw new NotImplementedException();
+                    var newKey = _walletHelper.CreateNewAddress();
+                    var fromAddr = newKey.GetPublicKeyHashed();
+                    var smartContractTransaction = new SmartContractTransaction
+                    {
+                        From = fromAddr,
+                        Data = compilationResult.Infos.First().Code.FromHexString(),
+                        Nonce = NonceHelper.GetNonceInt32()
+                    };
+                    rpcClient.SendRawTransaction(smartContractTransaction).ContinueWith((c) =>
+                    {
+
+                    });
+                }
+                catch (AggregateException)
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to build the solidity contract"));
+                }
+            });
         }
     }
 }

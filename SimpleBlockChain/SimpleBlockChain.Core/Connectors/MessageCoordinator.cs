@@ -227,6 +227,11 @@ namespace SimpleBlockChain.Core.Connectors
                 return Launch(peerConnector, message as PingMessage);
             }
 
+            if (message.GetCommandName() == Constants.MessageNames.Block)
+            {
+                Launch(peerConnector, message as BlockMessage);
+            }
+
             return null;
         }
 
@@ -246,6 +251,11 @@ namespace SimpleBlockChain.Core.Connectors
             }
 
             peerConnector.Execute(getDataMessage.Serialize());
+        }
+
+        private void Launch(PeerConnector peerConnector, BlockMessage message)
+        {
+            peerConnector.Execute(message.Serialize());
         }
 
         private Message Launch(PeerConnector peerConnector, PingMessage message)

@@ -273,6 +273,7 @@ namespace SimpleBlockChain.Core.Nodes
         private JObject SubmitBlock(IEnumerable<string> parameters, string id, JObject response)
         {
             var blockChain = _blockChainStore.GetBlockChain();
+            var smartContract = _smartContractStore.GetSmartContracts();
             if (!parameters.Any())
             {
                 return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The block is missing");
@@ -284,6 +285,7 @@ namespace SimpleBlockChain.Core.Nodes
             {
                 _blockValidator.Check(block);
                 blockChain.AddBlock(block);
+                smartContract.AddBlock(block);
                 P2PConnectorEventStore.Instance().Broadcast(block);
                 if (block.Transactions != null)
                 {
@@ -414,7 +416,7 @@ namespace SimpleBlockChain.Core.Nodes
                 if (bool.TryParse(parameters.ElementAt(1), out allowHighFees)) { }
             }
 
-            var kvp = BcBaseTransaction.Deserialize(txPayload);
+            var kvp = BaseTransaction.Deserialize(txPayload);
             try
             {
                 var tx = kvp.Key;
@@ -489,7 +491,6 @@ namespace SimpleBlockChain.Core.Nodes
             }
             else
             {
-                var h2 = requestedBlock.GetHashHeader();
                 response["result"] = requestedBlock.GetHashHeader().ToHexString();
             }
 

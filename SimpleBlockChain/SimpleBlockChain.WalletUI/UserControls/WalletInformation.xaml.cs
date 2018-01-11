@@ -1,8 +1,5 @@
-﻿using MahApps.Metro.Controls.Dialogs;
-using SimpleBlockChain.Core;
-using SimpleBlockChain.Core.Aggregates;
+﻿using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Builders;
-using SimpleBlockChain.Core.Crypto;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Repositories;
@@ -10,6 +7,7 @@ using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
+using SimpleBlockChain.WalletUI.Helpers;
 using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
@@ -26,16 +24,18 @@ namespace SimpleBlockChain.WalletUI.UserControls
         private readonly ITransactionHelper _transactionHelper;
         private readonly IWalletRepository _walletRepository;
         private readonly ITransactionBuilder _transactionBuilder;
+        private readonly IWalletHelper _walletHelper;
         private WalletInformationViewModel _viewModel;
         private object _lock = new object();
 
         public WalletInformation(IScriptBuilder scriptBuilder, ITransactionHelper transactionHelper, 
-            IWalletRepository walletRepository, ITransactionBuilder transactionBuilder)
+            IWalletRepository walletRepository, ITransactionBuilder transactionBuilder, IWalletHelper walletHelper)
         {
             _scriptBuilder = scriptBuilder;
             _transactionHelper = transactionHelper;
             _walletRepository = walletRepository;
             _transactionBuilder = transactionBuilder;
+            _walletHelper = walletHelper;
             InitializeComponent();
             Loaded += Load;
             Unloaded += Unload;
@@ -114,7 +114,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
                 return;
             }
 
-            var newKey = CreateNewAddress();
+            var newKey = _walletHelper.CreateNewAddress();
             var kh = new BigInteger(newKey.GetPublicKeyHashed());
             var script = _scriptBuilder.New()
                 .AddToStack(walletAddr.Key.GetSignature())
@@ -238,28 +238,6 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
                 }
             });
-        }
-
-        private Key CreateNewAddress()
-        {
-            var walletStore = WalletStore.Instance();
-            var authenticatedWallet = walletStore.GetAuthenticatedWallet();
-            if (authenticatedWallet == null)
-            {
-                return null;
-            }
-
-            var key = Key.Genererate();
-            var blockChainAdr = new BlockChainAddress(ScriptTypes.P2PKH, authenticatedWallet.Network, key);
-            authenticatedWallet.Addresses.Add(new WalletAggregateAddress
-            {
-                Hash = blockChainAdr.GetSerializedHash(),
-                Key = key,
-                Network = authenticatedWallet.Network
-            });
-            var password = walletStore.GetPassword();
-            _walletRepository.Update(authenticatedWallet, walletStore.GetPassword());
-            return key;
         }
 
         private void Destroy()

@@ -81,6 +81,14 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             }
         }
 
+        public ICommand PublishContractCommand
+        {
+            get
+            {
+                return _publishContractCommand;
+            }
+        }
+
         private void CallSmartContractExecute()
         {
             if (CallContractEvt != null)

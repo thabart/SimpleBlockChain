@@ -19,7 +19,16 @@ namespace SimpleBlockChain.Core.Transactions
         public int Nonce { get; set; }
 
 
-        public SmartContractTransaction() { }
+        public SmartContractTransaction()
+        {
+            From = new byte[0];
+            To = new byte[0];
+            Data = new byte[0];
+            Gas = 0;
+            GasPrice = 0;
+            Value = 0;
+            Nonce = 0;
+        }
 
         public SmartContractTransaction(uint version, uint lockTime) : base(version, lockTime, TransactionCategories.SmartContract) { }
 
@@ -45,7 +54,7 @@ namespace SimpleBlockChain.Core.Transactions
             result.AddRange(BitConverter.GetBytes(Value));
             result.AddRange(BitConverter.GetBytes(Nonce));
             result.AddRange(BitConverter.GetBytes(LockTime));
-            return null;
+            return result;
         }
 
         public static KeyValuePair<BaseTransaction, int> Deserialize(IEnumerable<byte> payload)
@@ -54,7 +63,7 @@ namespace SimpleBlockChain.Core.Transactions
             {
                 throw new ArgumentNullException(nameof(payload));
             }
-            SmartContractTransaction result = null;
+            SmartContractTransaction result = new SmartContractTransaction();
             int currentStartIndex = 0;
             result.Version = BitConverter.ToUInt32(payload.Take(4).ToArray(), 0);
             result.Category = (TransactionCategories)payload.ElementAt(4);
@@ -79,7 +88,7 @@ namespace SimpleBlockChain.Core.Transactions
             currentStartIndex += dataCompactSize.Value;
             if (dataCompactSize.Key.Size > 0)
             {
-                result.To = payload.Skip(currentStartIndex).Take((int)dataCompactSize.Key.Size);
+                result.Data = payload.Skip(currentStartIndex).Take((int)dataCompactSize.Key.Size);
                 currentStartIndex += (int)dataCompactSize.Key.Size;
             }
 

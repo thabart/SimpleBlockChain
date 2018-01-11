@@ -123,9 +123,9 @@ namespace SimpleBlockChain.Core.Validators
             var smartContracts = _smartContractStore.GetSmartContracts();
             var vm = new SolidityVm();
             var defaultCallValue = new DataWord(new byte[] { 0x00 });
-            if (transaction.To == null)
+            if (transaction.To == null || !transaction.To.Any())
             {
-                if (transaction.From == null)
+                if (transaction.From == null || !transaction.From.Any())
                 {
                     throw new ArgumentNullException(nameof(transaction.From));
                 }
@@ -135,7 +135,7 @@ namespace SimpleBlockChain.Core.Validators
                     throw new ValidationException(ErrorCodes.FromInvalidLength);
                 }
 
-                if (transaction.Data == null)
+                if (transaction.Data == null || !transaction.Data.Any())
                 {
                     throw new ArgumentNullException(nameof(transaction.Data));
                 }
@@ -145,7 +145,7 @@ namespace SimpleBlockChain.Core.Validators
                 {
                     while (!program.IsStopped())
                     {
-                        program.Step();
+                        vm.Step(program);
                     }
 
                     var hReturn = program.GetResult().GetHReturn();

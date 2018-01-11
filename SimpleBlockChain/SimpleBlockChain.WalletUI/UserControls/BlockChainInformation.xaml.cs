@@ -7,7 +7,10 @@ using SimpleBlockChain.WalletUI.Events;
 using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -15,23 +18,13 @@ namespace SimpleBlockChain.WalletUI.UserControls
 {
     public partial class BlockChainInformation : UserControl
     {
-        private const int BLOCKS_PER_PAGE = 5;
-        private int _currentPage = 0;
         private BlockChainInformationViewModel _viewModel;
-        private int _currentNbBlocks = 0;
 
         public BlockChainInformation()
         {
             Loaded += Load;
             Unloaded += Unload;
             InitializeComponent();
-        }
-
-        public void Refresh(int nbBlocks)
-        {
-            if (_viewModel == null) { return; }
-            _currentNbBlocks = nbBlocks;
-            RefreshBlocks();
         }
 
         public void Reset()
@@ -44,9 +37,14 @@ namespace SimpleBlockChain.WalletUI.UserControls
         {
             _viewModel = new BlockChainInformationViewModel();
             DataContext = _viewModel;
-            _viewModel.NextPageEvt += NextPage;
-            _viewModel.PreviousPageEvt += PreviousPage;
             _viewModel.SelectBlockEvt += DisplayBlock;
+            _viewModel.RefreshEvt += Refresh;
+        }
+
+        private void Refresh(object sender, EventArgs e)
+        {
+            if (_viewModel == null) { return; }
+            RefreshBlocks();
         }
 
         private void Unload(object sender, RoutedEventArgs e)
@@ -61,18 +59,6 @@ namespace SimpleBlockChain.WalletUI.UserControls
             MainWindowStore.Instance().DisplayFlyout(flyout, Position.Right, 400);
         }
 
-        private void NextPage(object sender, EventArgs e)
-        {
-            _currentPage += 1;
-            RefreshBlocks();
-        }
-
-        private void PreviousPage(object sender, EventArgs e)
-        {
-            _currentPage -= 1;
-            RefreshBlocks();
-        }
-
         private void RefreshBlocks()
         {
             var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
@@ -82,65 +68,65 @@ namespace SimpleBlockChain.WalletUI.UserControls
             }
 
             var rpcClient = new RpcClient(authenticatedWallet.Network);
-            var startIndex = _currentPage * BLOCKS_PER_PAGE;
-            /*
-            var lastIndex = startIndex + (BLOCKS_PER_PAGE - 1);
-            if (lastIndex > (_currentNbBlocks - 1))
-            {
-                lastIndex = _currentNbBlocks;
-            }
-            */
-            var lastIndex = _currentNbBlocks;
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                _viewModel.Blocks.Clear();
-            });
+            var startIndex = 0;
+            var lastIndex = WalletPageStore.Instance().NbBlocks;
+            var waitBlockHashes = new List<Task<IEnumerable<byte>>>();
             for (var i = startIndex; i < lastIndex; i++)
             {
-                rpcClient.GetBlockHash(i).ContinueWith((r) =>
+                waitBlockHashes.Add(rpcClient.GetBlockHash(i));
+            }
+
+            Task.WhenAll(waitBlockHashes.ToArray()).ContinueWith((r) =>
+            {
+                var waitAllBlocks = new List<Task<Block>>();
+                try
+                {
+                    var lstBHash = r.Result.ToList();
+                    foreach (var bHash in lstBHash)
+                    {
+                        if (bHash == null) { continue; }
+                        waitAllBlocks.Add(rpcClient.GetBlock(bHash));
+                    }
+                }
+                catch (AggregateException) { }
+
+                Task.WhenAll(waitAllBlocks.ToArray()).ContinueWith((b) =>
                 {
                     try
                     {
-                        var bHash = r.Result;
-                        if (bHash == null) { return; }
-                        rpcClient.GetBlock(bHash).ContinueWith((sr) =>
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            try
-                            {
-                                Block b = sr.Result;
-                                if (b == null)
-                                {
-                                    return;
-                                }
-
-                                var blockHash = b.GetHashHeader().ToHexString();
-                                var previousHash = b.BlockHeader.PreviousBlockHeader.ToHexString();
-                                var nbTransactions = b.Transactions.Count();
-                                var fees = b.GetTotalFees();
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    _viewModel.Blocks.Add(new BlockViewModel
-                                    {
-                                        Fees = fees,
-                                        Hash = blockHash,
-                                        PreviousHash = previousHash
-                                    });
-                                });
-                            }
-                            catch (AggregateException ex) { }
+                            _viewModel.Blocks.Clear();
                         });
+                        var blocks = b.Result;
+                        foreach (var block in blocks)
+                        {
+                            if (block == null) { continue; }
+                            var blockHash = block.GetHashHeader().ToHexString();
+                            var previousHash = block.BlockHeader.PreviousBlockHeader.ToHexString();
+                            var nbTransactions = block.Transactions.Count();
+                            var fees = block.GetTotalFees();
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                _viewModel.Blocks.Add(new BlockViewModel
+                                {
+                                    Fees = fees,
+                                    Hash = blockHash,
+                                    PreviousHash = previousHash
+                                });
+                            });
+                        }
                     }
-                    catch (AggregateException ex) { }
+                    catch (AggregateException) { }
                 });
-            }
+            });
         }
 
         private void Destroy()
         {
             if (_viewModel == null) { return; }
-            _viewModel.NextPageEvt -= NextPage;
-            _viewModel.PreviousPageEvt -= PreviousPage;
             _viewModel.SelectBlockEvt -= DisplayBlock;
+            _viewModel.RefreshEvt -= Refresh;
             _viewModel = null;
         }
     }

@@ -15,20 +15,17 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 
     public class BlockChainInformationViewModel
     {
-        private ICommand _previousPageCommand;
-        private ICommand _nextPageCommand;
+        private ICommand _refreshCommand;
         private ICommand _selectBlockCommand;
 
         public BlockChainInformationViewModel()
         {
-            _previousPageCommand = new RelayCommand(p => ExecutePreviousPage(), p => CanExecutePreviousPage());
-            _nextPageCommand = new RelayCommand(p => ExecuteNextPage(), p => CanExecuteNextPage());
+            _refreshCommand = new RelayCommand(p => ExecuteRefresh(), p => CanExecuteRefresh());
             _selectBlockCommand = new RelayCommand(p => ExecuteSelectBlock(), p => CanSelectBlock());
             Blocks = new ObservableCollection<BlockViewModel>();
         }
-
-        public event EventHandler PreviousPageEvt;
-        public event EventHandler NextPageEvt;
+        
+        public event EventHandler RefreshEvt;
         public event EventHandler<BlockEventArgs> SelectBlockEvt;
         public ObservableCollection<BlockViewModel> Blocks { get; private set; }
         public BlockViewModel SelectedBlock { get; set; }
@@ -38,19 +35,11 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             Blocks = new ObservableCollection<BlockViewModel>();
         }
 
-        public ICommand PreviousPageCommand
+        public ICommand RefreshCommand
         {
             get
             {
-                return _previousPageCommand;
-            }
-        }
-
-        public ICommand NextPageCommand
-        {
-            get
-            {
-                return _nextPageCommand;
+                return _refreshCommand;
             }
         }
 
@@ -62,28 +51,15 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             }
         }
 
-        private void ExecutePreviousPage()
+        private void ExecuteRefresh()
         {
-            if (PreviousPageEvt != null)
+            if (RefreshEvt != null)
             {
-                PreviousPageEvt(this, EventArgs.Empty);
+                RefreshEvt(this, EventArgs.Empty);
             }
         }
 
-        private bool CanExecutePreviousPage()
-        {
-            return true;
-        }
-
-        private void ExecuteNextPage()
-        {
-            if (NextPageEvt != null)
-            {
-                NextPageEvt(this, EventArgs.Empty);
-            }
-        }
-
-        private bool CanExecuteNextPage()
+        private bool CanExecuteRefresh()
         {
             return true;
         }

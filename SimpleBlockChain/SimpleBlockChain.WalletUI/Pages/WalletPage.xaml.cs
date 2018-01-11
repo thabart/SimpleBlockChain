@@ -4,6 +4,7 @@ using SimpleBlockChain.Core.Nodes;
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.WalletUI.Events;
+using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.UserControls;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
@@ -141,9 +142,6 @@ namespace SimpleBlockChain.WalletUI.Pages
         private void RefreshUi(object sender, DoWorkEventArgs e)
         {
             RefreshNbBlocks();
-            _walletInformation.Refresh();
-            _blockChainInformation.Refresh(_viewModel.NbBlocks);
-            _memoryPoolInformation.Refresh();
         }
 
         private void RefreshNbBlocks()
@@ -162,6 +160,7 @@ namespace SimpleBlockChain.WalletUI.Pages
                     var  nb = r.Result;
                     Application.Current.Dispatcher.Invoke(() =>
                     {
+                        WalletPageStore.Instance().NbBlocks = nb;
                         _viewModel.NbBlocks = nb;
                     });
                 }

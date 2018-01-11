@@ -167,13 +167,13 @@ namespace SimpleBlockChain.Core.Compiler
                     continue;
                 }
 
-                if (smartContractTransaction.To == null)
+                if (smartContractTransaction.To == null || !smartContractTransaction.To.Any()) // Create the contract.
                 {
                     var solidityVm = new SolidityVm();
                     var program = new SolidityProgram(smartContractTransaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(smartContractTransaction.From.ToArray()), defaultCallValue, this));
                     while(!program.IsStopped())
                     {
-                        program.Step();
+                        solidityVm.Step(program);
                     }
 
                     var contractCode = program.GetResult().GetHReturn();

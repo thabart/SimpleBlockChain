@@ -1,5 +1,5 @@
 ﻿using LevelDB;
-using SimpleBlockChain.Core.Compiler;
+using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Stores;
 using SimpleBlockChain.Core.Transactions;
@@ -97,14 +97,15 @@ namespace SimpleBlockChain.Core.Blocks
 
         public Block GetBlock(int blockHeight)
         {
-            string result = null;
-            if (!_db.TryGet(string.Format(BLOCK_HASH, blockHeight), ReadOptions.Default, out result))
+            string hash = null;
+            if (!_db.TryGet(string.Format(BLOCK_HASH, blockHeight), ReadOptions.Default, out hash))
             {
                 return null;
             }
 
-            var hash = result;
-            return GetBlock(Convert.FromBase64String(hash));
+            var result =  GetBlock(hash.FromHexString());
+            result.GetHashHeader();
+            return result;
         }
 
         public int GetBlockHeight(IEnumerable<byte> hash)
@@ -115,7 +116,7 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             string result = null;
-            if (!_db.TryGet(string.Format(BLOCK_HEIGHT, Convert.ToBase64String(hash.ToArray())), ReadOptions.Default, out result))
+            if (!_db.TryGet(string.Format(BLOCK_HEIGHT, hash.ToHexString()), ReadOptions.Default, out result))
             {
                 return -1;
             }
@@ -130,7 +131,7 @@ namespace SimpleBlockChain.Core.Blocks
                 throw new ArgumentNullException(nameof(hash));
             }
 
-            var utf8Str = Convert.ToBase64String(hash.ToArray());
+            var utf8Str = hash.ToHexString();
             string utf8BlockHeader = string.Empty;
             string utf8BlockTxIds = string.Empty;
             if (!_db.TryGet(string.Format(BLOCK_KEY, utf8Str), ReadOptions.Default, out utf8BlockHeader))
@@ -150,13 +151,13 @@ namespace SimpleBlockChain.Core.Blocks
                 string utf8Transaction = string.Empty;
                 if (_db.TryGet(string.Format(TRANSACTION_ELT, txIdPayload), ReadOptions.Default, out utf8Transaction))
                 {
-                    var kvp = BaseTransaction.Deserialize(Convert.FromBase64String(utf8Transaction));
+                    var kvp = BaseTransaction.Deserialize(utf8Transaction.FromHexString());
                     transactions.Add(kvp.Key);
                     continue;
                 }
             }
 
-            var blockHeader = Block.DeserializeBlockHeader(Convert.FromBase64String(utf8BlockHeader));
+            var blockHeader = Block.DeserializeBlockHeader(utf8BlockHeader.FromHexString());
             return new Block(blockHeader, transactions);
         }
 
@@ -173,7 +174,7 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             Slice result = string.Empty;
-            var base64TxId = Convert.ToBase64String(txId.ToArray());
+            var base64TxId = txId.ToHexString();
             if (_db.TryGet(ReadOptions.Default, string.Format(TX_OUT_UNSPENT_ELT, string.Format("{0}_{1}", base64TxId, index)), out result))
             {
                 return true;
@@ -224,7 +225,7 @@ namespace SimpleBlockChain.Core.Blocks
                 throw new ArgumentNullException(nameof(txId));
             }
 
-            var b64TxId = Convert.ToBase64String(txId.ToArray());
+            var b64TxId = txId.ToHexString();
             var dic = _db.Find(ReadOptions.Default, string.Format(TX_OUT_UNSPENT_ELT, b64TxId));
             return ExtractUnspentTransactions(dic);
         }
@@ -270,12 +271,12 @@ namespace SimpleBlockChain.Core.Blocks
             var callback = new Func<BaseTransaction>(() =>
             {
                 string result;
-                if (!_db.TryGet(string.Format(TRANSACTION_ELT, Convert.ToBase64String(txId.ToArray())), ReadOptions.Default, out result))
+                if (!_db.TryGet(string.Format(TRANSACTION_ELT, txId.ToHexString()), ReadOptions.Default, out result))
                 {
                     return null;
                 }
 
-                var payload = Convert.FromBase64String(result);
+                var payload = result.FromHexString();
                 var kvp = BaseTransaction.Deserialize(payload);
                 if (kvp.Equals(default(KeyValuePair<BaseTransaction, int>)) && kvp.Key != null)
                 {
@@ -324,16 +325,18 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             var batch = new WriteBatch();
-            var hashHeader = Convert.ToBase64String(block.GetHashHeader());
-            batch.Put(string.Format(BLOCK_KEY, hashHeader), Convert.ToBase64String(block.SerializeHeader()));
+            var hashHeader = block.GetHashHeader().ToHexString();
+            var bk = string.Format(BLOCK_KEY, hashHeader);
+            batch.Put(bk, block.SerializeHeader().ToHexString());
             var allTxIds = new List<IEnumerable<byte>>();
             var allOutpoint = block.Transactions.Where(t => t is NoneCoinbaseTransaction).Select(t => (((NoneCoinbaseTransaction)t).TransactionIn.First() as TransactionInNoneCoinbase).Outpoint);
             foreach (var transaction in block.Transactions)
             {
                 var currentTxId = transaction.GetTxId();
-                var base64TxId = Convert.ToBase64String(currentTxId.ToArray());
+                var base64TxId = currentTxId.ToHexString();
                 var arr = transaction.Serialize().ToArray();
-                batch.Put(string.Format(TRANSACTION_ELT, base64TxId), Convert.ToBase64String(arr));
+                batch.Put(string.Format(TRANSACTION_ELT, base64TxId), arr.ToHexString());
+                allTxIds.Add(currentTxId);
                 var monetaryTransaction = transaction as BcBaseTransaction;
                 if (monetaryTransaction == null)
                 {
@@ -366,27 +369,25 @@ namespace SimpleBlockChain.Core.Blocks
                         var index = tr.Outpoint.Index;
                         if (IsUnspent(txId, index))
                         {
-                            batch.Delete(string.Format(TX_OUT_UNSPENT_ELT, string.Format("{0}_{1}", Convert.ToBase64String(txId), index)));
+                            batch.Delete(string.Format(TX_OUT_UNSPENT_ELT, string.Format("{0}_{1}", txId.ToHexString(), index)));
                         }
                     }
                 }
-
-                allTxIds.Add(currentTxId);
             }
 
             var b64Lst = new List<string>();
             var blockTransactions = new List<byte>();
             foreach (var txId in allTxIds)
             {
-                b64Lst.Add(Convert.ToBase64String(txId.ToArray()));
+                b64Lst.Add(txId.ToHexString());
             }
 
             var b64 = string.Join(TXID_SEPARATOR.ToString(), b64Lst);
             batch.Put(string.Format(BLOCK_TRANSACTIONS, hashHeader), b64);
-            batch.Put(CURRENT_BLOCK, Convert.ToBase64String(block.GetHashHeader()));
+            batch.Put(CURRENT_BLOCK, block.GetHashHeader().ToHexString());
             batch.Put(CURRENT_BLOCK_HEIGHT, _currentBlockHeight.ToString());
-            batch.Put(string.Format(BLOCK_HEIGHT, Convert.ToBase64String(block.GetHashHeader())), _currentBlockHeight.ToString());
-            batch.Put(string.Format(BLOCK_HASH, _currentBlockHeight.ToString()), Convert.ToBase64String(block.GetHashHeader()));
+            batch.Put(string.Format(BLOCK_HEIGHT, block.GetHashHeader().ToHexString()), _currentBlockHeight.ToString());
+            batch.Put(string.Format(BLOCK_HASH, _currentBlockHeight.ToString()), block.GetHashHeader().ToHexString());
             _db.Write(batch, WriteOptions.Default);
         }
 
@@ -398,7 +399,7 @@ namespace SimpleBlockChain.Core.Blocks
 
         private void IntitializeCurrentBlock()
         {
-            _currentBlockHash = Convert.FromBase64String(_db.Get(CURRENT_BLOCK, ReadOptions.Default));
+            _currentBlockHash = _db.Get(CURRENT_BLOCK, ReadOptions.Default).FromHexString();
             var h = _db.Get(CURRENT_BLOCK_HEIGHT, ReadOptions.Default);
             _currentBlockHeight = int.Parse(_db.Get(CURRENT_BLOCK_HEIGHT, ReadOptions.Default));
         }
@@ -420,7 +421,7 @@ namespace SimpleBlockChain.Core.Blocks
             foreach (var kvp in dic)
             {
                 var values = kvp.Key.Replace(TX_OUT_UNSPENT, "").Split('_');
-                var txId = Convert.FromBase64String(values.ElementAt(1));
+                var txId = values.ElementAt(1).FromHexString();
                 var index = int.Parse(values.ElementAt(2));
                 var txOut = (TransactionOut)GetTransactionOut(txId, index);
                 if (txOut == null)
@@ -454,32 +455,6 @@ namespace SimpleBlockChain.Core.Blocks
             }
 
             return network;
-        }
-
-        private void Execute(SmartContractTransaction transaction)
-        {
-            if (transaction == null)
-            {
-                throw new ArgumentNullException(nameof(transaction));
-            }
-
-            var defaultCallValue = new DataWord(new byte[] { 0x00 });
-            if (transaction.To == null) // CREATE SMART CONTRACT.
-            {
-                var solidityVm = new SolidityVm();
-                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(transaction.From.ToArray()), defaultCallValue, _smartContractStore.GetSmartContracts()));
-                while(!program.IsStopped())
-                {
-                    program.Step();
-                }
-
-                var contractCode = program.GetResult().GetHReturn();
-                // CREATE SMART CONTRACT + 
-            }
-            else
-            {
-
-            }
         }
     }
 }
