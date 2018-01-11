@@ -163,6 +163,8 @@ namespace SimpleBlockChain.Core.Nodes
                     return CompileSolidity(parameters, id, response);
                 case Constants.RpcOperations.GetCompilers:
                     return GetCompilers(response);
+                case Constants.RpcOperations.GetTransactionReceipt:
+                    return GetTransactionReceipt(parameters, id, response);
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");
@@ -845,6 +847,16 @@ namespace SimpleBlockChain.Core.Nodes
             var compilers = new JArray();
             compilers.Add("solidity");
             response["result"] = compilers;
+            return response;
+        }
+
+        private JObject GetTransactionReceipt(IEnumerable<string> parameters, string id, JObject response)
+        {
+            if (parameters == null || !parameters.Any())
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The hash is not specified");
+            }
+
             return response;
         }
 
