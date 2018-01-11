@@ -20,7 +20,7 @@ namespace SimpleBlockChain.Core.Rpc
         Task<IEnumerable<RawMemoryPool>> GetRawMemPool(bool verboseOutput = false);
         Task<BlockTemplate> GetBlockTemplate();
         Task<bool> SubmitBlock(Block block);
-        Task<bool> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false);
+        Task<string> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false);
         Task<long> GetUnconfirmedBalance();
         Task<Block> GetBlock(IEnumerable<byte> hash);
         Task<int> GetBlockCount();
@@ -28,6 +28,7 @@ namespace SimpleBlockChain.Core.Rpc
         Task<BaseTransaction> GetRawTransaction(IEnumerable<byte> txId);
         Task<string> CallSmartContract(SmartContractTransactionParameter scTransaction);
         Task<CompileSolidityResponse> CompileSolidity(string contract);
+        Task<TransactionReceiptResponse> GetTransactionReceipt(IEnumerable<byte> txId);
     }
 
     public class RpcClient : IRpcClient
@@ -138,7 +139,7 @@ namespace SimpleBlockChain.Core.Rpc
             return true;
         }
 
-        public async Task<bool> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false)
+        public async Task<string> SendRawTransaction(BaseTransaction transaction, bool allowHighFees = false)
         {
             if (transaction == null)
             {
@@ -170,7 +171,7 @@ namespace SimpleBlockChain.Core.Rpc
                 throw new RpcException(errorCode);
             }
 
-            return true;
+            return jsonObj.GetValue("result").ToString();
         }
 
         public async Task<IEnumerable<UnspentTransaction>> GetUnspentTransactions(GetUnspentTransactionsParameter parameter)
@@ -569,6 +570,53 @@ namespace SimpleBlockChain.Core.Rpc
             }
 
             result.Infos = lstInfo;
+            return result;
+        }
+
+        public async Task<TransactionReceiptResponse> GetTransactionReceipt(IEnumerable<byte> txId)
+        {
+            if (txId == null)
+            {
+                throw new ArgumentNullException(nameof(txId));
+            }
+
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(txId.ToHexString());
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.GetTransactionReceipt);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.GetValue("result").ToString();
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            var resultObj = JObject.Parse(r);
+            var result = new TransactionReceiptResponse
+            {
+                TransactionHash = resultObj.GetValue("transactionHash").ToString(),
+                ContractAddress= resultObj.GetValue("contractAddress").ToString()
+            };
             return result;
         }
 

@@ -9,18 +9,35 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         private string _smartContractAddress;
         private string _smartContractCallValue;
         private string _smartContract;
+        private string _transactionAddress;
         private ICommand _callContractCommand;
         private ICommand _compileContractCommand;
         private ICommand _publishContractCommand;
+        private ICommand _getSmartContractCommand;
         public event EventHandler CallContractEvt;
         public event EventHandler CompileContractEvt;
         public event EventHandler PublishContractEvt;
+        public event EventHandler GetSmartContractEvt;
 
         public SmartContractViewModel()
         {
             _callContractCommand = new RelayCommand(p => CallSmartContractExecute(), p => CanExecuteCallSmartContract());
             _compileContractCommand = new RelayCommand(p => CompileContractExecute(), p => CanCompileContract());
             _publishContractCommand = new RelayCommand(p => PublishContractExecute(), p => CanPublishContract());
+            _getSmartContractCommand = new RelayCommand(p => GetSmartContractExecute(), p => CanExecuteGetSmartContract());
+        }
+
+        public string TransactionAddress
+        {
+            get { return _transactionAddress; }
+            set
+            {
+                if (_transactionAddress != value)
+                {
+                    _transactionAddress = value;
+                    NotifyPropertyChanged(nameof(TransactionAddress));
+                }
+            }
         }
 
         public string SmartContractAddress
@@ -89,6 +106,14 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             }
         }
 
+        public ICommand GetSmartContractCommand
+        {
+            get
+            {
+                return _getSmartContractCommand;
+            }
+        }
+
         private void CallSmartContractExecute()
         {
             if (CallContractEvt != null)
@@ -124,6 +149,19 @@ namespace SimpleBlockChain.WalletUI.ViewModels
         }
 
         private bool CanPublishContract()
+        {
+            return true;
+        }
+
+        private void GetSmartContractExecute()
+        {
+            if (GetSmartContractEvt != null)
+            {
+                GetSmartContractEvt(this, EventArgs.Empty);
+            }
+        }
+
+        private bool CanExecuteGetSmartContract()
         {
             return true;
         }

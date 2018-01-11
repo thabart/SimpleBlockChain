@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Rpc.Parameters;
 using SimpleBlockChain.Core.Stores;
@@ -7,12 +8,11 @@ using SimpleBlockChain.WalletUI.Helpers;
 using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using SimpleBlockChain.Core.Helpers;
 
 namespace SimpleBlockChain.WalletUI.UserControls
 {
@@ -35,6 +35,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             _viewModel.CallContractEvt -= CallContract;
             _viewModel.CompileContractEvt -= CompileContract;
             _viewModel.PublishContractEvt -= PublishContract;
+            _viewModel.GetSmartContractEvt -= GetSmartContract;
             _viewModel = null;
         }
 
@@ -44,6 +45,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             _viewModel.CallContractEvt += CallContract;
             _viewModel.CompileContractEvt += CompileContract;
             _viewModel.PublishContractEvt += PublishContract;
+            _viewModel.GetSmartContractEvt += GetSmartContract;
             DataContext = _viewModel;
         }
 
@@ -188,13 +190,54 @@ namespace SimpleBlockChain.WalletUI.UserControls
                     };
                     rpcClient.SendRawTransaction(smartContractTransaction).ContinueWith((c) =>
                     {
-
+                        Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(string.Format("The transaction id is : {0}", c.Result)));
                     });
                 }
                 catch (AggregateException)
                 {
                     Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to build the solidity contract"));
                 }
+            });
+        }
+
+        private void GetSmartContract(object sender, EventArgs e)
+        {
+            if (_viewModel == null) { return; }
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                MainWindowStore.Instance().DisplayError("You're not authenticated");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_viewModel.TransactionAddress))
+            {
+                MainWindowStore.Instance().DisplayError("The transaction address must be filled in");
+                return;
+            }
+
+            IEnumerable<byte> txId = null;
+            try
+            {
+                txId = _viewModel.TransactionAddress.FromHexString();
+            }
+            catch(Exception)
+            {
+                MainWindowStore.Instance().DisplayError("The transaction address is not a valid hex");
+                return;
+            }
+
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.GetTransactionReceipt(txId).ContinueWith((r) =>
+            {
+                try
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(string.Format("The smart contract address is : {0}", r.Result.ContractAddress)));
+                }
+                catch(AggregateException)
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to get the smart contract address"));
+                }                
             });
         }
     }

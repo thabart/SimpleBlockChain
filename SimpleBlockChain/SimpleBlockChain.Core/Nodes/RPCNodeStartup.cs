@@ -161,9 +161,9 @@ namespace SimpleBlockChain.Core.Nodes
                     return CallSmartContract(parameters, id, response);
                 case Constants.RpcOperations.CompileSolidity: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_compilesolidity
                     return CompileSolidity(parameters, id, response);
-                case Constants.RpcOperations.GetCompilers:
+                case Constants.RpcOperations.GetCompilers: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getcompilers
                     return GetCompilers(response);
-                case Constants.RpcOperations.GetTransactionReceipt:
+                case Constants.RpcOperations.GetTransactionReceipt: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_gettransactionreceipt
                     return GetTransactionReceipt(parameters, id, response);
             }
 
@@ -857,6 +857,33 @@ namespace SimpleBlockChain.Core.Nodes
                 return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The hash is not specified");
             }
 
+            var txHash = parameters.First();
+            IEnumerable<byte> txId = null;
+            try
+            {
+                txId = txHash.FromHexString();
+            }
+            catch(Exception)
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The txid cannot be decoded");
+            }
+
+            var transaction = _blockChainStore.GetBlockChain().GetTransaction(txId);
+            if (transaction == null)
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_REQUEST, "The transaction doesn't exist");
+            }
+
+            var smartContract = _smartContractStore.GetSmartContracts().GetSmartContractAddress(txId);
+            if (smartContract == null)
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_REQUEST, "The smart contract doesn't exist");
+            }
+
+            var obj = new JObject();
+            obj["transactionHash"] = txId.ToHexString();
+            obj["contractAddress"] = smartContract.ToHexString();
+            response["result"] = obj;
             return response;
         }
 
