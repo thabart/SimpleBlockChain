@@ -95,7 +95,8 @@ namespace SimpleBlockChain.Core.Compiler
         JUMP = 0x56,
         JUMPI = 0x57,
         PC = 0x58,
-        MSIZE = 0x5a,
+        MSIZE = 0x59,
+        GAS = 0x5a,
         JUMPDEST = 0x5b,
         PUSH1 = 0x60,
         PUSH2 = 0x61,
@@ -159,6 +160,12 @@ namespace SimpleBlockChain.Core.Compiler
         SWAP8 = 0x97,
         SWAP9 = 0x98,
         SWAP10 = 0x99,
+        SWAP11 = 0x9A,
+        SWAP12 = 0x9b,
+        SWAP13 = 0x9c,
+        SWAP14 = 0x9d,
+        SWAP15 = 0x9e,
+        SWAP16 = 0x9f,
         RETURN = 0xf3,
         CALL = 0xf1
     }

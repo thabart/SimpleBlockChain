@@ -71,7 +71,13 @@ namespace SimpleBlockChain.Core.Compiler
             { SolidityOpCodes.SWAP7, 8 },
             { SolidityOpCodes.SWAP8, 9 },
             { SolidityOpCodes.SWAP9, 10 },
-            { SolidityOpCodes.SWAP10, 11 }
+            { SolidityOpCodes.SWAP10, 11 },
+            { SolidityOpCodes.SWAP11, 12 },
+            { SolidityOpCodes.SWAP12, 13 },
+            { SolidityOpCodes.SWAP13, 14 },
+            { SolidityOpCodes.SWAP14, 15 },
+            { SolidityOpCodes.SWAP15, 16 },
+            { SolidityOpCodes.SWAP16, 17 }
         };
 
         public void Step(SolidityProgram program, bool trace = false)
@@ -299,6 +305,13 @@ namespace SimpleBlockChain.Core.Compiler
                     program.SaveMemory(msStoreW1, msStoreW2);
                     program.Step();
                     break;
+                case SolidityOpCodes.MSTORE8:
+                     var addr = program.StackPop();
+                     var value = program.StackPop();
+                     byte[] byteVal = { value.GetData()[31] };
+                     program.SaveMemory(addr.GetIntValueSafe(), byteVal);
+                     program.Step();
+                    break;
                 case SolidityOpCodes.CALLVALUE:
                     var callValue = program.GetCallValue();
                     program.StackPush(callValue);
@@ -384,6 +397,12 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.SWAP8:
                 case SolidityOpCodes.SWAP9:
                 case SolidityOpCodes.SWAP10:
+                case SolidityOpCodes.SWAP11:
+                case SolidityOpCodes.SWAP12:
+                case SolidityOpCodes.SWAP13:
+                case SolidityOpCodes.SWAP14:
+                case SolidityOpCodes.SWAP15:
+                case SolidityOpCodes.SWAP16:
                     var sn = SizeSolidityCodes[opCode.Value] - SizeSolidityCodes[SolidityOpCodes.SWAP1] + 2;
                     stack.Swap(stack.Count() - 1, stack.Count() - sn);
                     program.Step();
@@ -468,6 +487,8 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.SSTORE:
                     var sstoreWord1 = program.StackPop();
                     var sstoreWord2 = program.StackPop();
+                    var tt = sstoreWord1.GetData().ToHexString();
+                    var tt2 = sstoreWord2.GetData().ToHexString();
                     program.SaveStorage(sstoreWord1, sstoreWord2);
                     program.Step();
                     break;
@@ -487,6 +508,12 @@ namespace SimpleBlockChain.Core.Compiler
                     var hash = HashFactory.Crypto.SHA3.CreateBlake256();
                     var shaWord = hash.ComputeBytes(buffer).GetBytes();
                     program.StackPush(shaWord);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.MSIZE:
+                    int memSize = program.GetMemorySize();
+                    var sizeW = new DataWord(memSize);
+                    program.StackPush(sizeW);
                     program.Step();
                     break;
             }

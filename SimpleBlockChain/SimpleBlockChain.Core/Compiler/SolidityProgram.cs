@@ -170,6 +170,11 @@ namespace SimpleBlockChain.Core.Compiler
             return _stack.ElementAt(i);
         }
 
+        public int GetMemorySize()
+        {
+            return _memory.GetSize();
+        }
+
         public byte[] GetMemory()
         {
             return _memory.Read(0, _memory.GetSize());
