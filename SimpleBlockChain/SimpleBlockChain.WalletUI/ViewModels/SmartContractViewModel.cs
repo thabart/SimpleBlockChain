@@ -6,10 +6,12 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 {
     public class SmartContractViewModel : BaseViewModel
     {
+        private string _getSmartContractAddressResult;
         private string _smartContractAddress;
         private string _smartContractCallValue;
         private string _smartContract;
         private string _transactionAddress;
+        private string _transactionId;
         private ICommand _callContractCommand;
         private ICommand _compileContractCommand;
         private ICommand _publishContractCommand;
@@ -36,6 +38,22 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 {
                     _transactionAddress = value;
                     NotifyPropertyChanged(nameof(TransactionAddress));
+                }
+            }
+        }
+
+        public string GetSmartContractAddressResult
+        {
+            get
+            {
+                return _getSmartContractAddressResult;
+            }
+            set
+            {
+                if (_getSmartContractAddressResult != value)
+                {
+                    _getSmartContractAddressResult = value;
+                    NotifyPropertyChanged(nameof(GetSmartContractAddressResult));
                 }
             }
         }
@@ -78,6 +96,22 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 {
                     _smartContract = value;
                     NotifyPropertyChanged(nameof(SmartContract));
+                }
+            }
+        }
+
+        public string TransactionId
+        {
+            get
+            {
+                return _transactionId;
+            }
+            set
+            {
+                if (_transactionId != value)
+                {
+                    _transactionId = value;
+                    NotifyPropertyChanged(nameof(TransactionId));
                 }
             }
         }

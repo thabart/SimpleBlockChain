@@ -190,7 +190,10 @@ namespace SimpleBlockChain.WalletUI.UserControls
                     };
                     rpcClient.SendRawTransaction(smartContractTransaction).ContinueWith((c) =>
                     {
-                        Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(string.Format("The transaction id is : {0}", c.Result)));
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            _viewModel.TransactionId = c.Result;
+                        });
                     });
                 }
                 catch (AggregateException)
@@ -232,7 +235,10 @@ namespace SimpleBlockChain.WalletUI.UserControls
             {
                 try
                 {
-                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(string.Format("The smart contract address is : {0}", r.Result.ContractAddress)));
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        _viewModel.GetSmartContractAddressResult = r.Result.ContractAddress;
+                    });
                 }
                 catch(AggregateException)
                 {

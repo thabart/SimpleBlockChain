@@ -1081,10 +1081,12 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var setMsgData = new List<byte>();
             setMsgData.AddRange(operationPayload);
             setMsgData.AddRange(parameterPayload);
+            var str = setMsgData.ToHexString();
 
             operationSignature = "get()"; // CREATE GET PARAMETER.
             var getMsgData = hash.ComputeBytes(Encoding.ASCII.GetBytes(operationSignature)).GetBytes().Take(4);
 
+            str = getMsgData.ToHexString();
             var address = new DataWord(_adr.FromHexString().ToArray());
             var callValue = new DataWord("00".FromHexString().ToArray());
             var scAddress = "0000000000000000000000000000000000000001".FromHexString();
