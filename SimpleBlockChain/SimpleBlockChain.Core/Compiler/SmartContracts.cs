@@ -107,7 +107,7 @@ namespace SimpleBlockChain.Core.Compiler
             var keyHex = key.GetData().ToHexString();
             if (!_db.TryGet(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), ReadOptions.Default, out result))
             {
-                return null;
+                return DataWord.ZERO;
             }
 
             return new DataWord(result.FromHexString().ToArray());

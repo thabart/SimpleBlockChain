@@ -159,6 +159,17 @@ namespace SimpleBlockChain.Core.Compiler
             return _data;
         }
 
+        public byte[] GetReverseData()
+        {
+            var data = GetDataWithoutFixSize().ToList();
+            for (var i = data.Count; i < 32; i++)
+            {
+                data.Add(0);
+            }
+
+            return data.ToArray();
+        }
+
         public bool IsZero()
         {
             foreach (byte tmp in _data)

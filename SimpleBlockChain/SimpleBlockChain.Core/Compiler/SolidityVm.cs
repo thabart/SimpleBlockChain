@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Math;
+﻿using HashLib;
+using Org.BouncyCastle.Math;
 using SimpleBlockChain.Core.Extensions;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,17 @@ namespace SimpleBlockChain.Core.Compiler
             { SolidityOpCodes.DUP3, 3 },
             { SolidityOpCodes.DUP4, 4 },
             { SolidityOpCodes.DUP5, 5 },
+            { SolidityOpCodes.DUP6, 6 },
+            { SolidityOpCodes.DUP7, 7 },
+            { SolidityOpCodes.DUP8, 8 },
+            { SolidityOpCodes.DUP9, 9 },
+            { SolidityOpCodes.DUP10, 10 },
+            { SolidityOpCodes.DUP11, 11 },
+            { SolidityOpCodes.DUP12, 12 },
+            { SolidityOpCodes.DUP13, 13 },
+            { SolidityOpCodes.DUP14, 14 },
+            { SolidityOpCodes.DUP15, 15 },
+            { SolidityOpCodes.DUP16, 16 },
             { SolidityOpCodes.SWAP1, 2 },
             { SolidityOpCodes.SWAP2, 3 },
             { SolidityOpCodes.SWAP3, 4 },
@@ -318,6 +330,17 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.DUP3:
                 case SolidityOpCodes.DUP4:
                 case SolidityOpCodes.DUP5:
+                case SolidityOpCodes.DUP6:
+                case SolidityOpCodes.DUP7:
+                case SolidityOpCodes.DUP8:
+                case SolidityOpCodes.DUP9:
+                case SolidityOpCodes.DUP10:
+                case SolidityOpCodes.DUP11:
+                case SolidityOpCodes.DUP12:
+                case SolidityOpCodes.DUP13:
+                case SolidityOpCodes.DUP14:
+                case SolidityOpCodes.DUP15:
+                case SolidityOpCodes.DUP16:
                     var n = SizeSolidityCodes[opCode.Value] - SizeSolidityCodes[SolidityOpCodes.DUP1] + 1;
                     var dup1W1 = stack[stack.Count() - n];
                     program.StackPush(dup1W1);
@@ -455,7 +478,15 @@ namespace SimpleBlockChain.Core.Compiler
                 case SolidityOpCodes.SLOAD:
                     var sLoadKey = program.StackPop();
                     var sLoadVal = program.StorageLoad(sLoadKey);
-                    program.StackPush(sLoadVal);
+                    program.StackPush(sLoadVal);program.Step();
+                    break;
+                case SolidityOpCodes.SHA3:
+                    var sha3MemOffsetData = program.StackPop();
+                    var sha3LengthData = program.StackPop();
+                    byte[] buffer = program.ChunkMemory(sha3MemOffsetData.GetIntValueSafe(), sha3LengthData.GetIntValueSafe());
+                    var hash = HashFactory.Crypto.SHA3.CreateBlake256();
+                    var shaWord = hash.ComputeBytes(buffer).GetBytes();
+                    program.StackPush(shaWord);
                     program.Step();
                     break;
             }
