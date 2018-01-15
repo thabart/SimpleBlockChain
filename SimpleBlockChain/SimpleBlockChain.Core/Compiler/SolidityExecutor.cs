@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.Core.Stores;
+﻿using SimpleBlockChain.Core.Extensions;
+using SimpleBlockChain.Core.Stores;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ namespace SimpleBlockChain.Core.Compiler
 {
     public interface ISolidityExecutor
     {
-        SolidityExecutor Execute(IEnumerable<byte> scAddrPayload, IEnumerable<byte> addrPayload);
+        SolidityExecutor Execute(IEnumerable<byte> scAddrPayload, IEnumerable<byte> addrPayload, IEnumerable<byte> data);
     }
 
     public class SolidityExecutor : ISolidityExecutor
@@ -21,7 +22,7 @@ namespace SimpleBlockChain.Core.Compiler
             _smartContractStore = smartContractStore;
         }
 
-        public SolidityExecutor Execute(IEnumerable<byte> scAddrPayload, IEnumerable<byte> addrPayload)
+        public SolidityExecutor Execute(IEnumerable<byte> scAddrPayload, IEnumerable<byte> addrPayload, IEnumerable<byte> data)
         {
             if (scAddrPayload == null)
             {
@@ -36,7 +37,8 @@ namespace SimpleBlockChain.Core.Compiler
             var smartContract = _smartContractStore.GetSmartContracts().GetSmartContract(scAddrPayload);
             var defaultCallValue = new DataWord(new byte[] { 0x00 });
             _smartContracts = _smartContractStore.GetSmartContracts();
-            _solidityProgram = new SolidityProgram(smartContract.Code.ToList(), new SolidityProgramInvoke(scAddrPayload, smartContract.Address, new DataWord(addrPayload.ToArray()), defaultCallValue, _smartContracts));
+            var scode = smartContract.Code.ToHexString();
+            _solidityProgram = new SolidityProgram(smartContract.Code.ToList(), new SolidityProgramInvoke(data, smartContract.Address, new DataWord(addrPayload.ToArray()), defaultCallValue, _smartContracts));
             var vm = new SolidityVm();
             while (!_solidityProgram.IsStopped())
             {

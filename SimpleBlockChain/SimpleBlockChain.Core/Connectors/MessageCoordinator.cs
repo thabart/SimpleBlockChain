@@ -133,14 +133,14 @@ namespace SimpleBlockChain.Core.Connectors
             {
                 var msg = message as BlockMessage;
                 _blockValidator.Check(msg.Block);
-                blockChain.AddBlock(msg.Block);
-                smartContract.Start();
-                smartContract.AddBlock(msg.Block);
-                smartContract.Commit();
                 if (msg.Block.Transactions != null)
                 {
                     MemoryPool.Instance().Remove(msg.Block.Transactions.Select(tx => tx.GetTxId()));
                 }
+
+                smartContract.AddBlock(msg.Block);
+                smartContract.Commit();
+                blockChain.AddBlock(msg.Block);
             }
 
             if (message.GetCommandName() == Constants.MessageNames.NotFound) //  SOME INVENTORIES ARE NOT FOUND.

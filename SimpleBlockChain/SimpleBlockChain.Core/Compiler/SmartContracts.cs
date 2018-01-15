@@ -35,6 +35,10 @@ namespace SimpleBlockChain.Core.Compiler
         private const string SMART_CONTRACT_STORE = "SMART_CONTRACT_STORE";
         private const string SMART_CONTRACT_STORE_ELT = SMART_CONTRACT_STORE + "_{0}_{1}";
 
+        private Dictionary<string, SmartContract> _cacheSmartContracts;
+        private Dictionary<string, SmartContract> _cacheTxSmartContracts;
+        private Dictionary<string, string> _cacheDataRows;
+
         internal SmartContracts(IAssemblyHelper assemblyHelper, Networks network)
         {
             _assemblyHelper = assemblyHelper;
@@ -42,31 +46,94 @@ namespace SimpleBlockChain.Core.Compiler
             var options = new Options { CreateIfMissing = true };
             _db = new DB(GetDbFile(), options);
             Init();
-        }
-
-        public void Start()
-        {
             _writeBatch = new WriteBatch();
+            _cacheSmartContracts = new Dictionary<string, SmartContract>();
+            _cacheDataRows = new Dictionary<string, string>();
+            _cacheTxSmartContracts = new Dictionary<string, SmartContract>();
         }
 
         public void Commit()
         {
             _db.Write(_writeBatch, WriteOptions.Default);
+            ClearCache();
         }
 
         public void Rollback()
         {
             _writeBatch = new WriteBatch();
+            ClearCache();
         }
 
-        public bool AddBlock(Block block)
+        public bool AddBlock(Block block, bool addInTransaction = false)
         {
             if (block == null)
             {
                 throw new ArgumentNullException(nameof(block));
             }
 
-            Persist(block);
+            var writeBatch = new WriteBatch();
+            if (addInTransaction)
+            {
+                writeBatch = _writeBatch;
+            }
+
+            Persist(block, writeBatch, addInTransaction);
+            if (!addInTransaction)
+            {
+                _db.Write(writeBatch, WriteOptions.Default);
+            }
+
+            return true;
+        }
+
+        public bool AddStorageRow(IEnumerable<byte> scAddr, DataWord key, DataWord value, bool addInTransaction = false)
+        {
+            if (scAddr == null)
+            {
+                throw new ArgumentNullException(nameof(scAddr));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            
+            var writeBatch = new WriteBatch();
+            if (addInTransaction)
+            {
+                writeBatch = _writeBatch;
+            }
+
+            string result = string.Empty;
+            var scAddrHex = scAddr.ToHexString();
+            var keyHex = key.GetData().ToHexString();
+            var valueHex = value.GetData().ToHexString();
+            if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, scAddrHex), ReadOptions.Default, out result))
+            {
+                return false;
+            }
+
+            result = string.Empty;
+            if (_db.TryGet(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), ReadOptions.Default, out result))
+            {
+                writeBatch.Delete(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex));
+            }
+
+            writeBatch.Put(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), valueHex);
+            if (!addInTransaction)
+            {
+                _db.Write(writeBatch, WriteOptions.Default);
+            }
+            else
+            {
+                _cacheDataRows.Add(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), keyHex);
+            }
+
             return true;
         }
 
@@ -80,7 +147,13 @@ namespace SimpleBlockChain.Core.Compiler
             string result = string.Empty;
             if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, smartContractAddress.ToHexString()), ReadOptions.Default, out result))
             {
-                return null;
+                var cacheSmartContract = _cacheSmartContracts.FirstOrDefault(c => c.Key == smartContractAddress.ToHexString());
+                if (cacheSmartContract.Equals(default(KeyValuePair<string, SmartContract>)) || cacheSmartContract.Value == null)
+                {
+                    return null;
+                }
+
+                return cacheSmartContract.Value;
             }
 
             return new SmartContract
@@ -100,7 +173,13 @@ namespace SimpleBlockChain.Core.Compiler
             string result = string.Empty;
             if (!_db.TryGet(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), ReadOptions.Default, out result))
             {
-                return null;
+                var cacheTxSmartContract = _cacheSmartContracts.FirstOrDefault(c => c.Key == txId.ToHexString());
+                if (cacheTxSmartContract.Equals(default(KeyValuePair<string, SmartContract>)) || cacheTxSmartContract.Value == null)
+                {
+                    return null;
+                }
+
+                return cacheTxSmartContract.Value.Address;
             }
 
             return result.FromHexString();
@@ -123,59 +202,24 @@ namespace SimpleBlockChain.Core.Compiler
             var keyHex = key.GetData().ToHexString();
             if (!_db.TryGet(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), ReadOptions.Default, out result))
             {
-                return DataWord.ZERO;
+
+                var cacheDataRow = _cacheDataRows.FirstOrDefault(c => c.Key == string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex));
+                if (cacheDataRow.Equals(default(KeyValuePair<string, string>)) || string.IsNullOrWhiteSpace(cacheDataRow.Value))
+                {
+                    return DataWord.ZERO;
+                }
+
+                return new DataWord(cacheDataRow.Value.FromHexString().ToArray());
             }
 
             return new DataWord(result.FromHexString().ToArray());
         }
 
-        public bool AddStorageRow(IEnumerable<byte> scAddr, DataWord key, DataWord value)
+        private void Persist(Block block, WriteBatch writeBatch, bool addIntoCache = false)
         {
-            if (_writeBatch == null)
+            if (writeBatch == null)
             {
-                throw new InvalidOperationException("the transaction has not been init");
-            }
-
-            if (scAddr == null)
-            {
-                throw new ArgumentNullException(nameof(scAddr));
-            }
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-
-            string result = string.Empty;
-            var scAddrHex = scAddr.ToHexString();
-            var keyHex = key.GetData().ToHexString();
-            var valueHex = value.GetData().ToHexString();
-            if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, scAddrHex), ReadOptions.Default, out result))
-            {
-                return false;
-            }
-
-            result = string.Empty;
-            if (_db.TryGet(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), ReadOptions.Default, out result))
-            {
-                _writeBatch.Delete(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex));
-            }
-
-            _writeBatch.Put(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), valueHex);
-            return true;
-        }
-
-        private void Persist(Block block)
-        {
-            if (_writeBatch == null)
-            {
-                throw new InvalidOperationException("the transaction has not been init");
+                throw new ArgumentNullException(nameof(writeBatch));
             }
 
             if (block == null)
@@ -192,38 +236,77 @@ namespace SimpleBlockChain.Core.Compiler
                     continue;
                 }
 
-                var solidityVm = new SolidityVm();
-                var program = new SolidityProgram(smartContractTransaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(smartContractTransaction.From.ToArray()), defaultCallValue, this));
-                while (!program.IsStopped())
-                {
-                    solidityVm.Step(program);
-                }
 
                 if (smartContractTransaction.To == null || !smartContractTransaction.To.Any()) // Create the contract.
                 {
+                    var solidityVm = new SolidityVm();
+                    var program = new SolidityProgram(smartContractTransaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(smartContractTransaction.From.ToArray()), defaultCallValue, this));
+                    while (!program.IsStopped())
+                    {
+                        solidityVm.Step(program);
+                    }
+
                     var contractCode = program.GetResult().GetHReturn();
                     var txId = transaction.GetTxId();
                     var smartContractAdr = smartContractTransaction.GetSmartContractAddress();
                     var hex = contractCode.ToHexString();
-                    _writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContractAdr.ToHexString()), hex);
-                    _writeBatch.Put(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), smartContractAdr.ToHexString());
+                    writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContractAdr.ToHexString()), hex);
+                    writeBatch.Put(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), smartContractAdr.ToHexString());
+                    if (addIntoCache)
+                    {
+                        _cacheSmartContracts.Add(smartContractAdr.ToHexString(), new SmartContract
+                        {
+                            Address = smartContractAdr,
+                            Code = contractCode
+                        });
+                        _cacheTxSmartContracts.Add(txId.ToHexString(), new SmartContract
+                        {
+                            Address = smartContractAdr,
+                            Code = contractCode
+                        });
+                    }
+                }
+                else if (smartContractTransaction.To != null)
+                {
+                    var sc = GetSmartContract(smartContractTransaction.To);
+                    if (sc == null)
+                    {
+                        return;
+                    }
+
+                    var from = smartContractTransaction.From;
+                    if (from == null)
+                    {
+                        from = new byte[0];
+                    }
+
+                    var solidityVm = new SolidityVm();
+                    var program = new SolidityProgram(sc.Code.ToList(), new SolidityProgramInvoke(smartContractTransaction.Data, smartContractTransaction.To, new DataWord(from.ToArray()), defaultCallValue, this));
+                    while (!program.IsStopped())
+                    {
+                        solidityVm.Step(program);
+                    }
                 }
             }
         }
         
-        private void Persist(SmartContract smartContract)
+        private void Persist(SmartContract smartContract, WriteBatch writeBatch, bool addIntoCache = false)
         {
-            if (_writeBatch == null)
-            {
-                throw new InvalidOperationException("the transaction has not been init");
-            }
-
             if (smartContract == null)
             {
                 throw new ArgumentNullException(nameof(smartContract));
             }
 
-            _writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContract.Address.ToHexString()), smartContract.Code.ToHexString());
+            if (writeBatch == null)
+            {
+                throw new ArgumentNullException(nameof(writeBatch));
+            }
+
+            writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContract.Address.ToHexString()), smartContract.Code.ToHexString());
+            if (addIntoCache)
+            {
+                _cacheSmartContracts.Add(smartContract.Address.ToHexString(), smartContract);
+            }
         }
 
         public void Dispose()
@@ -255,17 +338,24 @@ namespace SimpleBlockChain.Core.Compiler
 
         private void Init()
         {
-            Start();
+            var writeBatch = new WriteBatch();
             foreach(var embeddedContract in _embeddedContracts)
             {
                 string result = string.Empty;
                 if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, embeddedContract.Address.ToHexString()), ReadOptions.Default, out result))
                 {
-                    Persist(embeddedContract);
+                    Persist(embeddedContract, writeBatch);
                 }
             }
 
-            Commit();
+            _db.Write(writeBatch, WriteOptions.Default);
+        }
+
+        private void ClearCache()
+        {
+            _cacheSmartContracts = new Dictionary<string, SmartContract>();
+            _cacheDataRows = new Dictionary<string, string>();
+            _cacheTxSmartContracts = new Dictionary<string, SmartContract>();
         }
     }
 }

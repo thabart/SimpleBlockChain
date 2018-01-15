@@ -40,7 +40,10 @@
                     <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Call value</Label>
                     <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=SmartContractCallValue, Mode=TwoWay}"></TextBox>
                     <!-- Submit button -->
-                    <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CallContractCommand}">Send</Button>
+                    <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+                        <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=CallContractCommand}">Call contract</Button>
+                        <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=PublishTransactionCallCommand}">Publish transaction call</Button>
+                    </StackPanel>
                 </Grid>
             </StackPanel>
             <!-- Display the contract address -->

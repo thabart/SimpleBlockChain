@@ -1168,6 +1168,8 @@ namespace SimpleBlockChain.UnitTests.Compiler
             getNomenCodeMsgData.AddRange(codeParameterSize);
             getNomenCodeMsgData.AddRange(codeParameter);
 
+            var xxxx = getNomenCodeMsgData.ToHexString();
+
             var address = new DataWord(_adr.FromHexString().ToArray());
             var callValue = new DataWord("00".FromHexString().ToArray());
             var scAddress = "0000000000000000000000000000000000000001".FromHexString();

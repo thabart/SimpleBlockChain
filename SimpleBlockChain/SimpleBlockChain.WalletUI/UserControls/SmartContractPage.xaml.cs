@@ -36,6 +36,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
             _viewModel.CompileContractEvt -= CompileContract;
             _viewModel.PublishContractEvt -= PublishContract;
             _viewModel.GetSmartContractEvt -= GetSmartContract;
+            _viewModel.PublishTransactionCallEvt -= PublishTransactionCall;
             _viewModel = null;
         }
 
@@ -46,7 +47,70 @@ namespace SimpleBlockChain.WalletUI.UserControls
             _viewModel.CompileContractEvt += CompileContract;
             _viewModel.PublishContractEvt += PublishContract;
             _viewModel.GetSmartContractEvt += GetSmartContract;
+            _viewModel.PublishTransactionCallEvt += PublishTransactionCall;
             DataContext = _viewModel;
+        }
+
+        private void PublishTransactionCall(object sender, EventArgs e)
+        {
+
+            if (_viewModel == null) { return; }
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                MainWindowStore.Instance().DisplayError("You're not authenticated");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_viewModel.SmartContractAddress))
+            {
+                MainWindowStore.Instance().DisplayError("The address should be filled in");
+                return;
+            }
+
+            IEnumerable<byte> to = null;
+            IEnumerable<byte> data = null;
+            try
+            {
+                to = _viewModel.SmartContractAddress.FromHexString();
+            }
+            catch
+            {
+                MainWindowStore.Instance().DisplayError("The address should be encoded in hex");
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(_viewModel.SmartContractCallValue))
+            {
+                try
+                {
+                    data = _viewModel.SmartContractCallValue.FromHexString();
+                }
+                catch
+                {
+                    MainWindowStore.Instance().DisplayError("The callvalue should be encoded in hex");
+                    return;
+                }
+            }
+            
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            var smartContractTransaction = new SmartContractTransaction
+            {
+                To = to,
+                Data = data
+            };
+            rpcClient.SendRawTransaction(smartContractTransaction).ContinueWith((t) =>
+            {
+                try
+                {
+                    var txId = t.Result;
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(string.Format("A new transaction has been published : {0}", txId)));
+                }
+                catch (AggregateException)
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to publish the transaction"));
+                }
+            });
         }
 
         private void CallContract(object sender, EventArgs e)

@@ -289,22 +289,25 @@ namespace SimpleBlockChain.Core.Nodes
             try
             {
                 _blockValidator.Check(block);
-                blockChain.AddBlock(block);
-                smartContract.Start();
-                smartContract.AddBlock(block);
-                smartContract.Commit();
-                P2PConnectorEventStore.Instance().Broadcast(block);
                 if (block.Transactions != null)
                 {
                     MemoryPool.Instance().Remove(block.Transactions.Select(tx => tx.GetTxId()));
                 }
 
+                smartContract.AddBlock(block);
+                smartContract.Commit();
+                blockChain.AddBlock(block);
+                P2PConnectorEventStore.Instance().Broadcast(block);
                 response["result"] = null;
                 return response;
             }
             catch (ValidationException ex)
             {
                 return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_VERIFY_ERROR, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_REQUEST, ex.Message);
             }
         }
 
@@ -779,7 +782,7 @@ namespace SimpleBlockChain.Core.Nodes
             try
             {
                 _transactionValidator.Check(callSmartContractTx);
-                var executor = _solidityExecutor.Execute(callToPayload, callFromPayload).Rollback();
+                var executor = _solidityExecutor.Execute(callToPayload, callFromPayload, callDataPayload).Rollback();
                 var result = executor.GetProgram().GetResult().GetHReturn().ToHexString();
                 response["result"] = result;
                 return response;
