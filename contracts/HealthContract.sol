@@ -1,5 +1,3 @@
-pragma solidity ^0.4.8;
-
 contract MedicalPatientContract {	
     uint8 constant max8 = 2**8 - 1;
     uint16 constant max16 = 2**16 - 1;

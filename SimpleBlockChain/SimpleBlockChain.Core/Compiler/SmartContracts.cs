@@ -204,7 +204,8 @@ namespace SimpleBlockChain.Core.Compiler
                     var contractCode = program.GetResult().GetHReturn();
                     var txId = transaction.GetTxId();
                     var smartContractAdr = smartContractTransaction.GetSmartContractAddress();
-                    _writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContractAdr.ToHexString()), contractCode.ToHexString());
+                    var hex = contractCode.ToHexString();
+                    _writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContractAdr.ToHexString()), hex);
                     _writeBatch.Put(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), smartContractAdr.ToHexString());
                 }
             }
@@ -254,6 +255,7 @@ namespace SimpleBlockChain.Core.Compiler
 
         private void Init()
         {
+            Start();
             foreach(var embeddedContract in _embeddedContracts)
             {
                 string result = string.Empty;
@@ -262,6 +264,8 @@ namespace SimpleBlockChain.Core.Compiler
                     Persist(embeddedContract);
                 }
             }
+
+            Commit();
         }
     }
 }

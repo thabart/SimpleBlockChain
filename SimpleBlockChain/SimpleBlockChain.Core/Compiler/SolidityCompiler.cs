@@ -74,12 +74,16 @@ namespace SimpleBlockChain.Core.Compiler
                         result = ParseBinariesAndAbi(output);
                     }
                 }
-                using (StreamReader standardError = process.StandardError)
+
+                if (!result.Any())
                 {
-                    string error = standardError.ReadToEnd();
-                    if (!string.IsNullOrWhiteSpace(error))
+                    using (StreamReader standardError = process.StandardError)
                     {
-                        throw new InvalidOperationException(error);
+                        string error = standardError.ReadToEnd();
+                        if (!string.IsNullOrWhiteSpace(error))
+                        {
+                            throw new InvalidOperationException(error);
+                        }
                     }
                 }
 

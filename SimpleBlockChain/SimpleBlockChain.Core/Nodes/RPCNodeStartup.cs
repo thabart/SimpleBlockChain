@@ -816,7 +816,7 @@ namespace SimpleBlockChain.Core.Nodes
             var result = new JObject();
             result.Add("language", "Solidity");
             result.Add("languageVersion", "0");
-            result.Add("compilerVersion", "1.7.3");
+            result.Add("compilerVersion", "0.4.19");
             result.Add("source", contract);
             var info = new JArray();
             foreach(var compilationR in compilationResult)

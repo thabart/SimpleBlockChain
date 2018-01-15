@@ -1,4 +1,5 @@
 ﻿using SimpleBlockChain.Core.Stores;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,6 +23,16 @@ namespace SimpleBlockChain.Core.Compiler
 
         public SolidityExecutor Execute(IEnumerable<byte> scAddrPayload, IEnumerable<byte> addrPayload)
         {
+            if (scAddrPayload == null)
+            {
+                throw new ArgumentNullException(nameof(scAddrPayload));
+            }
+
+            if (addrPayload == null)
+            {
+                addrPayload = new byte[0];
+            }
+
             var smartContract = _smartContractStore.GetSmartContracts().GetSmartContract(scAddrPayload);
             var defaultCallValue = new DataWord(new byte[] { 0x00 });
             _smartContracts = _smartContractStore.GetSmartContracts();
