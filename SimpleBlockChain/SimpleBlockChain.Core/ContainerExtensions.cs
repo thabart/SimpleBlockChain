@@ -33,6 +33,7 @@ namespace SimpleBlockChain.Core
             serviceCollection.AddTransient<ITransactionHelper, TransactionHelper>();
             serviceCollection.AddTransient<IMessageCoordinator, MessageCoordinator>();
             serviceCollection.AddTransient<ISmartContractFactory, SmartContractFactory>();
+            serviceCollection.AddTransient<ISolidityExecutor, SolidityExecutor>();
             serviceCollection.AddSingleton<IBlockChainStore, BlockChainStore>();
             serviceCollection.AddSingleton<ISmartContractStore, SmartContractStore>();
             return serviceCollection;

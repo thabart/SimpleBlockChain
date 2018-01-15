@@ -16,6 +16,7 @@ namespace SimpleBlockChain.Core.Compiler
         private readonly Networks _network;
         private DB _db;
         private const string _databaseFile = "sc_{0}.dat";
+        private WriteBatch _writeBatch;
         private IEnumerable<SmartContract> _embeddedContracts = new List<SmartContract>
         {
             new SmartContract
@@ -41,6 +42,21 @@ namespace SimpleBlockChain.Core.Compiler
             var options = new Options { CreateIfMissing = true };
             _db = new DB(GetDbFile(), options);
             Init();
+        }
+
+        public void Start()
+        {
+            _writeBatch = new WriteBatch();
+        }
+
+        public void Commit()
+        {
+            _db.Write(_writeBatch, WriteOptions.Default);
+        }
+
+        public void Rollback()
+        {
+            _writeBatch = new WriteBatch();
         }
 
         public bool AddBlock(Block block)
@@ -115,6 +131,11 @@ namespace SimpleBlockChain.Core.Compiler
 
         public bool AddStorageRow(IEnumerable<byte> scAddr, DataWord key, DataWord value)
         {
+            if (_writeBatch == null)
+            {
+                throw new InvalidOperationException("the transaction has not been init");
+            }
+
             if (scAddr == null)
             {
                 throw new ArgumentNullException(nameof(scAddr));
@@ -143,22 +164,26 @@ namespace SimpleBlockChain.Core.Compiler
             result = string.Empty;
             if (_db.TryGet(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), ReadOptions.Default, out result))
             {
-                _db.Delete(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex));
+                _writeBatch.Delete(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex));
             }
 
-            _db.Put(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), valueHex);
+            _writeBatch.Put(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), valueHex);
             return true;
         }
 
         private void Persist(Block block)
         {
+            if (_writeBatch == null)
+            {
+                throw new InvalidOperationException("the transaction has not been init");
+            }
+
             if (block == null)
             {
                 throw new ArgumentNullException(nameof(block));
             }
 
             var defaultCallValue = new DataWord(new byte[] { 0x00 });
-            var batch = new WriteBatch();
             foreach (var transaction in block.Transactions)
             {
                 var smartContractTransaction = transaction as SmartContractTransaction;
@@ -167,36 +192,37 @@ namespace SimpleBlockChain.Core.Compiler
                     continue;
                 }
 
+                var solidityVm = new SolidityVm();
+                var program = new SolidityProgram(smartContractTransaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(smartContractTransaction.From.ToArray()), defaultCallValue, this));
+                while (!program.IsStopped())
+                {
+                    solidityVm.Step(program);
+                }
+
                 if (smartContractTransaction.To == null || !smartContractTransaction.To.Any()) // Create the contract.
                 {
-                    var solidityVm = new SolidityVm();
-                    var program = new SolidityProgram(smartContractTransaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(smartContractTransaction.From.ToArray()), defaultCallValue, this));
-                    while(!program.IsStopped())
-                    {
-                        solidityVm.Step(program);
-                    }
-
                     var contractCode = program.GetResult().GetHReturn();
                     var txId = transaction.GetTxId();
                     var smartContractAdr = smartContractTransaction.GetSmartContractAddress();
-                    batch.Put(string.Format(SMART_CONTRACT_ELT, smartContractAdr.ToHexString()), contractCode.ToHexString());
-                    batch.Put(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), smartContractAdr.ToHexString());
+                    _writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContractAdr.ToHexString()), contractCode.ToHexString());
+                    _writeBatch.Put(string.Format(SMART_CONTRACT_TX_ELT, txId.ToHexString()), smartContractAdr.ToHexString());
                 }
             }
-
-            _db.Write(batch, WriteOptions.Default);
         }
         
-        public void Persist(SmartContract smartContract)
+        private void Persist(SmartContract smartContract)
         {
+            if (_writeBatch == null)
+            {
+                throw new InvalidOperationException("the transaction has not been init");
+            }
+
             if (smartContract == null)
             {
                 throw new ArgumentNullException(nameof(smartContract));
             }
 
-            var batch = new WriteBatch();
-            batch.Put(string.Format(SMART_CONTRACT_ELT, smartContract.Address.ToHexString()), smartContract.Code.ToHexString());
-            _db.Write(batch, WriteOptions.Default);
+            _writeBatch.Put(string.Format(SMART_CONTRACT_ELT, smartContract.Address.ToHexString()), smartContract.Code.ToHexString());
         }
 
         public void Dispose()

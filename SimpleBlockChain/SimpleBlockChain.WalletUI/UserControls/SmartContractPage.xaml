@@ -67,31 +67,36 @@
                 </Grid>
             </StackPanel>
         </Grid>
-        <StackPanel Grid.Column="1">
-            <Label>Compile a contract</Label>
+        <Grid Grid.Column="1">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <!-- Smart Contract -->
-                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Solidity contract</Label>
-                <TextBox AcceptsReturn="True" TextWrapping="Wrap" Margin="{StaticResource ControlMargin}" MinHeight="100" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContract, Mode=TwoWay}"></TextBox>
-                <!-- Transaction id -->
-                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Transaction id</Label>
-                <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=TransactionId}"></TextBox>
-                 <!-- Submit the contract -->
-                <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
-                    <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CompileContractCommand}">Compile contract</Button>
-                    <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=PublishContractCommand}">Publish contract</Button>
-                </StackPanel>                
+                <Label Grid.Row="0">Compile a contract</Label>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!-- Smart Contract -->
+                    <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Solidity contract</Label>
+                    <TextBox ScrollViewer.VerticalScrollBarVisibility="Auto" MinHeight="100" AcceptsReturn="True" TextWrapping="Wrap" Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContract, Mode=TwoWay}"></TextBox>
+                    <!-- Transaction id -->
+                    <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Transaction id</Label>
+                    <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=TransactionId}"></TextBox>
+                    <!-- Submit the contract -->
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+                        <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CompileContractCommand}">Compile contract</Button>
+                        <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=PublishContractCommand}">Publish contract</Button>
+                    </StackPanel>
+                </Grid>
             </Grid>
-            <!-- Solidity contract -->
-        </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

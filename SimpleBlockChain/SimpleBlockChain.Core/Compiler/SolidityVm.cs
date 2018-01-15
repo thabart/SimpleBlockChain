@@ -11,6 +11,7 @@ namespace SimpleBlockChain.Core.Compiler
     public class SolidityVm
     {
         private static readonly BigInteger BG_32 = BigInteger.ValueOf(32);
+        private static BigInteger MAX_MEM_SIZE = BigInteger.ValueOf(int.MaxValue);
 
         public static Dictionary<SolidityOpCodes, int> SizeSolidityCodes = new Dictionary<SolidityOpCodes, int>
         {
@@ -91,10 +92,108 @@ namespace SimpleBlockChain.Core.Compiler
             var currentOpCode = program.GetCurrentOpCode();
             var opCode = solidityOpCode.GetCode(currentOpCode);
             var stack = program.GetStack();
+            var oldMemSize = program.GetMemorySize();
+            long gasCost = (long)solidityOpCode.GetTier(opCode.Value);
+            switch(opCode)
+            {
+                case SolidityOpCodes.STOP:
+                    gasCost = SolidityGasCost.STOP;
+                    break;
+                case SolidityOpCodes.SUICIDE:
+                    gasCost = SolidityGasCost.SUICIDE;
+                    break;
+                case SolidityOpCodes.SSTORE:
+                    var sstoreNewValue = stack.ElementAt(stack.Count() - 2);
+                    var sstoreOldValue = program.StorageLoad(stack.Last());
+                    if (sstoreOldValue == null || !sstoreOldValue.IsZero())
+                    {
+                        gasCost = SolidityGasCost.SET_SSTORE;
+                    }
+                    else if (sstoreOldValue != null && sstoreNewValue.IsZero())
+                    {
+                        gasCost = SolidityGasCost.CLEAR_SSTORE;
+                    }
+                    else
+                    {
+                        gasCost = SolidityGasCost.RESET_SSTORE;
+                    }
+                    break;
+                case SolidityOpCodes.SLOAD:
+                    gasCost = SolidityGasCost.SLOAD;
+                    break;
+                case SolidityOpCodes.MSTORE:
+                    gasCost += CalcMemGas(oldMemSize, MemNeeded(stack.Last(), new DataWord(32)), 0);
+                    break;
+                case SolidityOpCodes.MSTORE8:
+                    gasCost += CalcMemGas(oldMemSize, MemNeeded(stack.Last(), new DataWord(1)), 0);
+                    break;
+                case SolidityOpCodes.MLOAD:
+                    gasCost += CalcMemGas(oldMemSize, MemNeeded(stack.Last(), new DataWord(32)), 0);
+                    break;
+                case SolidityOpCodes.RETURN:
+                case SolidityOpCodes.REVERT:
+                    gasCost = SolidityGasCost.STOP + CalcMemGas(oldMemSize, MemNeeded(stack.Last(), stack.ElementAt(stack.Count() - 2)), 0);
+                    break;
+                case SolidityOpCodes.SHA3:
+                    gasCost = SolidityGasCost.SHA3 + CalcMemGas(oldMemSize, MemNeeded(stack.Last(), stack.ElementAt(stack.Count() - 2)), 0);
+                    var size = stack.ElementAt(stack.Count() - 2);
+                    var chunkUsed = (size.GetLongValueSafe() + 31) / 32;
+                    gasCost += chunkUsed * SolidityGasCost.SHA3_WORD;
+                    break;
+                case SolidityOpCodes.CALLDATACOPY:
+                case SolidityOpCodes.RETURNDATACOPY:
+                    gasCost += CalcMemGas(oldMemSize, MemNeeded(stack.Last(), stack.ElementAt(stack.Count() - 3)),
+                            stack.ElementAt(stack.Count() - 3).GetLongValueSafe());
+                    break;
+                case SolidityOpCodes.CODECOPY:
+                    gasCost += CalcMemGas(oldMemSize,
+                            MemNeeded(stack.Last(), stack.ElementAt(stack.Count() - 3)),
+                            stack.ElementAt(stack.Count() - 3).GetLongValueSafe());
+                    break;
+                case SolidityOpCodes.EXTCODESIZE:
+                    gasCost = SolidityGasCost.EXT_CODE_SIZE;
+                    break;
+                case SolidityOpCodes.EXTCODECOPY:
+                    gasCost = SolidityGasCost.EXT_CODE_COPY + CalcMemGas(oldMemSize,
+                            MemNeeded(stack.ElementAt(stack.Count() - 2), stack.ElementAt(stack.Count() - 4)),
+                            stack.ElementAt(stack.Count() - 4).GetLongValueSafe());
+                    break;
+                case SolidityOpCodes.CALL:
+                // case SolidityOpCodes.CALLCODE:
+                case SolidityOpCodes.DELEGATECALL:
+                case SolidityOpCodes.STATICCALL:
+
+                    gasCost = SolidityGasCost.CALL;
+                    var callGasWord = stack.ElementAt(stack.Count() - 1);
+                    var callAddressWord = stack.ElementAt(stack.Count() - 2);
+                    var value = DataWord.ZERO;
+                    /*
+                    DataWord value = op.callHasValue() ?
+                            stack.get(stack.size() - 3) : DataWord.ZERO;
+                            */
+                    if (opCode == SolidityOpCodes.CALL)
+                    {
+                        gasCost += SolidityGasCost.NEW_ACCT_CALL;
+                    }
+                    
+                    if (!value.IsZero())
+                    {
+
+                        gasCost += SolidityGasCost.VT_CALL;
+                    }
+                    
+                    break;
+                case SolidityOpCodes.EXP:
+
+                    DataWord exp = stack.ElementAt(stack.Count() - 2);
+                    int bytesOccupied = exp.GetBytesOccupied();
+                    gasCost = SolidityGasCost.EXP_GAS + SolidityGasCost.EXP_BYTE_GAS * bytesOccupied;
+                    break;
+            }
 
             if (trace)
             {
-                Trace.WriteLine("Operation " + Enum.GetName(typeof(SolidityOpCodes), opCode) + " " + program.GetPc());
+                Trace.WriteLine("Operation " + Enum.GetName(typeof(SolidityOpCodes), opCode) + " " + program.GetPc() +" COST = " + gasCost);
                 Trace.WriteLine("Stack: ");
                 foreach (var s in program.GetStack())
                 {
@@ -517,6 +616,40 @@ namespace SimpleBlockChain.Core.Compiler
                     program.Step();
                     break;
             }
+        }
+
+        private long CalcMemGas(long oldMemSize, BigInteger  newMemSize, long copySize)
+        {
+            long gasCost = 0;
+            // Avoid overflows
+            if (newMemSize.CompareTo(MAX_MEM_SIZE) == 1)
+            {
+                throw new OverflowException();
+            }
+
+
+            long memoryUsage = (newMemSize.LongValue + 31) / 32 * 32;
+            if (memoryUsage > oldMemSize)
+            {
+                long memWords = (memoryUsage / 32);
+                long memWordsOld = (oldMemSize / 32);
+                long memGas = (SolidityGasCost.MEMORY * memWords + memWords * memWords / 512)
+                        - (SolidityGasCost.MEMORY * memWordsOld + memWordsOld * memWordsOld / 512);
+                gasCost += memGas;
+            }
+
+            if (copySize > 0)
+            {
+                long copyGas = SolidityGasCost.COPY_GAS * ((copySize + 31) / 32);
+                gasCost += copyGas;
+            }
+
+            return gasCost;
+        }
+
+        private static BigInteger MemNeeded(DataWord offset, DataWord size)
+        {
+            return size.IsZero() ? BigInteger.Zero : offset.GetValue().Add(size.GetValue());
         }
     }
 }

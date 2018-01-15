@@ -127,12 +127,31 @@ namespace SimpleBlockChain.Core.Compiler
             return intVal;
         }
 
+        public long GetLong()
+        {
+            long longVal = 0;
+            foreach (byte aData in _data)
+            {
+                longVal = (longVal << 8) + (aData & 0xff);
+            }
+
+            return longVal;
+        }
+
         public int GetIntValueSafe()
         {
             int bytesOccupied = GetBytesOccupied();
             int intValue = GetInt();
             if (bytesOccupied > 4 || intValue < 0) { return int.MaxValue; }
             return intValue;
+        }
+
+        public long GetLongValueSafe()
+        {
+            int bytesOccupied = GetBytesOccupied();
+            long longValue = GetLong();
+            if (bytesOccupied > 8 || longValue < 0) return long.MaxValue;
+            return longValue;
         }
 
         public DataWord Or(DataWord w2)

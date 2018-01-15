@@ -7,6 +7,136 @@ namespace SimpleBlockChain.Core.Compiler
     {
         private static SolidityOpCode _instance;
         private static Dictionary<byte, SolidityOpCodes> intToTypeMap = new Dictionary<byte, SolidityOpCodes>();
+        private static Dictionary<SolidityOpCodes, Tier> _opCodeToTier = new Dictionary<SolidityOpCodes, Tier>
+        {
+            { SolidityOpCodes.STOP, Tier.ZeroTier },
+            { SolidityOpCodes.ADD, Tier.VeryLowTier },
+            { SolidityOpCodes.MUL, Tier.LowTier },
+            { SolidityOpCodes.SUB, Tier.VeryLowTier },
+            { SolidityOpCodes.DIV, Tier.LowTier },
+            { SolidityOpCodes.SDIV, Tier.LowTier },
+            { SolidityOpCodes.MOD, Tier.LowTier },
+            { SolidityOpCodes.SMOD, Tier.LowTier },
+            { SolidityOpCodes.ADDMOD, Tier.MidTier },
+            { SolidityOpCodes.MULMOD, Tier.MidTier },
+            { SolidityOpCodes.EXP, Tier.SpecialTier },
+            { SolidityOpCodes.SIGNEXTEND, Tier.LowTier },
+            { SolidityOpCodes.LT, Tier.VeryLowTier },
+            { SolidityOpCodes.GT, Tier.VeryLowTier },
+            { SolidityOpCodes.SLT, Tier.VeryLowTier },
+            { SolidityOpCodes.SGT, Tier.VeryLowTier },
+            { SolidityOpCodes.EQ, Tier.VeryLowTier },
+            { SolidityOpCodes.ISZERO, Tier.VeryLowTier },
+            { SolidityOpCodes.AND, Tier.VeryLowTier },
+            { SolidityOpCodes.OR, Tier.VeryLowTier },
+            { SolidityOpCodes.XOR, Tier.VeryLowTier },
+            { SolidityOpCodes.NOT, Tier.VeryLowTier },
+            { SolidityOpCodes.BYTE, Tier.VeryLowTier },
+            { SolidityOpCodes.SHA3, Tier.SpecialTier },
+            { SolidityOpCodes.ADDRESS, Tier.BaseTier },
+            { SolidityOpCodes.BALANCE, Tier.ExtTier },
+            { SolidityOpCodes.ORIGIN, Tier.BaseTier },
+            { SolidityOpCodes.CALLER, Tier.BaseTier },
+            { SolidityOpCodes.CALLVALUE, Tier.BaseTier },
+            { SolidityOpCodes.CALLDATALOAD, Tier.VeryLowTier },
+            { SolidityOpCodes.CALLDATASIZE, Tier.BaseTier },
+            { SolidityOpCodes.CALLDATACOPY, Tier.VeryLowTier },
+            { SolidityOpCodes.CODESIZE, Tier.BaseTier },
+            { SolidityOpCodes.CODECOPY, Tier.VeryLowTier },
+            { SolidityOpCodes.RETURNDATASIZE, Tier.BaseTier },
+            { SolidityOpCodes.RETURNDATACOPY, Tier.VeryLowTier },
+            { SolidityOpCodes.GASPRICE, Tier.BaseTier },
+            { SolidityOpCodes.EXTCODESIZE, Tier.ExtTier },
+            { SolidityOpCodes.EXTCODECOPY, Tier.ExtTier },
+            { SolidityOpCodes.BLOCKHASH, Tier.ExtTier },
+            { SolidityOpCodes.COINBASE, Tier.BaseTier },
+            { SolidityOpCodes.TIMESTAMP, Tier.BaseTier },
+            { SolidityOpCodes.NUMBER, Tier.BaseTier },
+            { SolidityOpCodes.DIFFICULTY, Tier.BaseTier },
+            { SolidityOpCodes.GASLIMIT, Tier.BaseTier },
+            { SolidityOpCodes.POP, Tier.BaseTier },
+            { SolidityOpCodes.MLOAD, Tier.VeryLowTier },
+            { SolidityOpCodes.MSTORE, Tier.VeryLowTier },
+            { SolidityOpCodes.MSTORE8, Tier.VeryLowTier },
+            { SolidityOpCodes.SLOAD, Tier.SpecialTier },
+            { SolidityOpCodes.SSTORE, Tier.SpecialTier },
+            { SolidityOpCodes.JUMP, Tier.MidTier },
+            { SolidityOpCodes.JUMPI, Tier.HighTier },
+            { SolidityOpCodes.PC, Tier.BaseTier },
+            { SolidityOpCodes.MSIZE, Tier.BaseTier },
+            { SolidityOpCodes.GAS, Tier.BaseTier },
+            { SolidityOpCodes.JUMPDEST, Tier.SpecialTier },
+            { SolidityOpCodes.PUSH1, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH2, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH3, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH4, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH5, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH6, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH7, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH8, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH9, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH10, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH11, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH12, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH13, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH14, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH15, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH16, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH17, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH18, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH19, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH20, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH21, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH22, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH23, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH24, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH25, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH26, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH27, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH28, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH29, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH30, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH31, Tier.VeryLowTier },
+            { SolidityOpCodes.PUSH32, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP1, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP2, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP3, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP4, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP5, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP6, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP7, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP8, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP9, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP10, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP11, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP12, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP13, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP14, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP15, Tier.VeryLowTier },
+            { SolidityOpCodes.DUP16, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP1, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP2, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP3, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP4, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP5, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP6, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP7, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP8, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP9, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP10, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP11, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP12, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP13, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP14, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP15, Tier.VeryLowTier },
+            { SolidityOpCodes.SWAP16, Tier.VeryLowTier },
+            { SolidityOpCodes.CALL, Tier.SpecialTier },
+            { SolidityOpCodes.RETURN, Tier.ZeroTier },
+            { SolidityOpCodes.DELEGATECALL, Tier.SpecialTier },
+            { SolidityOpCodes.STATICCALL, Tier.SpecialTier },
+            { SolidityOpCodes.REVERT, Tier.ZeroTier },
+            { SolidityOpCodes.SUICIDE, Tier.ZeroTier }
+        };
 
         private SolidityOpCode()
         {
@@ -37,6 +167,35 @@ namespace SimpleBlockChain.Core.Compiler
 
             return intToTypeMap[key];
         }
+
+        public Tier? GetTier(byte code)
+        {
+            var opCode = GetCode(code);
+            if (opCode == null)
+            {
+                return null;
+            }
+
+            return _opCodeToTier[opCode.Value];
+        }
+
+        public Tier GetTier(SolidityOpCodes opCode)
+        {
+            return _opCodeToTier[opCode];
+        }
+    }
+
+    public enum Tier
+    {
+        ZeroTier = 0,
+        BaseTier = 2,
+        VeryLowTier = 3,
+        LowTier = 5,
+        MidTier = 8,
+        HighTier = 10,
+        ExtTier = 20,
+        SpecialTier = 1,
+        InvalidTier = 0
     }
 
     public enum SolidityOpCodes : byte

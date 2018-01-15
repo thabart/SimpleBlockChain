@@ -42,9 +42,11 @@ namespace SimpleBlockChain.Core.Nodes
         private readonly ITransactionHelper _transactionHelper;
         private readonly ITransactionValidator _transactionValidator;
         private readonly IBlockValidator _blockValidator;
+        private readonly ISolidityExecutor _solidityExecutor;
 
         public RPCNodeStartup(IWalletRepository walletRepository, Networks network, IBlockChainStore blockChainStore, 
-            ISmartContractStore smartContractStore, ITransactionHelper transactionHelper, ITransactionValidator transactionValidator, IBlockValidator blockValidator)
+            ISmartContractStore smartContractStore, ITransactionHelper transactionHelper, ITransactionValidator transactionValidator, IBlockValidator blockValidator,
+            ISolidityExecutor solidityExecutor)
         {
             _walletRepository = walletRepository;
             _network = network;
@@ -53,6 +55,7 @@ namespace SimpleBlockChain.Core.Nodes
             _transactionHelper = transactionHelper;
             _transactionValidator = transactionValidator;
             _blockValidator = blockValidator;
+            _solidityExecutor = solidityExecutor;
         }
 
         public void Configure(IApplicationBuilder app)
@@ -287,7 +290,9 @@ namespace SimpleBlockChain.Core.Nodes
             {
                 _blockValidator.Check(block);
                 blockChain.AddBlock(block);
+                smartContract.Start();
                 smartContract.AddBlock(block);
+                smartContract.Commit();
                 P2PConnectorEventStore.Instance().Broadcast(block);
                 if (block.Transactions != null)
                 {
@@ -774,23 +779,8 @@ namespace SimpleBlockChain.Core.Nodes
             try
             {
                 _transactionValidator.Check(callSmartContractTx);
-                var smartContract = _smartContractStore.GetSmartContracts().GetSmartContract(callToPayload);
-                var fromAddr = new DataWord();
-                if (callFromPayload != null)
-                {
-                    fromAddr = new DataWord(callFromPayload.ToArray());
-                }
-
-                var defaultCallValue = new DataWord(new byte[] { 0x00 });
-                var program = new SolidityProgram(smartContract.Code.ToList(), new SolidityProgramInvoke(callDataPayload, 
-                    smartContract.Address, fromAddr, defaultCallValue, _smartContractStore.GetSmartContracts()));
-                var vm = new SolidityVm();
-                while (!program.IsStopped())
-                {
-                    vm.Step(program);
-                }
-
-                var result = program.GetResult().GetHReturn().ToHexString();
+                var executor = _solidityExecutor.Execute(callToPayload, callFromPayload).Rollback();
+                var result = executor.GetProgram().GetResult().GetHReturn().ToHexString();
                 response["result"] = result;
                 return response;
             }

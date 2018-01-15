@@ -140,7 +140,8 @@ namespace SimpleBlockChain.Core.Validators
                     throw new ArgumentNullException(nameof(transaction.Data));
                 }
 
-                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(transaction.From.ToArray()), defaultCallValue, _smartContractStore.GetSmartContracts())); // TRY TO GET THE CONTRACT.
+                var scs = _smartContractStore.GetSmartContracts();
+                var program = new SolidityProgram(transaction.Data.ToList(), new SolidityProgramInvoke(new byte[0], new DataWord(transaction.From.ToArray()), defaultCallValue, scs)); // TRY TO GET THE CONTRACT.
                 try
                 {
                     while (!program.IsStopped())
@@ -148,6 +149,7 @@ namespace SimpleBlockChain.Core.Validators
                         vm.Step(program);
                     }
 
+                    scs.Rollback();
                     var hReturn = program.GetResult().GetHReturn();
                     if (hReturn == null || !hReturn.Any())
                     {

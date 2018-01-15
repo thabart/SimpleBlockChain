@@ -17,11 +17,12 @@ namespace SimpleBlockChain.Core.Nodes
         private readonly ITransactionHelper _transactionHelper;
         private readonly ITransactionValidator _transactionValidator;
         private readonly IBlockValidator _blockValidator;
+        private readonly ISolidityExecutor _solidityExecutor;
         private IWebHost _host;
 
         internal RPCNode(IWalletRepository walletRepository, Networks network, ISmartContractStore smartContractStore, 
             IBlockChainStore blockChainStore, ITransactionHelper transactionHelper, ITransactionValidator transactionValidator,
-            IBlockValidator blockValidator)
+            IBlockValidator blockValidator, ISolidityExecutor solidityExecutor)
         {
             _walletRepository = walletRepository;
             _network = network;
@@ -30,12 +31,13 @@ namespace SimpleBlockChain.Core.Nodes
             _transactionHelper = transactionHelper;
             _transactionValidator = transactionValidator;
             _blockValidator = blockValidator;
+            _solidityExecutor = solidityExecutor;
         }
 
         public void Start()
         {
             var rpcNodeStartup = new RPCNodeStartup(_walletRepository, _network, _blockChainStore, 
-                _smartContractStore, _transactionHelper, _transactionValidator, _blockValidator);
+                _smartContractStore, _transactionHelper, _transactionValidator, _blockValidator, _solidityExecutor);
             _host = new WebHostBuilder().UseKestrel()
                 .UseUrls($"http://localhost:{PortsHelper.GetRPCPort(_network)}")
                 .Configure((app) =>

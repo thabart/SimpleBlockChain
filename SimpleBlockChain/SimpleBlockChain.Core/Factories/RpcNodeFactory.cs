@@ -20,10 +20,11 @@ namespace SimpleBlockChain.Core.Factories
         private readonly ITransactionHelper _transactionHelper;
         private readonly ITransactionValidator _transactionValidator;
         private readonly IBlockValidator _blockValidator;
+        private readonly ISolidityExecutor _solidityExecutor;
 
         public RpcNodeFactory(IWalletRepository walletRepository, IBlockChainStore blockChainStore,
             ISmartContractStore smartContractStore, ITransactionHelper transactionHelper, ITransactionValidator transactionValidator,
-            IBlockValidator blockValidator)
+            IBlockValidator blockValidator, ISolidityExecutor solidityExecutor)
         {
             _walletRepository = walletRepository;
             _blockChainStore = blockChainStore;
@@ -31,12 +32,13 @@ namespace SimpleBlockChain.Core.Factories
             _transactionHelper = transactionHelper;
             _transactionValidator = transactionValidator;
             _blockValidator = blockValidator;
+            _solidityExecutor = solidityExecutor;
         }
 
         public RPCNode Build(Networks network)
         {
             return new RPCNode(_walletRepository, network, _smartContractStore,
-                _blockChainStore, _transactionHelper, _transactionValidator, _blockValidator);
+                _blockChainStore, _transactionHelper, _transactionValidator, _blockValidator, _solidityExecutor);
         }
     }
 }
