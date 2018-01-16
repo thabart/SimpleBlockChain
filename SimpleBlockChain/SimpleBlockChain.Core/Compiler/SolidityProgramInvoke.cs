@@ -11,6 +11,7 @@ namespace SimpleBlockChain.Core.Compiler
         private IEnumerable<byte> _smartContractAddress;
         private DataWord _ownerAddress;
         private DataWord _callValue;
+        private bool _addInTransaction = false;
 
         public SolidityProgramInvoke(IEnumerable<byte> smartContractAddress, DataWord ownerAddress, DataWord callValue, SmartContracts smartContracts)
         {
@@ -20,13 +21,19 @@ namespace SimpleBlockChain.Core.Compiler
             _smartContracts = smartContracts;
         }
 
-        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, IEnumerable<byte> smartContractAddress, DataWord ownerAddress, DataWord callValue, SmartContracts smartContracts)
+        public SolidityProgramInvoke(IEnumerable<byte> msgDataRaw, IEnumerable<byte> smartContractAddress, DataWord ownerAddress, DataWord callValue, SmartContracts smartContracts, bool addInTransaction = false)
         {
             _msgDataRaw = msgDataRaw;
             _smartContractAddress = smartContractAddress;
             _ownerAddress = ownerAddress;
             _callValue = callValue;
             _smartContracts = smartContracts;
+            _addInTransaction = addInTransaction;
+        }
+
+        public bool GetAddInTransaction()
+        {
+            return _addInTransaction;
         }
 
         public SmartContracts GetStorage()

@@ -782,7 +782,7 @@ namespace SimpleBlockChain.Core.Nodes
             try
             {
                 _transactionValidator.Check(callSmartContractTx);
-                var executor = _solidityExecutor.Execute(callToPayload, callFromPayload, callDataPayload).Rollback();
+                var executor = _solidityExecutor.Execute(callToPayload, callFromPayload, callDataPayload, true).Rollback();
                 var result = executor.GetProgram().GetResult().GetHReturn().ToHexString();
                 response["result"] = result;
                 return response;

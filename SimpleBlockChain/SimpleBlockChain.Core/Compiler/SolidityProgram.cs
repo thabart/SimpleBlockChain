@@ -85,7 +85,7 @@ namespace SimpleBlockChain.Core.Compiler
         public void SaveStorage(DataWord w1, DataWord w2)
         {
             var scAddr = _progInvoke.GetSmartContractAddress();
-            _progInvoke.GetStorage().AddStorageRow(scAddr, w1, w2);
+            _progInvoke.GetStorage().AddStorageRow(scAddr, w1, w2, _progInvoke.GetAddInTransaction());
         }
 
         public void SaveStorage(IEnumerable<byte> key, IEnumerable<byte> val)
@@ -93,7 +93,7 @@ namespace SimpleBlockChain.Core.Compiler
             var scAddr = _progInvoke.GetSmartContractAddress();
             var keyWord = new DataWord(key.ToArray());
             var valWord = new DataWord(val.ToArray());
-            _progInvoke.GetStorage().AddStorageRow(scAddr, keyWord, valWord);
+            _progInvoke.GetStorage().AddStorageRow(scAddr, keyWord, valWord, _progInvoke.GetAddInTransaction());
         }
 
         public DataWord StorageLoad(DataWord keyWord)

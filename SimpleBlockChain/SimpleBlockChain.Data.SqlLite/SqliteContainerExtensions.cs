@@ -47,6 +47,7 @@ namespace SimpleBlockChain.Data.Sqlite
         private static void RegisterServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IWalletRepository, WalletRepository>();
+            serviceCollection.AddTransient<ISolidityContractsRepository, SolidityContractsRepository>();
         }
     }
 }

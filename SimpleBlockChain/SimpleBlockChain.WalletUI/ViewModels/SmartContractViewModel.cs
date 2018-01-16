@@ -1,4 +1,5 @@
-﻿using SimpleBlockChain.WalletUI.Commands;
+﻿using SimpleBlockChain.Core.Aggregates;
+using SimpleBlockChain.WalletUI.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -7,8 +8,14 @@ namespace SimpleBlockChain.WalletUI.ViewModels
 {
     public class FunctionDefinitionViewModel
     {
+        public FunctionDefinitionViewModel()
+        {
+            Parameters = new ObservableCollection<ParameterDefinitionViewModel>();
+        }
+
         public string FunctionName { get; set; }
         public ObservableCollection<ParameterDefinitionViewModel> Parameters { get; set; }
+        public SolidityContractAggregateFunction FunctionAgg { get; set; }
     }
 
     public class ParameterDefinitionViewModel : BaseViewModel
@@ -33,28 +40,39 @@ namespace SimpleBlockChain.WalletUI.ViewModels
             }
         }
 
+        public class SolidityContractViewModel
+        {
+            public SolidityContractViewModel()
+            {
+                Functions = new ObservableCollection<FunctionDefinitionViewModel>();
+            }
+
+            public string Address { get; set; }
+            public ObservableCollection<FunctionDefinitionViewModel> Functions { get; set; }
+            public SolidityContractAggregate SolidityContractAgg { get; set; }
+        }
+
         public class SmartContractViewModel : BaseViewModel
         {
-            private string _getSmartContractAddressResult;
-            private string _smartContractAddress;
+            private string _newSmartContractAddress;
             private string _smartContractCallValue;
             private string _smartContract;
-            private string _transactionAddress;
             private string _transactionId;
             private string _generatedCallValue;
             private ICommand _callContractCommand;
             private ICommand _compileContractCommand;
             private ICommand _publishContractCommand;
-            private ICommand _getSmartContractCommand;
             private ICommand _publishTransactionCallCommand;
-            private ICommand _getCallValueCommand;
+            private ICommand _persistSmartContractCommand;
+            private ICommand _refreshContractsCommand;
             public event EventHandler CallContractEvt;
             public event EventHandler CompileContractEvt;
             public event EventHandler PublishContractEvt;
-            public event EventHandler GetSmartContractEvt;
             public event EventHandler PublishTransactionCallEvt;
-            public event EventHandler GetCallValueEvt;
-            private ObservableCollection<FunctionDefinitionViewModel> _functionDefinitions;
+            public event EventHandler PersistSmartContractEvt;
+            public event EventHandler RefreshContractsEvt;
+            private ObservableCollection<SolidityContractViewModel> _smartContracts;
+            private SolidityContractViewModel _selectedSolidityContract;
             private FunctionDefinitionViewModel _selectedFunctionDefinition;
 
             public SmartContractViewModel()
@@ -62,10 +80,10 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 _callContractCommand = new RelayCommand(p => CallSmartContractExecute(), p => CanExecuteCallSmartContract());
                 _compileContractCommand = new RelayCommand(p => CompileContractExecute(), p => CanCompileContract());
                 _publishContractCommand = new RelayCommand(p => PublishContractExecute(), p => CanPublishContract());
-                _getSmartContractCommand = new RelayCommand(p => GetSmartContractExecute(), p => CanExecuteGetSmartContract());
                 _publishTransactionCallCommand = new RelayCommand(p => PublishTransactionCallExecute(), p => CanPublishTransactionCallExecute());
-                _getCallValueCommand = new RelayCommand(p => GetCallValueExecute(), p => CanExecuteGetCallValue());
-                _functionDefinitions = new ObservableCollection<FunctionDefinitionViewModel>();
+                _persistSmartContractCommand = new RelayCommand(p => PersistSmartContractExecute(), p => CanExecutePersistSmartContract());
+                _refreshContractsCommand = new RelayCommand(p => RefreshContractsExecute(), p => CanExecuteRefreshContracts());
+                _smartContracts = new ObservableCollection<SolidityContractViewModel>();
             }
 
             #region Properties
@@ -86,52 +104,42 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 }
             }
 
-            public ObservableCollection<FunctionDefinitionViewModel> FunctionDefinitions
+            public SolidityContractViewModel SelectedSolidityContract
             {
                 get
                 {
-                    return _functionDefinitions;
+                    return _selectedSolidityContract;
                 }
-            }
-
-            public string TransactionAddress
-            {
-                get { return _transactionAddress; }
                 set
                 {
-                    if (_transactionAddress != value)
+                    if (_selectedSolidityContract != value)
                     {
-                        _transactionAddress = value;
-                        NotifyPropertyChanged(nameof(TransactionAddress));
+                        _selectedSolidityContract = value;
+                        NotifyPropertyChanged(nameof(SelectedSolidityContract));
                     }
                 }
             }
 
-            public string GetSmartContractAddressResult
+            public ObservableCollection<SolidityContractViewModel> SmartContracts
             {
                 get
                 {
-                    return _getSmartContractAddressResult;
-                }
-                set
-                {
-                    if (_getSmartContractAddressResult != value)
-                    {
-                        _getSmartContractAddressResult = value;
-                        NotifyPropertyChanged(nameof(GetSmartContractAddressResult));
-                    }
+                    return _smartContracts;
                 }
             }
 
-            public string SmartContractAddress
+            public string NewSmartContractAddress
             {
-                get { return _smartContractAddress; }
+                get
+                {
+                    return _newSmartContractAddress;
+                }
                 set
                 {
-                    if (value != _smartContractAddress)
+                    if (_newSmartContractAddress != value)
                     {
-                        _smartContractAddress = value;
-                        NotifyPropertyChanged(nameof(SmartContractAddress));
+                        _newSmartContractAddress = value;
+                        NotifyPropertyChanged(nameof(NewSmartContractAddress));
                     }
                 }
             }
@@ -221,14 +229,6 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 }
             }
 
-            public ICommand GetSmartContractCommand
-            {
-                get
-                {
-                    return _getSmartContractCommand;
-                }
-            }
-
             public ICommand PublishTransactionCallCommand
             {
                 get
@@ -237,11 +237,19 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 }
             }
 
-            public ICommand GetCallValueCommand
+            public ICommand PersistSmartContractCommand
             {
                 get
                 {
-                    return _getCallValueCommand;
+                    return _persistSmartContractCommand;
+                }
+            }
+
+            public ICommand RefreshContractsCommand
+            {
+                get
+                {
+                    return _refreshContractsCommand;
                 }
             }
 
@@ -301,33 +309,33 @@ namespace SimpleBlockChain.WalletUI.ViewModels
                 return true;
             }
 
-            private void GetSmartContractExecute()
+            private void PersistSmartContractExecute()
             {
-                if (GetSmartContractEvt != null)
+                if (PersistSmartContractEvt != null)
                 {
-                    GetSmartContractEvt(this, EventArgs.Empty);
+                    PersistSmartContractEvt(this, EventArgs.Empty);
                 }
             }
 
-            private bool CanExecuteGetSmartContract()
+            private bool CanExecutePersistSmartContract()
             {
                 return true;
             }
 
-            private void GetCallValueExecute()
+            private void RefreshContractsExecute()
             {
-                if (GetCallValueEvt != null)
+                if (RefreshContractsEvt != null)
                 {
-                    GetCallValueEvt(this, EventArgs.Empty);
+                    RefreshContractsEvt(this, EventArgs.Empty);
                 }
             }
 
-            private bool CanExecuteGetCallValue()
+            private bool CanExecuteRefreshContracts()
             {
                 return true;
             }
-    
-        #endregion
+
+            #endregion
         }
     }
 }

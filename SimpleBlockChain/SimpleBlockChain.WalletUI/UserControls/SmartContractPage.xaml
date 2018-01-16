@@ -17,127 +17,109 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-                <RowDefinition />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <!-- Call a contract -->
-            <StackPanel Grid.Row="0">
-                <Label>Call a contract (without transaction)</Label>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <!-- Smart Contract address -->
-                    <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Contract address</Label>
-                    <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContractAddress, Mode=TwoWay}"></TextBox>
-                    <!-- Smart Contract callvalue -->
-                    <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Call value</Label>
-                    <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=SmartContractCallValue, Mode=TwoWay}"></TextBox>
-                    <!-- Submit button -->
-                    <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal">
-                        <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=CallContractCommand}">Call contract</Button>
-                        <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=PublishTransactionCallCommand}">Publish transaction call</Button>
-                    </StackPanel>
-                </Grid>
-            </StackPanel>
-            <!-- Display the contract address -->
-            <StackPanel Grid.Row="1">
-                <Label>Display the contract address</Label>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <!-- The transaction address -->
-                    <Label Grid.Column="0" Grid.Row="0" Margin="{StaticResource ControlMargin}">The transaction address</Label>
-                    <TextBox Grid.Column="1" Grid.Row="0" Margin="{StaticResource ControlMargin}" Text="{Binding Path=TransactionAddress, Mode=TwoWay}"></TextBox>
-                    <!-- Contract address -->
-                    <Label Grid.Column="0" Grid.Row="1" Margin="{StaticResource ControlMargin}">The contract address</Label>
-                    <TextBox Grid.Column="1" Grid.Row="1" Margin="{StaticResource ControlMargin}" Text="{Binding Path=GetSmartContractAddressResult, Mode=TwoWay}"></TextBox>
-                    <!-- Submit button -->
-                    <Button Grid.Row="2" Grid.ColumnSpan="2" Margin="{StaticResource ControlMargin}" Command="{Binding Path=GetSmartContractCommand}">Get the contract address</Button>
-                </Grid>
-            </StackPanel>
-            <!-- Call a contract with predefined parametes -->
-            <StackPanel Grid.Row="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <!-- The method name -->
-                    <Label Grid.Column="0" Grid.Row="0" Margin="{StaticResource ControlMargin}">Select the method</Label>
-                    <ComboBox Grid.Column="1" Grid.Row="0"  Margin="{StaticResource ControlMargin}" ItemsSource="{Binding Path=FunctionDefinitions}" DisplayMemberPath="FunctionName" SelectedItem="{Binding Path=SelectedFunctionDefinition, Mode=TwoWay}" />
-                    <!-- Display the parameters -->
-                    <Label Grid.Column="0" Grid.Row="1" Margin="{StaticResource ControlMargin}">Parameters</Label>
-                    <ListView Grid.Column="1" Grid.Row="1" Margin="{StaticResource ControlMargin}" ItemsSource="{Binding SelectedFunctionDefinition.Parameters}">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="0" Content="{Binding Path=Name}"></Label>
-                                    <TextBox Grid.Column="1" Text="{Binding Path=Value, Mode=TwoWay}"></TextBox>
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                    <!-- Get the call value -->
-                    <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.ColumnSpan="2" Command="{Binding Path=GetCallValueCommand}">Get call value</Button>
-                    <!-- Display the call value -->
-                    <Label Grid.Column="0" Grid.Row="3" Margin="{StaticResource ControlMargin}">Call value</Label>
-                    <TextBox Margin="{StaticResource ControlMargin}" Grid.Row="3" Grid.Column="1" Text="{Binding Path=GeneratedCallValue}"></TextBox>
-                </Grid>
-            </StackPanel>
+            <!-- Persisted contracts -->
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button Command="{Binding Path=RefreshContractsCommand}">Refresh contracts</Button>
+                <!-- Display list of persisted contracts -->
+                <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Contracts</Label>
+                <ComboBox Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Path=SmartContracts, Mode=OneWay}" DisplayMemberPath="Address" SelectedItem="{Binding Path=SelectedSolidityContract, Mode=OneWayToSource}"></ComboBox>
+                <!-- Select the method -->
+                <Label Grid.Column="0" Grid.Row="2" Margin="{StaticResource ControlMargin}">Select the method</Label>
+                <ComboBox Grid.Column="1" Grid.Row="2"  Margin="{StaticResource ControlMargin}" ItemsSource="{Binding Path=SelectedSolidityContract.Functions}" DisplayMemberPath="FunctionName"  SelectedItem="{Binding Path=SelectedFunctionDefinition, Mode=OneWayToSource}" />
+                <!-- Display the parameters -->
+                <Label Grid.Column="0" Grid.Row="3" Margin="{StaticResource ControlMargin}">Select a parameter</Label>
+                <ListView Grid.Column="1" Grid.Row="3" Margin="{StaticResource ControlMargin}" ItemsSource="{Binding Path=SelectedFunctionDefinition.Parameters, Mode=OneWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Content="{Binding Path=Name, Mode=OneWay}"></Label>
+                                <TextBox Grid.Column="1" Text="{Binding Path=Value, Mode=OneWayToSource}"></TextBox>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <!-- Buttons -->
+                <StackPanel Orientation="Horizontal" Grid.Row="4">
+                    <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=CallContractCommand}">Execute</Button>
+                    <Button Margin="{StaticResource ControlMargin}">Publish transaction</Button>
+                </StackPanel>
+            </Grid>
         </Grid>
         <Grid Grid.Column="1">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="8*" />
+                    <RowDefinition Height="2*" />
                 </Grid.RowDefinitions>
-                <Label Grid.Row="0">Compile a contract</Label>
-                <Grid Grid.Row="1">
+                <!-- Compile & publish the contract -->
+                <Grid Grid.Row="0">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <!-- Smart Contract -->
-                    <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Solidity contract</Label>
-                    <TextBox ScrollViewer.VerticalScrollBarVisibility="Auto" MinHeight="100" AcceptsReturn="True" TextWrapping="Wrap" Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContract, Mode=TwoWay}"></TextBox>
-                    <!-- Transaction id -->
-                    <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Transaction id</Label>
-                    <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=TransactionId}"></TextBox>
-                    <!-- Submit the contract -->
-                    <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
-                        <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CompileContractCommand}">Compile contract</Button>
-                        <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=PublishContractCommand}">Publish contract</Button>
-                    </StackPanel>
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- Smart Contract -->
+                        <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="0">Solidity contract</Label>
+                        <TextBox ScrollViewer.VerticalScrollBarVisibility="Auto" MinHeight="100" AcceptsReturn="True" TextWrapping="Wrap" Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="0" Text="{Binding Path=SmartContract, Mode=TwoWay}"></TextBox>
+                        <!-- Transaction id -->
+                        <Label Margin="{StaticResource ControlMargin}" Grid.Column="0" Grid.Row="1">Transaction id</Label>
+                        <TextBox Margin="{StaticResource ControlMargin}" Grid.Column="1" Grid.Row="1" Text="{Binding Path=TransactionId}"></TextBox>
+                        <!-- Submit the contract -->
+                        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+                            <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=CompileContractCommand}">Compile contract</Button>
+                            <Button Margin="{StaticResource ControlMargin}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Command="{Binding Path=PublishContractCommand}">Publish contract</Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+                <!-- Display the contract address -->
+                <Grid Grid.Row="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <!-- The transaction address -->
+                        <Label Grid.Column="0" Grid.Row="0" Margin="{StaticResource ControlMargin}">The transaction address</Label>
+                        <TextBox Grid.Column="1" Grid.Row="0" Margin="{StaticResource ControlMargin}" Text="{Binding Path=TransactionId, Mode=OneWay}" IsReadOnly="True"></TextBox>
+                        <!-- Contract address -->
+                        <Label Grid.Column="0" Grid.Row="1" Margin="{StaticResource ControlMargin}">The contract address</Label>
+                        <TextBox Grid.Column="1" Grid.Row="1" Margin="{StaticResource ControlMargin}" Text="{Binding Path=NewSmartContractAddress, Mode=OneWay}" IsReadOnly="True"></TextBox>
+                        <!-- Submit button -->
+                        <Button Grid.Row="2" Grid.ColumnSpan="2" Margin="{StaticResource ControlMargin}" Command="{Binding Path=PersistSmartContractCommand}">Persist the contract</Button>
+                    </Grid>
                 </Grid>
             </Grid>
         </Grid>
