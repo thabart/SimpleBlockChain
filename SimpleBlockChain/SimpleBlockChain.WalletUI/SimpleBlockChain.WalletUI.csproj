@@ -80,6 +80,9 @@
     <Reference Include="BouncyCastle.Crypto, Version=1.8.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BouncyCastle.NetCore.1.8.1.3\lib\net20\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="HashLib, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NStratis.HashLib.1.0.0.1\lib\netstandard1.3\HashLib.dll</HintPath>
+    </Reference>
     <Reference Include="MahApps.Metro, Version=1.5.0.23, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\MahApps.Metro.dll</HintPath>
       <Private>True</Private>

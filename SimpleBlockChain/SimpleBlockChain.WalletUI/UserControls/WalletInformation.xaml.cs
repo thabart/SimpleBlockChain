@@ -38,7 +38,6 @@ namespace SimpleBlockChain.WalletUI.UserControls
             _walletHelper = walletHelper;
             InitializeComponent();
             Loaded += Load;
-            Unloaded += Unload;
         }
 
         public void Refresh()
@@ -48,22 +47,14 @@ namespace SimpleBlockChain.WalletUI.UserControls
             RefreshBalance();
         }
 
-        public void Reset()
-        {
-            if (_viewModel == null) { return; }
-            _viewModel.Reset();
-        }
-
         private void Load(object sender, RoutedEventArgs e)
         {
-            _viewModel = new WalletInformationViewModel();
-            _viewModel.SendMoneyEvt += SendMoney;
-            DataContext = _viewModel;
-        }
-
-        private void Unload(object sender, RoutedEventArgs e)
-        {
-            Destroy();
+            if (_viewModel == null)
+            {
+                _viewModel = new WalletInformationViewModel();
+                DataContext = _viewModel;
+                _viewModel.SendMoneyEvt += SendMoney;
+            }
         }
 
         private void SendMoney(object sender, EventArgs e)
@@ -238,13 +229,6 @@ namespace SimpleBlockChain.WalletUI.UserControls
 
                 }
             });
-        }
-
-        private void Destroy()
-        {
-            if (_viewModel == null) { return; }
-            _viewModel.SendMoneyEvt -= SendMoney;
-            _viewModel = null;
         }
     }
 }

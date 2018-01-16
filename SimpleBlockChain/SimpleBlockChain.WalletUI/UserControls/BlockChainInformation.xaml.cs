@@ -23,33 +23,24 @@ namespace SimpleBlockChain.WalletUI.UserControls
         public BlockChainInformation()
         {
             Loaded += Load;
-            Unloaded += Unload;
             InitializeComponent();
-        }
-
-        public void Reset()
-        {
-            if (_viewModel == null) { return; }
-            _viewModel.Reset();
         }
 
         private void Load(object sender, RoutedEventArgs e)
         {
-            _viewModel = new BlockChainInformationViewModel();
-            DataContext = _viewModel;
-            _viewModel.SelectBlockEvt += DisplayBlock;
-            _viewModel.RefreshEvt += Refresh;
+            if (_viewModel == null)
+            {
+                _viewModel = new BlockChainInformationViewModel();
+                DataContext = _viewModel;
+                _viewModel.SelectBlockEvt += DisplayBlock;
+                _viewModel.RefreshEvt += Refresh;
+            }
         }
 
         private void Refresh(object sender, EventArgs e)
         {
             if (_viewModel == null) { return; }
             RefreshBlocks();
-        }
-
-        private void Unload(object sender, RoutedEventArgs e)
-        {
-            Destroy();
         }
 
         private void DisplayBlock(object sender, BlockEventArgs e)
@@ -120,14 +111,6 @@ namespace SimpleBlockChain.WalletUI.UserControls
                     catch (AggregateException) { }
                 });
             });
-        }
-
-        private void Destroy()
-        {
-            if (_viewModel == null) { return; }
-            _viewModel.SelectBlockEvt -= DisplayBlock;
-            _viewModel.RefreshEvt -= Refresh;
-            _viewModel = null;
         }
     }
 }

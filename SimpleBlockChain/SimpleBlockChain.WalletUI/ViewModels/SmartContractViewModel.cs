@@ -1,227 +1,333 @@
 ﻿using SimpleBlockChain.WalletUI.Commands;
 using System;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace SimpleBlockChain.WalletUI.ViewModels
 {
-    public class SmartContractViewModel : BaseViewModel
+    public class FunctionDefinitionViewModel
     {
-        private string _getSmartContractAddressResult;
-        private string _smartContractAddress;
-        private string _smartContractCallValue;
-        private string _smartContract;
-        private string _transactionAddress;
-        private string _transactionId;
-        private ICommand _callContractCommand;
-        private ICommand _compileContractCommand;
-        private ICommand _publishContractCommand;
-        private ICommand _getSmartContractCommand;
-        private ICommand _publishTransactionCallCommand;
-        public event EventHandler CallContractEvt;
-        public event EventHandler CompileContractEvt;
-        public event EventHandler PublishContractEvt;
-        public event EventHandler GetSmartContractEvt;
-        public event EventHandler PublishTransactionCallEvt;
+        public string FunctionName { get; set; }
+        public ObservableCollection<ParameterDefinitionViewModel> Parameters { get; set; }
+    }
 
-        public SmartContractViewModel()
-        {
-            _callContractCommand = new RelayCommand(p => CallSmartContractExecute(), p => CanExecuteCallSmartContract());
-            _compileContractCommand = new RelayCommand(p => CompileContractExecute(), p => CanCompileContract());
-            _publishContractCommand = new RelayCommand(p => PublishContractExecute(), p => CanPublishContract());
-            _getSmartContractCommand = new RelayCommand(p => GetSmartContractExecute(), p => CanExecuteGetSmartContract());
-            _publishTransactionCallCommand = new RelayCommand(p => PublishTransactionCallExecute(), p => CanPublishTransactionCallExecute());
-        }
+    public class ParameterDefinitionViewModel : BaseViewModel
+    {
+        private string _value;
 
-        public string TransactionAddress
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Value
         {
-            get { return _transactionAddress; }
+            get
+            {
+                return _value;
+            }
             set
             {
-                if (_transactionAddress != value)
+                if (_value != value)
                 {
-                    _transactionAddress = value;
-                    NotifyPropertyChanged(nameof(TransactionAddress));
+                    _value = value;
+                    NotifyPropertyChanged(nameof(Value));
                 }
             }
         }
 
-        public string GetSmartContractAddressResult
+        public class SmartContractViewModel : BaseViewModel
         {
-            get
+            private string _getSmartContractAddressResult;
+            private string _smartContractAddress;
+            private string _smartContractCallValue;
+            private string _smartContract;
+            private string _transactionAddress;
+            private string _transactionId;
+            private string _generatedCallValue;
+            private ICommand _callContractCommand;
+            private ICommand _compileContractCommand;
+            private ICommand _publishContractCommand;
+            private ICommand _getSmartContractCommand;
+            private ICommand _publishTransactionCallCommand;
+            private ICommand _getCallValueCommand;
+            public event EventHandler CallContractEvt;
+            public event EventHandler CompileContractEvt;
+            public event EventHandler PublishContractEvt;
+            public event EventHandler GetSmartContractEvt;
+            public event EventHandler PublishTransactionCallEvt;
+            public event EventHandler GetCallValueEvt;
+            private ObservableCollection<FunctionDefinitionViewModel> _functionDefinitions;
+            private FunctionDefinitionViewModel _selectedFunctionDefinition;
+
+            public SmartContractViewModel()
             {
-                return _getSmartContractAddressResult;
+                _callContractCommand = new RelayCommand(p => CallSmartContractExecute(), p => CanExecuteCallSmartContract());
+                _compileContractCommand = new RelayCommand(p => CompileContractExecute(), p => CanCompileContract());
+                _publishContractCommand = new RelayCommand(p => PublishContractExecute(), p => CanPublishContract());
+                _getSmartContractCommand = new RelayCommand(p => GetSmartContractExecute(), p => CanExecuteGetSmartContract());
+                _publishTransactionCallCommand = new RelayCommand(p => PublishTransactionCallExecute(), p => CanPublishTransactionCallExecute());
+                _getCallValueCommand = new RelayCommand(p => GetCallValueExecute(), p => CanExecuteGetCallValue());
+                _functionDefinitions = new ObservableCollection<FunctionDefinitionViewModel>();
             }
-            set
+
+            #region Properties
+
+            public FunctionDefinitionViewModel SelectedFunctionDefinition
             {
-                if (_getSmartContractAddressResult != value)
+                get
                 {
-                    _getSmartContractAddressResult = value;
-                    NotifyPropertyChanged(nameof(GetSmartContractAddressResult));
+                    return _selectedFunctionDefinition;
+                }
+                set
+                {
+                    if (_selectedFunctionDefinition != value)
+                    {
+                        _selectedFunctionDefinition = value;
+                        NotifyPropertyChanged(nameof(SelectedFunctionDefinition));
+                    }
                 }
             }
-        }
 
-        public string SmartContractAddress
-        {
-            get { return _smartContractAddress; }
-            set
+            public ObservableCollection<FunctionDefinitionViewModel> FunctionDefinitions
             {
-                if (value != _smartContractAddress)
+                get
                 {
-                    _smartContractAddress = value;
-                    NotifyPropertyChanged(nameof(SmartContractAddress));
+                    return _functionDefinitions;
                 }
             }
-        }
 
-        public string SmartContractCallValue
-        {
-            get { return _smartContractCallValue; }
-            set
+            public string TransactionAddress
             {
-                if (value != _smartContractCallValue)
+                get { return _transactionAddress; }
+                set
                 {
-                    _smartContractCallValue = value;
-                    NotifyPropertyChanged(nameof(SmartContractCallValue));
+                    if (_transactionAddress != value)
+                    {
+                        _transactionAddress = value;
+                        NotifyPropertyChanged(nameof(TransactionAddress));
+                    }
                 }
             }
-        }
 
-        public string SmartContract
-        {
-            get
+            public string GetSmartContractAddressResult
             {
-                return _smartContract;
-            }
-            set
-            {
-                if (value != _smartContract)
+                get
                 {
-                    _smartContract = value;
-                    NotifyPropertyChanged(nameof(SmartContract));
+                    return _getSmartContractAddressResult;
+                }
+                set
+                {
+                    if (_getSmartContractAddressResult != value)
+                    {
+                        _getSmartContractAddressResult = value;
+                        NotifyPropertyChanged(nameof(GetSmartContractAddressResult));
+                    }
                 }
             }
-        }
 
-        public string TransactionId
-        {
-            get
+            public string SmartContractAddress
             {
-                return _transactionId;
-            }
-            set
-            {
-                if (_transactionId != value)
+                get { return _smartContractAddress; }
+                set
                 {
-                    _transactionId = value;
-                    NotifyPropertyChanged(nameof(TransactionId));
+                    if (value != _smartContractAddress)
+                    {
+                        _smartContractAddress = value;
+                        NotifyPropertyChanged(nameof(SmartContractAddress));
+                    }
                 }
             }
-        }
 
-        public ICommand CallContractCommand
-        {
-            get
+            public string SmartContractCallValue
             {
-                return _callContractCommand;
+                get { return _smartContractCallValue; }
+                set
+                {
+                    if (value != _smartContractCallValue)
+                    {
+                        _smartContractCallValue = value;
+                        NotifyPropertyChanged(nameof(SmartContractCallValue));
+                    }
+                }
             }
-        }
 
-        public ICommand CompileContractCommand
-        {
-            get
+            public string SmartContract
             {
-                return _compileContractCommand;
+                get
+                {
+                    return _smartContract;
+                }
+                set
+                {
+                    if (value != _smartContract)
+                    {
+                        _smartContract = value;
+                        NotifyPropertyChanged(nameof(SmartContract));
+                    }
+                }
             }
-        }
 
-        public ICommand PublishContractCommand
-        {
-            get
+            public string TransactionId
             {
-                return _publishContractCommand;
+                get
+                {
+                    return _transactionId;
+                }
+                set
+                {
+                    if (_transactionId != value)
+                    {
+                        _transactionId = value;
+                        NotifyPropertyChanged(nameof(TransactionId));
+                    }
+                }
             }
-        }
 
-        public ICommand GetSmartContractCommand
-        {
-            get
+            public string GeneratedCallValue
             {
-                return _getSmartContractCommand;
+                get
+                {
+                    return _generatedCallValue;
+                }
+                set
+                {
+                    if (_generatedCallValue != value)
+                    {
+                        _generatedCallValue = value;
+                        NotifyPropertyChanged(nameof(GeneratedCallValue));
+                    }
+                }
             }
-        }
 
-        public ICommand PublishTransactionCallCommand
-        {
-            get
+            public ICommand CallContractCommand
             {
-                return _publishTransactionCallCommand;
+                get
+                {
+                    return _callContractCommand;
+                }
             }
-        }
 
-        private void PublishTransactionCallExecute()
-        {
-            if (PublishTransactionCallEvt != null)
+            public ICommand CompileContractCommand
             {
-                PublishTransactionCallEvt(this, EventArgs.Empty);
+                get
+                {
+                    return _compileContractCommand;
+                }
             }
-        }
 
-        private bool CanPublishTransactionCallExecute()
-        {
-            return true;
-        }
-
-        private void CallSmartContractExecute()
-        {
-            if (CallContractEvt != null)
+            public ICommand PublishContractCommand
             {
-                CallContractEvt(this, EventArgs.Empty);
+                get
+                {
+                    return _publishContractCommand;
+                }
             }
-        }
 
-        private bool CanExecuteCallSmartContract()
-        {
-            return true;
-        }
-
-        private void CompileContractExecute()
-        {
-            if (CompileContractEvt != null)
+            public ICommand GetSmartContractCommand
             {
-                CompileContractEvt(this, EventArgs.Empty);
+                get
+                {
+                    return _getSmartContractCommand;
+                }
             }
-        }
 
-        private bool CanCompileContract()
-        {
-            return true;
-        }
-
-        private void PublishContractExecute()
-        {
-            if (PublishContractEvt != null)
+            public ICommand PublishTransactionCallCommand
             {
-                PublishContractEvt(this, EventArgs.Empty);
+                get
+                {
+                    return _publishTransactionCallCommand;
+                }
             }
-        }
 
-        private bool CanPublishContract()
-        {
-            return true;
-        }
-
-        private void GetSmartContractExecute()
-        {
-            if (GetSmartContractEvt != null)
+            public ICommand GetCallValueCommand
             {
-                GetSmartContractEvt(this, EventArgs.Empty);
+                get
+                {
+                    return _getCallValueCommand;
+                }
             }
-        }
 
-        private bool CanExecuteGetSmartContract()
-        {
-            return true;
+            #endregion
+
+            #region Private methods
+
+            private void PublishTransactionCallExecute()
+            {
+                if (PublishTransactionCallEvt != null)
+                {
+                    PublishTransactionCallEvt(this, EventArgs.Empty);
+                }
+            }
+
+            private bool CanPublishTransactionCallExecute()
+            {
+                return true;
+            }
+
+            private void CallSmartContractExecute()
+            {
+                if (CallContractEvt != null)
+                {
+                    CallContractEvt(this, EventArgs.Empty);
+                }
+            }
+
+            private bool CanExecuteCallSmartContract()
+            {
+                return true;
+            }
+
+            private void CompileContractExecute()
+            {
+                if (CompileContractEvt != null)
+                {
+                    CompileContractEvt(this, EventArgs.Empty);
+                }
+            }
+
+            private bool CanCompileContract()
+            {
+                return true;
+            }
+
+            private void PublishContractExecute()
+            {
+                if (PublishContractEvt != null)
+                {
+                    PublishContractEvt(this, EventArgs.Empty);
+                }
+            }
+
+            private bool CanPublishContract()
+            {
+                return true;
+            }
+
+            private void GetSmartContractExecute()
+            {
+                if (GetSmartContractEvt != null)
+                {
+                    GetSmartContractEvt(this, EventArgs.Empty);
+                }
+            }
+
+            private bool CanExecuteGetSmartContract()
+            {
+                return true;
+            }
+
+            private void GetCallValueExecute()
+            {
+                if (GetCallValueEvt != null)
+                {
+                    GetCallValueEvt(this, EventArgs.Empty);
+                }
+            }
+
+            private bool CanExecuteGetCallValue()
+            {
+                return true;
+            }
+    
+        #endregion
         }
     }
 }

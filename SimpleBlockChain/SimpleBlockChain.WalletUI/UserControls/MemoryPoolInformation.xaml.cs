@@ -15,26 +15,16 @@ namespace SimpleBlockChain.WalletUI.UserControls
         {
             InitializeComponent();
             Loaded += Load;
-            Unloaded += Unload;
         }
-
-        public void Reset()
-        {
-            if (_viewModel == null) { return; }
-            _viewModel.Reset();
-        }
-
+        
         private void Load(object sender, RoutedEventArgs e)
         {
-            _viewModel = new MemoryPoolInformationViewModel();
-            DataContext = _viewModel;
-            _viewModel.RefreshEvt += Refresh;
-        }
-
-        private void Unload(object sender, RoutedEventArgs e)
-        {
-            _viewModel.RefreshEvt += Refresh;
-            _viewModel = null;
+            if (_viewModel == null)
+            {
+                _viewModel = new MemoryPoolInformationViewModel();
+                DataContext = _viewModel;
+                _viewModel.RefreshEvt += Refresh;
+            }
         }
 
         private void Refresh(object sender, EventArgs e)

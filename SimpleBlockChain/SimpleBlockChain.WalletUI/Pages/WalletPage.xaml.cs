@@ -198,9 +198,6 @@ namespace SimpleBlockChain.WalletUI.Pages
 
             _viewModel.IsConnected = false;
             _viewModel.NbBlocks = 0;
-            _walletInformation.Reset();
-            _blockChainInformation.Reset();
-            _memoryPoolInformation.Reset();
         }
 
         private void Destroy()

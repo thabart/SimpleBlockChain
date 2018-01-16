@@ -19,6 +19,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <!-- Call a contract -->
             <StackPanel Grid.Row="0">
@@ -60,13 +61,52 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <!-- The transaction address -->
-                    <Label Grid.Column="0" Grid.Row="0">The transaction address</Label>
-                    <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=TransactionAddress, Mode=TwoWay}"></TextBox>
+                    <Label Grid.Column="0" Grid.Row="0" Margin="{StaticResource ControlMargin}">The transaction address</Label>
+                    <TextBox Grid.Column="1" Grid.Row="0" Margin="{StaticResource ControlMargin}" Text="{Binding Path=TransactionAddress, Mode=TwoWay}"></TextBox>
                     <!-- Contract address -->
-                    <Label Grid.Column="0" Grid.Row="1">The contract address</Label>
-                    <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=GetSmartContractAddressResult, Mode=TwoWay}"></TextBox>
+                    <Label Grid.Column="0" Grid.Row="1" Margin="{StaticResource ControlMargin}">The contract address</Label>
+                    <TextBox Grid.Column="1" Grid.Row="1" Margin="{StaticResource ControlMargin}" Text="{Binding Path=GetSmartContractAddressResult, Mode=TwoWay}"></TextBox>
                     <!-- Submit button -->
-                    <Button Grid.Row="2" Grid.ColumnSpan="2" Command="{Binding Path=GetSmartContractCommand}">Get the contract address</Button>
+                    <Button Grid.Row="2" Grid.ColumnSpan="2" Margin="{StaticResource ControlMargin}" Command="{Binding Path=GetSmartContractCommand}">Get the contract address</Button>
+                </Grid>
+            </StackPanel>
+            <!-- Call a contract with predefined parametes -->
+            <StackPanel Grid.Row="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <!-- The method name -->
+                    <Label Grid.Column="0" Grid.Row="0" Margin="{StaticResource ControlMargin}">Select the method</Label>
+                    <ComboBox Grid.Column="1" Grid.Row="0"  Margin="{StaticResource ControlMargin}" ItemsSource="{Binding Path=FunctionDefinitions}" DisplayMemberPath="FunctionName" SelectedItem="{Binding Path=SelectedFunctionDefinition, Mode=TwoWay}" />
+                    <!-- Display the parameters -->
+                    <Label Grid.Column="0" Grid.Row="1" Margin="{StaticResource ControlMargin}">Parameters</Label>
+                    <ListView Grid.Column="1" Grid.Row="1" Margin="{StaticResource ControlMargin}" ItemsSource="{Binding SelectedFunctionDefinition.Parameters}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="{Binding Path=Name}"></Label>
+                                    <TextBox Grid.Column="1" Text="{Binding Path=Value, Mode=TwoWay}"></TextBox>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <!-- Get the call value -->
+                    <Button Margin="{StaticResource ControlMargin}" Grid.Row="2" Grid.ColumnSpan="2" Command="{Binding Path=GetCallValueCommand}">Get call value</Button>
+                    <!-- Display the call value -->
+                    <Label Grid.Column="0" Grid.Row="3" Margin="{StaticResource ControlMargin}">Call value</Label>
+                    <TextBox Margin="{StaticResource ControlMargin}" Grid.Row="3" Grid.Column="1" Text="{Binding Path=GeneratedCallValue}"></TextBox>
                 </Grid>
             </StackPanel>
         </Grid>

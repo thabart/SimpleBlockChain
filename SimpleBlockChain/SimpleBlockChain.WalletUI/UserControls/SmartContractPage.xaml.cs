@@ -1,4 +1,7 @@
-﻿using SimpleBlockChain.Core.Extensions;
+﻿using HashLib;
+using Newtonsoft.Json.Linq;
+using SimpleBlockChain.Core.Compiler;
+using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Helpers;
 using SimpleBlockChain.Core.Rpc;
 using SimpleBlockChain.Core.Rpc.Parameters;
@@ -9,10 +12,12 @@ using SimpleBlockChain.WalletUI.Stores;
 using SimpleBlockChain.WalletUI.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using static SimpleBlockChain.WalletUI.ViewModels.ParameterDefinitionViewModel;
 
 namespace SimpleBlockChain.WalletUI.UserControls
 {
@@ -26,29 +31,60 @@ namespace SimpleBlockChain.WalletUI.UserControls
             _walletHelper = walletHelper;
             InitializeComponent();
             Loaded += Load;
-            Unloaded += Unload;
-        }
-
-        private void Unload(object sender, RoutedEventArgs e)
-        {
-            if (_viewModel == null) { return; }
-            _viewModel.CallContractEvt -= CallContract;
-            _viewModel.CompileContractEvt -= CompileContract;
-            _viewModel.PublishContractEvt -= PublishContract;
-            _viewModel.GetSmartContractEvt -= GetSmartContract;
-            _viewModel.PublishTransactionCallEvt -= PublishTransactionCall;
-            _viewModel = null;
         }
 
         private void Load(object sender, RoutedEventArgs e)
         {
-            _viewModel = new SmartContractViewModel();
-            _viewModel.CallContractEvt += CallContract;
-            _viewModel.CompileContractEvt += CompileContract;
-            _viewModel.PublishContractEvt += PublishContract;
-            _viewModel.GetSmartContractEvt += GetSmartContract;
-            _viewModel.PublishTransactionCallEvt += PublishTransactionCall;
-            DataContext = _viewModel;
+            if (_viewModel == null)
+            {
+                _viewModel = new SmartContractViewModel();
+                DataContext = _viewModel;
+                _viewModel.CallContractEvt += CallContract;
+                _viewModel.CompileContractEvt += CompileContract;
+                _viewModel.PublishContractEvt += PublishContract;
+                _viewModel.GetSmartContractEvt += GetSmartContract;
+                _viewModel.PublishTransactionCallEvt += PublishTransactionCall;
+                _viewModel.GetCallValueEvt += GetCallValue;
+            }
+        }
+
+        private void GetCallValue(object sender, EventArgs e)
+        {
+            var selectedFnDef = _viewModel.SelectedFunctionDefinition;
+            if (selectedFnDef == null)
+            {
+                MainWindowStore.Instance().DisplayError("A function must be selected");
+                return;
+            }
+
+            var parameters = string.Empty;
+            if (selectedFnDef.Parameters != null)
+            {
+                parameters = string.Join(",", selectedFnDef.Parameters.Select(p => p.Type));
+            }
+
+            var operationName = string.Format("{0}({1})", selectedFnDef.FunctionName, parameters);
+            var hash = HashFactory.Crypto.SHA3.CreateKeccak256();
+            var callDataValue = new List<byte>();
+            var operationPayload = hash.ComputeBytes(Encoding.ASCII.GetBytes(operationName)).GetBytes().Take(4);
+            callDataValue.AddRange(operationPayload);
+            if (selectedFnDef.Parameters != null)
+            {
+                for(var i = 1; i <= selectedFnDef.Parameters.Count; i++)
+                {
+                    var p = selectedFnDef.Parameters[i - 1];
+                    callDataValue.AddRange(new DataWord(32 * (i * selectedFnDef.Parameters.Count)).GetData());
+                }
+
+                foreach (var p in selectedFnDef.Parameters)
+                {
+                    callDataValue.AddRange(new DataWord(Encoding.ASCII.GetBytes(p.Value).Count()).GetData());
+                    callDataValue.AddRange(new DataWord(Encoding.ASCII.GetBytes(p.Value)).GetReverseData());
+                }
+            }
+
+            var hex = callDataValue.ToHexString();
+            Application.Current.Dispatcher.Invoke(() => _viewModel.GeneratedCallValue = hex);
         }
 
         private void PublishTransactionCall(object sender, EventArgs e)
@@ -197,18 +233,57 @@ namespace SimpleBlockChain.WalletUI.UserControls
                 try
                 {
                     var compilationResult = t.Result;
-                    var builder = new StringBuilder();
-                    builder.Append("BUILD RESULT");
-                    builder.AppendLine();
-                    foreach(var info in compilationResult.Infos)
+                    if (compilationResult.Infos == null)
                     {
-                        builder.Append("Code: " + info.Code);
-                        builder.AppendLine();
-                        builder.Append("ABI : " + info.AbiDefinition.ToString());
-                        builder.AppendLine();
+                        return;
                     }
 
-                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(builder.ToString()));
+                    Application.Current.Dispatcher.Invoke(() => _viewModel.FunctionDefinitions.Clear());
+                    foreach (var info in compilationResult.Infos)
+                    {
+                        var abiDefinition = info.AbiDefinition;
+                        foreach(JObject record in abiDefinition)
+                        {
+                            JToken jTokenName = null;
+                            if (!record.TryGetValue("name", out jTokenName))
+                            {
+                                continue;
+                            }
+
+                            JToken jTokenInputs = null;
+                            var fnType = record.GetValue("type").ToString();
+                            if (fnType != "function")
+                            {
+                                continue;
+                            }
+
+                            var parameters = new ObservableCollection<ParameterDefinitionViewModel>();
+                            if (record.TryGetValue("inputs", out jTokenInputs))
+                            {
+                                var jArrInput = jTokenInputs as JArray;
+                                if (jArrInput != null)
+                                {
+                                    foreach(JObject inputDef in jArrInput)
+                                    {
+                                        parameters.Add(new ParameterDefinitionViewModel
+                                        {
+                                            Name = inputDef.GetValue("name").ToString(),
+                                            Type = inputDef.GetValue("type").ToString()
+                                        });
+                                    }
+                                }
+                            }
+
+                            var newFuncDef = new FunctionDefinitionViewModel
+                            {
+                                FunctionName = jTokenName.ToString(),
+                                Parameters = parameters  
+                            };
+                            Application.Current.Dispatcher.Invoke(() => _viewModel.FunctionDefinitions.Add(newFuncDef));
+                        }
+                        
+                        Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage("The contract has been compiled"));
+                    }
                 }
                 catch (AggregateException)
                 {

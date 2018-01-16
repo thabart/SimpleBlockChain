@@ -1132,7 +1132,7 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var codeParameterSize = (new DataWord(Encoding.ASCII.GetBytes(codeValue).Length).GetData());
             var codeParameter = (new DataWord(Encoding.ASCII.GetBytes(codeValue)).GetReverseData());
             var inamiPrescriberSizeParameter = (new DataWord(Encoding.ASCII.GetBytes(prescriberVal).Length).GetData());
-            var inamiPrescriberSizeValue = (new DataWord(Encoding.ASCII.GetBytes(prescriberVal)).GetData());
+            var inamiPrescriberSizeValue = (new DataWord(Encoding.ASCII.GetBytes(prescriberVal)).GetReverseData());
             var inamiPrescriberParameter = DataWord.ZERO.GetData(); //(new DataWord(Encoding.ASCII.GetBytes("12222333485"))).GetData();
             var addMedicalPrestMsgData = new List<byte>();
             var offsetFirstParameter = (new DataWord(32 * 2)).GetData();
