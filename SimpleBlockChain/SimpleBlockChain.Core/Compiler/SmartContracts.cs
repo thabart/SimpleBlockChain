@@ -35,6 +35,12 @@ namespace SimpleBlockChain.Core.Compiler
         private const string SMART_CONTRACT_STORE = "SMART_CONTRACT_STORE";
         private const string SMART_CONTRACT_STORE_ELT = SMART_CONTRACT_STORE + "_{0}_{1}";
 
+        private const string SMART_CONTRACT_LOG = "SMART_CONTRACT_LOG";
+        private const string SMART_CONTRACT_LOG_ELT = SMART_CONTRACT_LOG + "_{0}_{1}";
+
+        private const string SMART_CONTRACT_TOPIC = "SMART_CONTRACT_TOPIC";
+        private const string SMART_CONTRACT_TOPIC_ELT = SMART_CONTRACT_TOPIC + "_{0}";
+
         private Dictionary<string, SmartContract> _cacheSmartContracts;
         private Dictionary<string, SmartContract> _cacheTxSmartContracts;
         private Dictionary<string, string> _cacheDataRows;
@@ -132,6 +138,81 @@ namespace SimpleBlockChain.Core.Compiler
             else
             {
                 _cacheDataRows.Add(string.Format(SMART_CONTRACT_STORE_ELT, scAddrHex, keyHex), keyHex);
+            }
+
+            return true;
+        }
+
+        public IEnumerable<SolidityLogInfo> GetLogs(List<IEnumerable<byte>> blockHashes)
+        {
+            if (blockHashes == null)
+            {
+                throw new ArgumentNullException(nameof(blockHashes));
+            }
+            
+            foreach(var blockHash in blockHashes)
+            {
+                var key = string.Format(SMART_CONTRACT_LOG + "_{0}", blockHash.ToHexString());
+                var dic = _db.Find(ReadOptions.Default, key);
+                foreach(var kvp in dic)
+                {
+                    var log = kvp.Key.Replace(key, "");
+                    // TODO : REPLACE 
+                }
+            }
+
+            return null;
+        }
+
+        public bool AddLogs(IEnumerable<byte> scAddr, IEnumerable<byte> blockHash, List<SolidityLogInfo> logs, bool addInTransaction = false)
+        {
+            if (scAddr == null)
+            {
+                throw new ArgumentNullException(nameof(scAddr));
+            }
+
+            if (blockHash == null)
+            {
+                throw new ArgumentNullException(nameof(blockHash));
+            }
+
+            if (logs == null)
+            {
+                throw new ArgumentNullException(nameof(logs));
+            }
+
+            var writeBatch = new WriteBatch();
+            if (addInTransaction)
+            {
+                writeBatch = _writeBatch;
+            }
+
+
+            string result = string.Empty;
+            var scAddrHex = scAddr.ToHexString();
+            if (!_db.TryGet(string.Format(SMART_CONTRACT_ELT, scAddrHex), ReadOptions.Default, out result))
+            {
+                return false;
+            }
+
+            var blockHashHex = blockHash.ToHexString();
+            foreach(var log in logs)
+            {
+                var logHex = log.GetData().ToHexString();
+                writeBatch.Put(string.Format(SMART_CONTRACT_LOG_ELT, blockHashHex, scAddrHex), logHex);
+                var topics = log.GetTopics();
+                if (topics != null && topics.Any())
+                {
+                    foreach(var topic in topics)
+                    {
+                        writeBatch.Put(string.Format(SMART_CONTRACT_TOPIC_ELT, logHex), topic.GetData().ToHexString());
+                    }
+                }
+            }
+
+            if (!addInTransaction)
+            {
+                _db.Write(writeBatch, WriteOptions.Default);
             }
 
             return true;
@@ -285,6 +366,12 @@ namespace SimpleBlockChain.Core.Compiler
                     while (!program.IsStopped())
                     {
                         solidityVm.Step(program);
+                    }
+
+                    var logs = program.GetResult().GetLogs();
+                    if (logs != null && logs.Any())
+                    {
+                        AddLogs(smartContractTransaction.To, block.GetHashHeader(), logs, addIntoCache);
                     }
                 }
             }

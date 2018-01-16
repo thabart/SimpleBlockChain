@@ -5,12 +5,12 @@ namespace SimpleBlockChain.Core.Compiler
 {
     public class SolidityProgramInvoke
     {
-        private readonly SmartContracts _smartContracts;
-        private static int _size = 32;
         private IEnumerable<byte> _msgDataRaw;
         private IEnumerable<byte> _smartContractAddress;
         private DataWord _ownerAddress;
         private DataWord _callValue;
+        private readonly SmartContracts _smartContracts;
+        private static int _size = 32;
         private bool _addInTransaction = false;
 
         public SolidityProgramInvoke(IEnumerable<byte> smartContractAddress, DataWord ownerAddress, DataWord callValue, SmartContracts smartContracts)
