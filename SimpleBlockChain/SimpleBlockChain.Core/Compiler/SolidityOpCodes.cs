@@ -135,7 +135,12 @@ namespace SimpleBlockChain.Core.Compiler
             { SolidityOpCodes.DELEGATECALL, Tier.SpecialTier },
             { SolidityOpCodes.STATICCALL, Tier.SpecialTier },
             { SolidityOpCodes.REVERT, Tier.ZeroTier },
-            { SolidityOpCodes.SUICIDE, Tier.ZeroTier }
+            { SolidityOpCodes.SUICIDE, Tier.ZeroTier },
+            { SolidityOpCodes.LOG0, Tier.SpecialTier },
+            { SolidityOpCodes.LOG1, Tier.SpecialTier },
+            { SolidityOpCodes.LOG2, Tier.SpecialTier },
+            { SolidityOpCodes.LOG3, Tier.SpecialTier },
+            { SolidityOpCodes.LOG4, Tier.SpecialTier }
         };
 
         private SolidityOpCode()
@@ -326,6 +331,11 @@ namespace SimpleBlockChain.Core.Compiler
         SWAP15 = 0x9e,
         SWAP16 = 0x9f,
         RETURN = 0xf3,
-        CALL = 0xf1
+        CALL = 0xf1,
+        LOG0 = 0xa0,
+        LOG1 = 0xa1,
+        LOG2 = 0xa2,
+        LOG3 = 0xa3,
+        LOG4 = 0xa4
     }
 }

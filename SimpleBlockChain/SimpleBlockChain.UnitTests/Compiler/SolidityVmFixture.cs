@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Org.BouncyCastle.Math;
 using SimpleBlockChain.Core;
 using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Extensions;
@@ -1186,7 +1187,7 @@ namespace SimpleBlockChain.UnitTests.Compiler
 
             while (!addMedicalPrestProg.IsStopped()) // ADD MEDICAL PRESCRIPTION.
             {
-                vm.Step(addMedicalPrestProg, true);
+                vm.Step(addMedicalPrestProg, false);
             }
 
             var r = addMedicalPrestProg.GetResult().GetHReturn().ToHexString();
@@ -1194,21 +1195,99 @@ namespace SimpleBlockChain.UnitTests.Compiler
 
             while (!addNomenCodeProg.IsStopped()) // ADD NOMEN CODE.
             {
-                vm.Step(addNomenCodeProg, true);
+                vm.Step(addNomenCodeProg, false);
             }
 
             while (!getNomenCodeProg.IsStopped()) // GET NOMEN CODE.
             {
-                vm.Step(getNomenCodeProg, true);
+                vm.Step(getNomenCodeProg, false);
             }
 
             var hR = getNomenCodeProg.GetResult().GetHReturn().ToHexString();
             r = Encoding.ASCII.GetString(getNomenCodeProg.GetResult().GetHReturn());
-            Assert.IsTrue(r == "0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000701056e6f6d656e00000000000000000000000000000000000000000000000000");
+            Assert.IsTrue(hR == "0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000701056e6f6d656e00000000000000000000000000000000000000000000000000");
+        }
+
+
+        [TestMethod]
+        public void WhenExecuteComplexContract5()
+        {
+            var excepted = "00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004636f646500000000000000000000000000000000000000000000000000000000";
+            const string codeValue = "code";
+            const int addr = 1;
+            const string prescriberVal = "prescriber";
+            RemoveSmartContracts(); // REMOVE THE SMART CONTRACTS.
+
+            var serviceProvider = BuildServiceProvider(); // GET THE DEPENDENCIES.
+
+            var smartContractStore = serviceProvider.GetService<ISmartContractStore>();
+            smartContractStore.Switch(Core.Networks.MainNet);
+
+            var operationSignature = "addMedicalPrestation(string,address,string)"; // ADD MEDICAL PRESTATION PARAMETER.
+            var hash = HashFactory.Crypto.SHA3.CreateKeccak256();
+            var operationPayload = hash.ComputeBytes(Encoding.ASCII.GetBytes(operationSignature)).GetBytes().Take(4);
+            var codeParameterSize = (new DataWord(Encoding.ASCII.GetBytes(codeValue).Length).GetData());
+            var codeParameter = (new DataWord(Encoding.ASCII.GetBytes(codeValue)).GetReverseData());
+            var addrParameter = (new DataWord(addr).GetData());
+            var inamiPrescriberSizeParameter = (new DataWord(Encoding.ASCII.GetBytes(prescriberVal).Length).GetData());
+            var inamiPrescriberSizeValue = (new DataWord(Encoding.ASCII.GetBytes(prescriberVal)).GetReverseData());
+            var addMedicalPrestMsgData = new List<byte>();
+            var offsetFirstParameter = (new DataWord(32 * 3)).GetData();
+            var offsetSecondParameter = (new DataWord(32 * 5)).GetData();
+            addMedicalPrestMsgData.AddRange(operationPayload);
+            addMedicalPrestMsgData.AddRange(offsetFirstParameter);
+            addMedicalPrestMsgData.AddRange(addrParameter);
+            addMedicalPrestMsgData.AddRange(offsetSecondParameter);
+            addMedicalPrestMsgData.AddRange(codeParameterSize);
+            addMedicalPrestMsgData.AddRange(codeParameter);
+            addMedicalPrestMsgData.AddRange(inamiPrescriberSizeParameter);
+            addMedicalPrestMsgData.AddRange(inamiPrescriberSizeValue);
+
+            var xxxx = addMedicalPrestMsgData.ToHexString();
+
+            var address = new DataWord(_adr.FromHexString().ToArray());
+            var callValue = new DataWord("00".FromHexString().ToArray());
+            var scAddress = "0000000000000000000000000000000000000001".FromHexString();
+            var addMedicalPrestPgInvoke = new SolidityProgramInvoke(addMedicalPrestMsgData, scAddress, address, callValue, smartContractStore.GetSmartContracts());
+            var vm = new SolidityVm();
+            string code = "606060405260043610610057576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680632a0634861461005c578063c6623ab814610095578063e7f224351461016c575b600080fd5b341561006757600080fd5b610093600480803573ffffffffffffffffffffffffffffffffffffffff16906020019091905050610200565b005b34156100a057600080fd5b610152600480803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284378201915050505050509190803573ffffffffffffffffffffffffffffffffffffffff1690602001909190803590602001908201803590602001908080601f01602080910402602001604051908101604052809392919081815260200183838082843782019150505050505091905050610243565b604051808215151515815260200191505060405180910390f35b341561017757600080fd5b6101e6600480803590602001908201803590602001908080601f0160208091040260200160405190810160405280939291908181526020018383808284378201915050505050509190803573ffffffffffffffffffffffffffffffffffffffff16906020019091905050610512565b604051808215151515815260200191505060405180910390f35b806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b6000600115156001856040518082805190602001908083835b602083101515610281578051825260208201915060208101905060208303925061025c565b6001836020036101000a038019825116818451168082178552505050505050905001915050908152602001604051809103902060020160009054906101000a900460ff16151514156102d6576000905061050b565b6060604051908101604052808473ffffffffffffffffffffffffffffffffffffffff168152602001838152602001600115158152506001856040518082805190602001908083835b602083101515610343578051825260208201915060208101905060208303925061031e565b6001836020036101000a038019825116818451168082178552505050505050905001915050908152602001604051809103902060008201518160000160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060208201518160010190805190602001906103d9929190610862565b5060408201518160020160006101000a81548160ff0219169083151502179055509050507f5f69eee0ba6cf854f4e27c571116fe14ab093c97e885c628463f4b820ccd5ad38483604051808060200180602001838103835285818151815260200191508051906020019080838360005b83811015610464578082015181840152602081019050610449565b50505050905090810190601f1680156104915780820380516001836020036101000a031916815260200191505b50838103825284818151815260200191508051906020019080838360005b838110156104ca5780820151818401526020810190506104af565b50505050905090810190601f1680156104f75780820380516001836020036101000a031916815260200191505b5094505050505060405180910390a1600190505b9392505050565b600080600015156001856040518082805190602001908083835b602083101515610551578051825260208201915060208101905060208303925061052c565b6001836020036101000a038019825116818451168082178552505050505050905001915050908152602001604051809103902060020160009054906101000a900460ff16151514156105a6576000915061085b565b6001846040518082805190602001908083835b6020831015156105de57805182526020820191506020810190506020830392506105b9565b6001836020036101000a038019825116818451168082178552505050505050905001915050908152602001604051809103902090508273ffffffffffffffffffffffffffffffffffffffff168160000160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff161415610674576000915061085b565b7f6d9e8f0e5f3b87567beaf685f9322bdf790f8abe64c81025bcdc83c0c1caa7078482600101604051808060200180602001838103835285818151815260200191508051906020019080838360005b838110156106de5780820151818401526020810190506106c3565b50505050905090810190601f16801561070b5780820380516001836020036101000a031916815260200191505b5083810382528481815460018160011615610100020316600290048152602001915080546001816001161561010002031660029004801561078d5780601f106107625761010080835404028352916020019161078d565b820191906000526020600020905b81548152906001019060200180831161077057829003601f168201915b505094505050505060405180910390a16001846040518082805190602001908083835b6020831015156107d557805182526020820191506020810190506020830392506107b0565b6001836020036101000a0380198251168184511680821785525050505050509050019150509081526020016040518091039020600080820160006101000a81549073ffffffffffffffffffffffffffffffffffffffff021916905560018201600061084091906108e2565b6002820160006101000a81549060ff02191690555050600191505b5092915050565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106108a357805160ff19168380011785556108d1565b828001600101855582156108d1579182015b828111156108d05782518255916020019190600101906108b5565b5b5090506108de919061092a565b5090565b50805460018160011615610100020316600290046000825580601f106109085750610927565b601f016020900490600052602060002090810190610926919061092a565b5b50565b61094c91905b80821115610948576000816000905550600101610930565b5090565b905600a165627a7a723058208cbb2a1c965946506fdcb4fdb7fd2d54f5e58631d12ed1296aa62c969e8be8360029";
+            var payload = code.FromHexString().ToList();
+            var addMedicalPrestProg = new SolidityProgram(payload, addMedicalPrestPgInvoke);
+
+            while (!addMedicalPrestProg.IsStopped()) // ADD MEDICAL PRESCRIPTION.
+            {
+                vm.Step(addMedicalPrestProg, false);
+            }
+
+            var r = addMedicalPrestProg.GetResult().GetHReturn().ToHexString();
+            var logs = addMedicalPrestProg.GetResult().GetLogs();
+            var firstLog = logs.First();
+            var firstTopic = firstLog.GetTopics().First();
+            var firstLogData = firstLog.GetData();
+            int offset = 0;
+            var evtOffsetFirstParameter = new BigInteger(firstLogData.Skip(offset).Take(32).ToArray()).IntValue;
+            offset += 32;
+            var evtOffsetSecondParameter = new BigInteger(firstLogData.Skip(offset).Take(32).ToArray()).IntValue;
+            var evtSizeFirstParameter = new BigInteger(firstLogData.Skip(evtOffsetFirstParameter).Take(32).ToArray()).IntValue;
+            var firstParameter = firstLogData.Skip(evtOffsetFirstParameter + 32).Take(evtSizeFirstParameter).ToArray();
+            var evtSizeSecondParameter = new BigInteger(firstLogData.Skip(evtOffsetSecondParameter).Take(32).ToArray()).IntValue;
+            var evtSecondParameter = firstLogData.Skip(evtOffsetSecondParameter + 32).Take(evtSizeSecondParameter).ToArray();
+
+            string s1 = Encoding.UTF8.GetString(firstParameter);
+            string s2 = Encoding.UTF8.GetString(evtSecondParameter);
+            /*
+            var decoded = firstLogData.Skip(offset).Take(length).ToArray();
+            string ss = Encoding.UTF8.GetString(decoded);
+            var s1 = firstLog.GetData().ToHexString();
+            var s2 = firstLog.GetTopics().First().GetData().ToHexString();
+            */
+            // "5f69eee0ba6cf854f4e27c571116fe14ab093c97e885c628463f4b820ccd5ad3"
+            // "5f69eee0ba6cf854f4e27c571116fe14ab093c97e885c628463f4b820ccd5ad3"
+            Assert.IsTrue(r == excepted);
         }
 
         #endregion
-        
+
         private void RemoveSmartContracts()
         {
             var assm = Assembly.LoadFrom("SimpleBlockChain.Core.dll");

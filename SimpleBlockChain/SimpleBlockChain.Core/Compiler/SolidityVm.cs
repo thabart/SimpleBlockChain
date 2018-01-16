@@ -78,7 +78,12 @@ namespace SimpleBlockChain.Core.Compiler
             { SolidityOpCodes.SWAP13, 14 },
             { SolidityOpCodes.SWAP14, 15 },
             { SolidityOpCodes.SWAP15, 16 },
-            { SolidityOpCodes.SWAP16, 17 }
+            { SolidityOpCodes.SWAP16, 17 },
+            { SolidityOpCodes.LOG0, 2 },
+            { SolidityOpCodes.LOG1, 3 },
+            { SolidityOpCodes.LOG2, 4 },
+            { SolidityOpCodes.LOG3, 5 },
+            { SolidityOpCodes.LOG4, 6 }
         };
 
         public void Step(SolidityProgram program, bool trace = false)
@@ -613,6 +618,26 @@ namespace SimpleBlockChain.Core.Compiler
                     int memSize = program.GetMemorySize();
                     var sizeW = new DataWord(memSize);
                     program.StackPush(sizeW);
+                    program.Step();
+                    break;
+                case SolidityOpCodes.LOG0:
+                case SolidityOpCodes.LOG1:
+                case SolidityOpCodes.LOG2:
+                case SolidityOpCodes.LOG3:
+                case SolidityOpCodes.LOG4:
+                    var logAdr = program.GetOwnerAddress();
+                    var logMemStart = stack.Pop();
+                    var logMemOffset = stack.Pop();
+                    var nTopics = SizeSolidityCodes[opCode.Value] - SizeSolidityCodes[SolidityOpCodes.LOG0];
+                    var topics = new List<DataWord>();
+                    for (int i = 0; i < nTopics; ++i)
+                    {
+                        DataWord topic = stack.Pop();
+                        topics.Add(topic);
+                    }
+                    
+                    var logData = program.ChunkMemory(logMemStart.GetIntValueSafe(), logMemOffset.GetIntValueSafe());
+                    program.GetResult().AddLogInfo(new SolidityLogInfo(topics, logData));
                     program.Step();
                     break;
             }
