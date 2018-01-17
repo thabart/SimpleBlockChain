@@ -14,9 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using static SimpleBlockChain.WalletUI.ViewModels.ParameterDefinitionViewModel;
 
 namespace SimpleBlockChain.WalletUI.UserControls
 {
@@ -75,8 +75,19 @@ namespace SimpleBlockChain.WalletUI.UserControls
             {
                 try
                 {
+                    // _viewModel.SelectedSolidityContract.SolidityContractAgg
                     var addFilterResult = t.Result;
-                    string s = "";
+                    var displayedStr = new StringBuilder();
+                    if (addFilterResult != null && addFilterResult.Any())
+                    {
+                        foreach(var addFilter in addFilterResult)
+                        {
+                            var res = _viewModel.SelectedSolidityContract.SolidityContractAgg.GetLogs(addFilter.Topics.First().GetData(), addFilter.Data);
+                            displayedStr.AppendLine(string.Format("{0} : {1}", res.Function.GetFullName(), string.Join(",", res.Data.Select(r => System.Text.Encoding.UTF8.GetString(r.ToArray())))));
+                        }
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayMessage(displayedStr.ToString()));
                 }
                 catch (AggregateException)
                 {
@@ -396,7 +407,7 @@ namespace SimpleBlockChain.WalletUI.UserControls
                                 Id = f
                             }))
                         };
-                        var fns = scAgg.GetFunctions();
+                        var fns = scAgg.GetFunctions(SolidityFunctionTypes.FUNCTION);
                         foreach (var fn in fns)
                         {
                             record.Functions.Add(new FunctionDefinitionViewModel

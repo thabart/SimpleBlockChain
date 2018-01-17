@@ -1243,6 +1243,9 @@ namespace SimpleBlockChain.UnitTests.Compiler
             addMedicalPrestMsgData.AddRange(inamiPrescriberSizeParameter);
             addMedicalPrestMsgData.AddRange(inamiPrescriberSizeValue);
 
+            var evtOp = "NewNotConfirmedPrestation(string,string)";
+            var evtOpHex = hash.ComputeBytes(Encoding.ASCII.GetBytes(evtOp)).GetBytes().ToHexString();
+
             var xxxx = addMedicalPrestMsgData.ToHexString();
 
             var address = new DataWord(_adr.FromHexString().ToArray());
@@ -1263,6 +1266,7 @@ namespace SimpleBlockChain.UnitTests.Compiler
             var logs = addMedicalPrestProg.GetResult().GetLogs();
             var firstLog = logs.First();
             var firstTopic = firstLog.GetTopics().First();
+            var firstTopicHex = firstTopic.GetData().ToHexString();
             var firstLogData = firstLog.GetData();
             int offset = 0;
             var evtOffsetFirstParameter = new BigInteger(firstLogData.Skip(offset).Take(32).ToArray()).IntValue;
