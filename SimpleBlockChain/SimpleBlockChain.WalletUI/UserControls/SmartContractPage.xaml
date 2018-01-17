@@ -29,6 +29,7 @@
                     <RowDefinition />
                     <RowDefinition />
                     <RowDefinition />
+                    <RowDefinition />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -57,10 +58,15 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                <!-- Display the parameters -->
+                <Label Grid.Column="0" Grid.Row="4" Margin="{StaticResource ControlMargin}">Select an event</Label>
+                <ComboBox Grid.Column="1" Grid.Row="4" ItemsSource="{Binding Path=SelectedSolidityContract.Filters, Mode=OneWay}" DisplayMemberPath="Id" SelectedItem="{Binding Path=SelectedFilter, Mode=OneWayToSource}"></ComboBox>
                 <!-- Buttons -->
-                <StackPanel Orientation="Horizontal" Grid.Row="4">
+                <StackPanel Orientation="Horizontal" Grid.Row="5">
                     <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=CallContractCommand}">Execute</Button>
-                    <Button Margin="{StaticResource ControlMargin}">Publish transaction</Button>
+                    <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=PublishTransactionCallCommand}">Publish transaction</Button>
+                    <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=ListenSmartContractCommand}">Listen</Button>
+                    <Button Margin="{StaticResource ControlMargin}" Command="{Binding Path=GetLastLogsCommand}">Get logs</Button>
                 </StackPanel>
             </Grid>
         </Grid>

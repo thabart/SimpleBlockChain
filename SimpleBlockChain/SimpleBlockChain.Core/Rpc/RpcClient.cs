@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using SimpleBlockChain.Core.Blocks;
+using SimpleBlockChain.Core.Compiler;
 using SimpleBlockChain.Core.Exceptions;
 using SimpleBlockChain.Core.Extensions;
 using SimpleBlockChain.Core.Factories;
@@ -29,6 +30,8 @@ namespace SimpleBlockChain.Core.Rpc
         Task<string> CallSmartContract(SmartContractTransactionParameter scTransaction);
         Task<CompileSolidityResponse> CompileSolidity(string contract);
         Task<TransactionReceiptResponse> GetTransactionReceipt(IEnumerable<byte> txId);
+        Task<IEnumerable<byte>> AddFilter(IEnumerable<byte> scAddr);
+        Task<IEnumerable<GetFilterChangeResponse>> GetFilterChanges(IEnumerable<byte> filterId);
     }
 
     public class RpcClient : IRpcClient
@@ -617,6 +620,113 @@ namespace SimpleBlockChain.Core.Rpc
                 TransactionHash = resultObj.GetValue("transactionHash").ToString(),
                 ContractAddress= resultObj.GetValue("contractAddress").ToString()
             };
+            return result;
+        }
+
+        public async Task<IEnumerable<byte>> AddFilter(IEnumerable<byte> scAddr)
+        {
+            if (scAddr == null)
+            {
+                throw new ArgumentNullException(nameof(scAddr));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(scAddr.ToHexString());
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.NewFilter);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.GetValue("result").ToString();
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            return r.FromHexString();
+        }
+
+        public async Task<IEnumerable<GetFilterChangeResponse>> GetFilterChanges(IEnumerable<byte> filterId)
+        {
+            if (filterId == null)
+            {
+                throw new ArgumentNullException(nameof(filterId));
+            }
+
+            var httpClient = _httpClientFactory.BuildClient();
+            var jParams = new JArray();
+            jParams.Add(filterId.ToHexString());
+            var jObj = new JObject();
+            jObj.Add("id", Guid.NewGuid().ToString());
+            jObj.Add("method", Constants.RpcOperations.GetFilterChanges);
+            jObj.Add("params", jParams);
+            var content = new StringContent(jObj.ToString(), System.Text.Encoding.UTF8, ContentType);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                Content = content,
+                RequestUri = GetUri()
+            };
+
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string errorCode = null;
+            var jsonObj = JObject.Parse(json);
+            if (TryGetError(jsonObj, out errorCode))
+            {
+                throw new RpcException(errorCode);
+            }
+
+            var r = jsonObj.GetValue("result").ToString();
+            if (string.IsNullOrWhiteSpace(r))
+            {
+                return null;
+            }
+
+            var jArr = JArray.Parse(r);
+            if (jArr == null)
+            {
+                return null;
+            }
+
+            var result = new List<GetFilterChangeResponse>();
+            foreach (JObject jRecord in jArr)
+            {
+                var jTopics = JArray.Parse(jRecord.GetValue("topics").ToString());
+                var topics = new List<DataWord>();
+                foreach(var jTopic in jTopics)
+                {
+                    topics.Add(new DataWord(jTopic.ToString().FromHexString().ToArray()));
+                }
+
+                var newRecord = new GetFilterChangeResponse
+                {
+                    Address = jRecord.GetValue("address").ToString().FromHexString(),
+                    BlockHash = jRecord.GetValue("blockHash").ToString().FromHexString(),
+                    BlockNumber = jRecord.GetValue("blockNumber").ToString().FromHexString(),
+                    Data = jRecord.GetValue("data").ToString().FromHexString(),
+                    Topics = topics
+                };
+                result.Add(newRecord);
+            }
+
             return result;
         }
 

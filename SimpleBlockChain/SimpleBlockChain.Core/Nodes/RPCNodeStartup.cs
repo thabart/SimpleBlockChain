@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Math;
 using SimpleBlockChain.Core.Blocks;
 using SimpleBlockChain.Core.Builders;
 using SimpleBlockChain.Core.Compiler;
@@ -168,6 +169,10 @@ namespace SimpleBlockChain.Core.Nodes
                     return GetCompilers(response);
                 case Constants.RpcOperations.GetTransactionReceipt: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_gettransactionreceipt
                     return GetTransactionReceipt(parameters, id, response);
+                case Constants.RpcOperations.NewFilter: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_newfilter
+                    return NewFilter(parameters, id, response);
+                case Constants.RpcOperations.GetFilterChanges: // https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getfilterchanges
+                    return GetFilterChanges(parameters, id, response);
             }
 
             return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_METHOD_NOT_FOUND, $"{method} Method not found");
@@ -877,6 +882,103 @@ namespace SimpleBlockChain.Core.Nodes
             obj["transactionHash"] = txId.ToHexString();
             obj["contractAddress"] = smartContract.ToHexString();
             response["result"] = obj;
+            return response;
+        }
+
+        private JObject NewFilter(IEnumerable<string> parameters, string id, JObject response)
+        {
+            if (parameters == null || !parameters.Any())
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The smart contract address must be specified");
+            }
+
+            var scHash = parameters.First();
+            IEnumerable<byte> scAddr = null;
+            try
+            {
+                scAddr = scHash.FromHexString();
+            }
+            catch (Exception)
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The smart contract address cannot be decoded");
+            }
+
+            var smartContracts = _smartContractStore.GetSmartContracts();
+            var scFilterId = smartContracts.GetCurrentSmartContractFilterId();
+            var filterId = BigInteger.ValueOf(1);
+            if (scFilterId != null)
+            {
+                filterId = new BigInteger(scFilterId.ToArray());
+                filterId = filterId.Add(BigInteger.ValueOf(1));
+            }
+
+            var solidityFilter = new SolidityFilter
+            {
+                Id = filterId.ToByteArray(),
+                SmartContractAddr = scAddr
+            };
+            if (!smartContracts.AddFilter(solidityFilter))
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_REQUEST, "The smart contract doesn't exist");
+            }
+
+            response["result"] = filterId.ToByteArray().ToHexString();
+            return response;
+        }
+
+        private JObject GetFilterChanges(IEnumerable<string> parameters, string id, JObject response)
+        {
+            if (parameters == null || !parameters.Any())
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The filter id must be specified");
+            }
+
+            var filterHash = parameters.First();
+            IEnumerable<byte> filterId = null;
+            try
+            {
+                filterId = filterHash.FromHexString();
+            }
+            catch (Exception)
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_PARAMS, "The filter id cannot be decoded");
+            }
+            
+            var smartContracts = _smartContractStore.GetSmartContracts();
+            var filter = smartContracts.GetFilter(filterId);
+            if (filter == null)
+            {
+                return CreateErrorResponse(id, (int)RpcErrorCodes.RPC_INVALID_REQUEST, "The filter doesn't exist");
+            }
+
+            var blockChain = _blockChainStore.GetBlockChain();
+            var currentBlock = blockChain.GetCurrentBlock(); // GET THE LOGS ONLY FOR THE LAST BLOCK.
+            var blockHash = currentBlock.GetHashHeader();
+            var logs = smartContracts.GetLogs(new List<IEnumerable<byte>> { blockHash }, filter.SmartContractAddr);
+            var jArr = new JArray();
+            foreach(var log in logs)
+            {
+                var jObj = new JObject();
+                jObj["blockNumber"] = blockChain.GetBlockHeight(blockHash);
+                jObj["blockHash"] = blockHash.ToHexString();
+                // transactionHash
+                // transactionIndex
+                jObj["address"] = filter.SmartContractAddr.ToHexString();
+                jObj["data"] = log.GetData().ToHexString();
+                var jArrTopics = new JArray();
+                if (log.GetTopics() != null)
+                {
+                    foreach(var topic in log.GetTopics())
+                    {
+                        jArrTopics.Add(topic.GetData().ToHexString());
+                    }
+                }
+
+                jObj["topics"] = jArrTopics;
+                jArr.Add(jObj);
+            }
+
+            response["result"] = jArr;
             return response;
         }
 

@@ -58,6 +58,7 @@ namespace SimpleBlockChain.Core.Aggregates
         public string Address { get; set; }
         public string Code { get; set; }
         public string Abi { get; set; }
+        public IEnumerable<string> Filters { get; set; }
 
         public IEnumerable<SolidityContractAggregateFunction> GetFunctions()
         {

@@ -24,13 +24,15 @@ namespace SimpleBlockChain.WalletUI.UserControls
     {
         private readonly IWalletHelper _walletHelper;
         private readonly ISolidityContractsRepository _solidityContractsRepository;
+        private readonly ISolidityFilterRepository _solidityFilterRepository;
         private SmartContractViewModel _viewModel;
         private SolidityContractAggregate _publishedSolidityContract = null;
 
-        public SmartContractPage(IWalletHelper walletHelper, ISolidityContractsRepository solidityContractsRepository)
+        public SmartContractPage(IWalletHelper walletHelper, ISolidityContractsRepository solidityContractsRepository, ISolidityFilterRepository solidityFilterRepository)
         {
             _walletHelper = walletHelper;
             _solidityContractsRepository = solidityContractsRepository;
+            _solidityFilterRepository = solidityFilterRepository;
             InitializeComponent();
             Loaded += Load;
         }
@@ -47,12 +49,91 @@ namespace SimpleBlockChain.WalletUI.UserControls
                 _viewModel.PublishTransactionCallEvt += PublishTransactionCall;
                 _viewModel.PersistSmartContractEvt += PersistSmartContract;
                 _viewModel.RefreshContractsEvt += Refresh;
+                _viewModel.ListenSmartContractEvt += ListenSmartContract;
+                _viewModel.GetLastLogsEvt += GetLastLogs;
             }
+        }
+
+        private void GetLastLogs(object sender, EventArgs e)
+        {
+            if (_viewModel == null) { return; }
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                MainWindowStore.Instance().DisplayError("You're not authenticated");
+                return;
+            }
+            
+            if (_viewModel.SelectedFilter == null)
+            {
+                MainWindowStore.Instance().DisplayError("Please select a filter");
+                return;
+            }
+            
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.GetFilterChanges(_viewModel.SelectedFilter.Id.FromHexString()).ContinueWith((t) =>
+            {
+                try
+                {
+                    var addFilterResult = t.Result;
+                    string s = "";
+                }
+                catch (AggregateException)
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying get the last changes"));
+                }
+            });
+        }
+
+        private void ListenSmartContract(object sender, EventArgs e)
+        {
+            if (_viewModel == null) { return; }
+            var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
+            if (authenticatedWallet == null)
+            {
+                MainWindowStore.Instance().DisplayError("You're not authenticated");
+                return;
+            }
+            
+            if (_viewModel.SelectedSolidityContract == null)
+            {
+                MainWindowStore.Instance().DisplayError("Contract must be selected");
+                return;
+            }
+
+            var rpcClient = new RpcClient(authenticatedWallet.Network);
+            rpcClient.AddFilter(_viewModel.SelectedSolidityContract.Address.FromHexString()).ContinueWith((t) =>
+            {
+                try
+                {
+                    var addFilterResult = t.Result;
+                    _solidityFilterRepository.Add(_viewModel.SelectedSolidityContract.Address, t.Result.ToHexString()).ContinueWith((s) =>
+                    {
+                        if (!s.Result)
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                MainWindowStore.Instance().DisplayMessage("The filter cannot be added");
+                            });
+                        }
+                        else
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                MainWindowStore.Instance().DisplayMessage("The filter has been added");
+                            });
+                        }
+                    });
+                }
+                catch (AggregateException)
+                {
+                    Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying add the filter"));
+                }
+            });
         }
 
         private void PublishTransactionCall(object sender, EventArgs e)
         {
-
             if (_viewModel == null) { return; }
             var authenticatedWallet = WalletStore.Instance().GetAuthenticatedWallet();
             if (authenticatedWallet == null)
@@ -61,43 +142,24 @@ namespace SimpleBlockChain.WalletUI.UserControls
                 return;
             }
 
-            /*
-            if (string.IsNullOrWhiteSpace(_viewModel.SmartContractAddress))
+            if (_viewModel.SelectedSolidityContract == null)
             {
-                MainWindowStore.Instance().DisplayError("The address should be filled in");
+                MainWindowStore.Instance().DisplayError("Contract must be selected");
                 return;
             }
 
-            IEnumerable<byte> to = null;
-            IEnumerable<byte> data = null;
-            try
+            if (_viewModel.SelectedFunctionDefinition == null)
             {
-                to = _viewModel.SmartContractAddress.FromHexString();
-            }
-            catch
-            {
-                MainWindowStore.Instance().DisplayError("The address should be encoded in hex");
+                MainWindowStore.Instance().DisplayError("Function must be selected");
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(_viewModel.SmartContractCallValue))
-            {
-                try
-                {
-                    data = _viewModel.SmartContractCallValue.FromHexString();
-                }
-                catch
-                {
-                    MainWindowStore.Instance().DisplayError("The callvalue should be encoded in hex");
-                    return;
-                }
-            }
-
+            var callValue = _viewModel.SelectedFunctionDefinition.FunctionAgg.GetCallValue(_viewModel.SelectedFunctionDefinition.Parameters.Select(p => p.Value));
             var rpcClient = new RpcClient(authenticatedWallet.Network);
             var smartContractTransaction = new SmartContractTransaction
             {
-                To = to,
-                Data = data
+                To = _viewModel.SelectedSolidityContract.Address.FromHexString(),
+                Data = callValue.FromHexString()
             };
             rpcClient.SendRawTransaction(smartContractTransaction).ContinueWith((t) =>
             {
@@ -107,7 +169,6 @@ namespace SimpleBlockChain.WalletUI.UserControls
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         MainWindowStore.Instance().DisplayMessage(string.Format("A new transaction has been published : {0}", txId));
-                        _viewModel.TransactionAddress = txId;
                     });
                 }
                 catch (AggregateException)
@@ -115,7 +176,6 @@ namespace SimpleBlockChain.WalletUI.UserControls
                     Application.Current.Dispatcher.Invoke(() => MainWindowStore.Instance().DisplayError("An error occured while trying to publish the transaction"));
                 }
             });
-            */
         }
 
         private void CallContract(object sender, EventArgs e)
@@ -330,7 +390,11 @@ namespace SimpleBlockChain.WalletUI.UserControls
                         var record = new SolidityContractViewModel
                         {
                             Address = scAgg.Address,
-                            SolidityContractAgg = scAgg
+                            SolidityContractAgg = scAgg,
+                            Filters = scAgg.Filters == null ? null : new ObservableCollection<FilterViewModel>(scAgg.Filters.Select(f => new FilterViewModel
+                            {
+                                Id = f
+                            }))
                         };
                         var fns = scAgg.GetFunctions();
                         foreach (var fn in fns)

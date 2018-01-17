@@ -76,6 +76,8 @@ namespace SimpleBlockChain.Core
             public const string CompileSolidity = "compile_solidity";
             public const string GetCompilers = "get_compilers";
             public const string GetTransactionReceipt = "get_transactionreceipt";
+            public const string NewFilter = "newfilter";
+            public const string GetFilterChanges = "getfilterchanges";
         }
     }
 }

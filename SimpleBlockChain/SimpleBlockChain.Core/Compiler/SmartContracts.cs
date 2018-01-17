@@ -41,6 +41,11 @@ namespace SimpleBlockChain.Core.Compiler
         private const string SMART_CONTRACT_TOPIC = "SMART_CONTRACT_TOPIC";
         private const string SMART_CONTRACT_TOPIC_ELT = SMART_CONTRACT_TOPIC + "_{0}";
 
+        private const string SMART_CONTRACT_FILTER = "SMART_CONTRACT_FILTER";
+        private const string SMART_CONTRACT_FILTER_ELT = SMART_CONTRACT_FILTER + "_{0}";
+
+        private const string CURRENT_SMART_CONTRACT_FILTER_ID = "CURRENT_SMART_CONTRACT_FILTER_ID";
+
         private Dictionary<string, SmartContract> _cacheSmartContracts;
         private Dictionary<string, SmartContract> _cacheTxSmartContracts;
         private Dictionary<string, string> _cacheDataRows;
@@ -143,25 +148,105 @@ namespace SimpleBlockChain.Core.Compiler
             return true;
         }
 
-        public IEnumerable<SolidityLogInfo> GetLogs(List<IEnumerable<byte>> blockHashes)
+        public bool AddFilter(SolidityFilter filter, bool addInTransaction = false)
+        {
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
+            var smartContract = GetSmartContract(filter.SmartContractAddr);
+            if (smartContract == null)
+            {
+                return false;
+            }
+
+            var writeBatch = new WriteBatch();
+            if (!addInTransaction)
+            {
+                writeBatch = _writeBatch;
+            }
+
+            writeBatch.Put(string.Format(SMART_CONTRACT_FILTER_ELT, filter.Id.ToHexString()), filter.SmartContractAddr.ToHexString());
+            if (!addInTransaction)
+            {
+                _db.Write(writeBatch, WriteOptions.Default);
+            }
+
+            var scFilterId = string.Empty;
+            if (_db.TryGet(CURRENT_SMART_CONTRACT_FILTER_ID, ReadOptions.Default, out scFilterId))
+            {
+                _db.Delete(CURRENT_SMART_CONTRACT_FILTER_ID);
+            }
+
+            _db.Put(CURRENT_SMART_CONTRACT_FILTER_ID, filter.Id.ToHexString());
+            return true;
+        }
+
+        public SolidityFilter GetFilter(IEnumerable<byte> id)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            string smartContractHex = null;
+            if (!_db.TryGet(string.Format(SMART_CONTRACT_FILTER_ELT, id.ToHexString()), ReadOptions.Default, out smartContractHex))
+            {
+                return null;
+            }
+
+            return new SolidityFilter
+            {
+                Id = id,
+                SmartContractAddr = smartContractHex.FromHexString()
+            };
+        }
+
+        public IEnumerable<byte> GetCurrentSmartContractFilterId()
+        {
+            var scFilterId = string.Empty;
+            if (!_db.TryGet(CURRENT_SMART_CONTRACT_FILTER_ID, ReadOptions.Default, out scFilterId))
+            {
+                return null;
+            }
+
+            return scFilterId.FromHexString();
+        }
+
+        public IEnumerable<SolidityLogInfo> GetLogs(List<IEnumerable<byte>> blockHashes, IEnumerable<byte> scHash)
         {
             if (blockHashes == null)
             {
                 throw new ArgumentNullException(nameof(blockHashes));
             }
-            
-            foreach(var blockHash in blockHashes)
+
+            if (scHash == null)
             {
-                var key = string.Format(SMART_CONTRACT_LOG + "_{0}", blockHash.ToHexString());
-                var dic = _db.Find(ReadOptions.Default, key);
-                foreach(var kvp in dic)
-                {
-                    var log = kvp.Key.Replace(key, "");
-                    // TODO : REPLACE 
-                }
+                throw new ArgumentNullException(nameof(scHash));
             }
 
-            return null;
+            var result = new List<SolidityLogInfo>();
+            foreach (var blockHash in blockHashes)
+            {
+                var logValue = string.Empty;
+                if (!_db.TryGet(string.Format(SMART_CONTRACT_LOG_ELT, blockHash.ToHexString(), scHash.ToHexString()), ReadOptions.Default, out logValue))
+                {
+                    continue;
+                }
+
+                var newTopics = new List<DataWord>();
+                var record = new SolidityLogInfo(newTopics, logValue.FromHexString().ToArray());
+                var topics = _db.Find(ReadOptions.Default, string.Format(SMART_CONTRACT_TOPIC_ELT, logValue));
+                foreach (var topic in topics)
+                {
+                    newTopics.Add(new DataWord(topic.Value.FromHexString().ToArray()));
+                }
+
+                result.Add(record);
+            }
+
+            return result;
         }
 
         public bool AddLogs(IEnumerable<byte> scAddr, IEnumerable<byte> blockHash, List<SolidityLogInfo> logs, bool addInTransaction = false)

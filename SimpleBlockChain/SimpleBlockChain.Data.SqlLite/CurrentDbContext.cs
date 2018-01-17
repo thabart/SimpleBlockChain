@@ -12,11 +12,13 @@ namespace SimpleBlockChain.Data.Sqlite
 
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<SolidityContract> SolidityContracts { get; set; }
+        public DbSet<SolidityFilter> SolidityFilters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.AddWalletMapping()
-                .AddSolidityContracts();
+                .AddSolidityContracts()
+                .AddFilters();
             base.OnModelCreating(modelBuilder);
         }
     }

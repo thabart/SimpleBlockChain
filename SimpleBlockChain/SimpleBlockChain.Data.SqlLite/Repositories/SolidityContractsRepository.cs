@@ -4,6 +4,7 @@ using SimpleBlockChain.Core.Repositories;
 using SimpleBlockChain.Data.Sqlite.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SimpleBlockChain.Data.Sqlite.Repositories
@@ -19,7 +20,7 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
 
         public async Task<IEnumerable<SolidityContractAggregate>> GetAll()
         {
-            var solidityContracts = await _currentDbContext.SolidityContracts.ToListAsync().ConfigureAwait(false);
+            var solidityContracts = await _currentDbContext.SolidityContracts.Include(s => s.Filters).ToListAsync().ConfigureAwait(false);
             var result = new List<SolidityContractAggregate>();
             foreach(var solidityContract in solidityContracts)
             {
@@ -27,7 +28,8 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
                 {
                     Address = solidityContract.Address,
                     Code = solidityContract.Code,
-                    Abi = solidityContract.Abi
+                    Abi = solidityContract.Abi,
+                    Filters = solidityContract.Filters == null ? null : solidityContract.Filters.Select(f => f.Id)
                 });
             }
 
@@ -41,7 +43,7 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
                 throw new ArgumentNullException(nameof(address));
             }
 
-            var result = await _currentDbContext.SolidityContracts.FirstOrDefaultAsync(c => c.Address == address);
+            var result = await _currentDbContext.SolidityContracts.Include(s => s.Filters).FirstOrDefaultAsync(c => c.Address == address);
             if (result == null)
             {
                 return null;
@@ -51,7 +53,8 @@ namespace SimpleBlockChain.Data.Sqlite.Repositories
             {
                 Address = result.Address,
                 Code = result.Code,
-                Abi = result.Abi
+                Abi = result.Abi,
+                Filters = result.Filters == null ? null : result.Filters.Select(f => f.Id)
             };
         }
 
