@@ -6,6 +6,7 @@ namespace EhealthBlockChain.API.Core.Repositories
 {
     public interface IInsuredClientsRepository
     {
+        Task<bool> Add();
         Task<SearchInsuredClientsResponse> Search(SearchInsuredClientsCommand command);
     }
 }

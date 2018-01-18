@@ -8,13 +8,23 @@ namespace EhealthBlockChain.API.Data
     {
         public CurrentDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions)
         {
+            try
+            {
+                Database.ExecuteSqlCommand("SET TRANSACTION ISOLATION LEVEL READ COMITTED;");
+            }
+            catch { }
         }
 
         public DbSet<InsuredClient> InsuredClients { get; set; }
+        public DbSet<MedicalProvider> MedicalProviders { get; set; }
+        public DbSet<MedicalBuilding> MedicalBuildings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.AddInsuredClient();
+            modelBuilder.AddInsuredClient()
+                .AddMedicalAssignment()
+                .AddMedicalBuilding()
+                .AddMedicalProvider();
             base.OnModelCreating(modelBuilder);
         }
     }

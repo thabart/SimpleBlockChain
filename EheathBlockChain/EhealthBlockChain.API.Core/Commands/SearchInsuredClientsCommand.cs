@@ -1,9 +1,11 @@
-﻿namespace EhealthBlockChain.API.Core.Commands
+﻿using System.Collections.Generic;
+
+namespace EhealthBlockChain.API.Core.Commands
 {
     public class SearchInsuredClientsCommand
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string NationalRegistrationNumber { get; set; }
+        public IEnumerable<string> FirstNames { get; set; }
+        public IEnumerable<string> LastNames { get; set; }
+        public IEnumerable<string> NationalRegistrationNumbers { get; set; }
     }
 }

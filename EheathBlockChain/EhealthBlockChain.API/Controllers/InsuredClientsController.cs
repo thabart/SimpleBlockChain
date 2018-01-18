@@ -27,7 +27,12 @@ namespace EhealthBlockChain.API.Controllers
 
             var command = jObj.GetSearchInsuredClients();
             var result = await _insuredClientsRepository.Search(command);
-            return new JsonResult(result.ToDto());
+            if (result == null)
+            {
+                return new NotFoundResult();
+            }
+
+            return new OkObjectResult(result.ToDto());
         }
     }
 }

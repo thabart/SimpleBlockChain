@@ -1,4 +1,6 @@
-﻿namespace EhealthBlockChain.API.Data.Models
+﻿using System;
+
+namespace EhealthBlockChain.API.Data.Models
 {
     internal sealed class InsuredClient
     {

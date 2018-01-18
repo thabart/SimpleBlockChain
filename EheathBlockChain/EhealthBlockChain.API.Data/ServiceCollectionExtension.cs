@@ -25,6 +25,8 @@ namespace EhealthBlockChain.API.Data
         private static void RegisterServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<IInsuredClientsRepository, InsuredClientsRepository>();
+            serviceCollection.AddTransient<IMedicalBuildingRepository, MedicalBuildingRepository>();
+            serviceCollection.AddTransient<IMedicalProviderRepository, MedicalProviderRepository>();
         }
     }
 }
