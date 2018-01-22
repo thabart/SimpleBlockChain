@@ -1,12 +1,12 @@
 {
   "profiles": {
-    "EheathBlockChain": {
+    "EheathBlockChain.OpenId": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:50203/"
+      "applicationUrl": "https://localhost:5443"
     }
   }
 }

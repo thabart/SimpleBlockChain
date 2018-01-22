@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace EheathBlockChain.Extensions
+namespace EheathBlockChain.OpenId.Extensions
 {
     internal static class SimpleIdentityServerContextExtensions
     {
@@ -464,7 +464,7 @@ namespace EheathBlockChain.Extensions
                 {
                     new Client
                     {
-                        ClientId = Constants.ClientId,
+                        ClientId = "EhealthClientId",
                         ClientName = "Eheath application",
                         ClientSecrets = new List<ClientSecret>
                         {
@@ -472,7 +472,7 @@ namespace EheathBlockChain.Extensions
                             {
                                 Id = Guid.NewGuid().ToString(),
                                 Type = SecretTypes.SharedSecret,
-                                Value = Constants.ClientSecret
+                                Value = "EhealthClientSecret"
                             }
                         },
                         TokenEndPointAuthMethod = TokenEndPointAuthenticationMethods.client_secret_post,

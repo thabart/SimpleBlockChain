@@ -68,5 +68,10 @@ namespace EheathBlockChain.Controllers
             result.Add(Constants.GrantedTokenNames.TokenType, grantedToken.TokenType);
             return new OkObjectResult(result);
         }
+
+        private void GetPermissions()
+        {
+
+        }
     }
 }
