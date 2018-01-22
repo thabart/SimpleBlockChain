@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { WebsiteService } from '../services';
+import { WebsiteService, SessionService } from '../services';
 
 class Authenticate extends React.Component {
     constructor(props) {
@@ -22,11 +22,13 @@ class Authenticate extends React.Component {
     authenticate(e) {
         e.preventDefault();
         var self = this;
+       console.log(SessionService.isExpired());
+        /*
         WebsiteService.authenticate(self.state.login, self.state.password).then(function (data) {
-            console.log(data);
+            SessionService.setSession(data);
         }).catch(function () {
             console.log("error");
-        });
+        });*/
     }
     render() {
         return (<div>

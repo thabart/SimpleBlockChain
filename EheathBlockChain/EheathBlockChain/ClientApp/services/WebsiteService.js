@@ -8,15 +8,12 @@ module.exports = {
             $.ajax('http://localhost:50203/Home/Authenticate', {
                 type: 'POST',
                 contentType: 'application/json',
-                data: data,
-                success: function (data) {
-                    resolve(data);
-                },
-                error: function () {
-                    reject();
-                }
-            })
-            resolve();
+                data: data
+            }).then(function (data) {
+                resolve(data);
+            }).fail(function (e) {
+                reject(e);
+            });
         });
     }
 };
