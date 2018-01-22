@@ -1,5 +1,7 @@
 ﻿import React from "react";
 import { WebsiteService, SessionService } from '../services';
+import AppDispatcher from '../appDispatcher';
+import Constants from '../constants';
 
 class Authenticate extends React.Component {
     constructor(props) {
@@ -19,16 +21,18 @@ class Authenticate extends React.Component {
             [name]: value
         });
     }
+    /* Authenticate the user */
     authenticate(e) {
         e.preventDefault();
         var self = this;
-       console.log(SessionService.isExpired());
-        /*
         WebsiteService.authenticate(self.state.login, self.state.password).then(function (data) {
             SessionService.setSession(data);
-        }).catch(function () {
+            AppDispatcher.dispatch({
+                actionName: Constants.events.USER_LOGGED_IN
+            });
+        }).catch(function (e) {
             console.log("error");
-        });*/
+        });
     }
     render() {
         return (<div>

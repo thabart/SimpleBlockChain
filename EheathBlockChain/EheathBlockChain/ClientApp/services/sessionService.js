@@ -24,7 +24,7 @@ module.exports = {
     isExpired: function () {
         var session = this.getSession();
         if (session === null || !session) {
-            return false;
+            return true;
         }
 
         var endDate = new Date(session[createDateTimeKey]);
