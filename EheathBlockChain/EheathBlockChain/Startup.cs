@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SimpleIdentityServer.Client;
-using System;
+using SimpleIdentityServer.UmaManager.Client;
 
 namespace EheathBlockChain
 {
@@ -27,6 +27,7 @@ namespace EheathBlockChain
             services.AddIdServerClient();
             services.AddSingleton(Configuration);
             services.AddMvc();
+            RegisterDependencies(services);
         }
         
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -55,6 +56,13 @@ namespace EheathBlockChain
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
+        }
+
+        private IServiceCollection RegisterDependencies(IServiceCollection services)
+        {
+            services.AddTransient<IIdentityServerUmaClientFactory, IdentityServerUmaClientFactory>();
+            services.AddTransient<IIdentityServerUmaManagerClientFactory, IdentityServerUmaManagerClientFactory>();
+            return services;
         }
     }
 }
