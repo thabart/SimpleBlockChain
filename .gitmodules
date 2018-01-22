@@ -1,0 +1,3 @@
+[submodule "EheathBlockChain/simpleidserver"]
+	path = EheathBlockChain/simpleidserver
+	url = https://github.com/thabart/SimpleIdentityServer.git

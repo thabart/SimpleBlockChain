@@ -12,7 +12,13 @@ class Header extends Component {
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul className="navbar-nav mr-auto">
                         <li className="nav-item active">
-                            <NavLink to="/">Home</NavLink>
+                            <NavLink to="/">Accueil</NavLink>
+                        </li>
+                        <li className="nav-item">
+                            <NavLink to="/medicalprestation/add">Ajouter prestation médicale</NavLink>
+                        </li>
+                        <li className="nav-item">
+                            <NavLink to="/authenticate">Se connecter</NavLink>
                         </li>
                     </ul>
                 </div>
