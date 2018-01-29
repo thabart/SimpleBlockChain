@@ -1,4 +1,4 @@
-﻿namespace Kmehr.Core.Requests
+﻿namespace Kmehr.Core.Common
 {
     public class IdentifierType
     {

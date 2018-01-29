@@ -40,18 +40,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Etk\EtkClient.cs" />
+    <Compile Include="Etk\EtkIdentifierType.cs" />
+    <Compile Include="Etk\GetEtkRequest.cs" />
+    <Compile Include="Etk\SearchCriteriaType.cs" />
+    <Compile Include="Helpers\EncryptionHelper.cs" />
+    <Compile Include="Helpers\EtkHelper.cs" />
+    <Compile Include="Kgss\CredentialType.cs" />
+    <Compile Include="Kgss\GetNewKeyRequest.cs" />
+    <Compile Include="Kgss\GetNewKeyRequestContent.cs" />
+    <Compile Include="Kgss\KgssClient.cs" />
+    <Compile Include="Kgss\KgssIdentifierTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Helpers\IOHelpers.cs" />
     <Compile Include="Kgss\GetKeyRequest.cs" />
     <Compile Include="Kgss\GetKeyRequestContent.cs" />
     <Compile Include="Kgss\SealedContentType.cs" />
-    <Compile Include="Requests\CreatePrescriptionAdministrativeInformationType.cs" />
-    <Compile Include="Requests\CreatePrescriptionParameter.cs" />
-    <Compile Include="Requests\CreatePrescriptionRequest.cs" />
-    <Compile Include="Requests\IdentifierType.cs" />
-    <Compile Include="Requests\RequestType.cs" />
-    <Compile Include="Requests\SecuredContentType.cs" />
+    <Compile Include="Prescriptions\CreatePrescriptionAdministrativeInformationType.cs" />
+    <Compile Include="Prescriptions\CreatePrescriptionParameter.cs" />
+    <Compile Include="Prescriptions\CreatePrescriptionRequest.cs" />
+    <Compile Include="Commons\IdentifierType.cs" />
+    <Compile Include="Prescriptions\RequestType.cs" />
+    <Compile Include="Prescriptions\SecuredContentType.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Sessions\" />

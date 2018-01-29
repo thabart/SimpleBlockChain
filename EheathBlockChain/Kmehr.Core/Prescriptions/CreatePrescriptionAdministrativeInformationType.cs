@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Kmehr.Core.Common;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace Kmehr.Core.Requests

@@ -1,4 +1,10 @@
-﻿using Kmehr.Core.Helpers;
+﻿using Kmehr.Core.Common;
+using Kmehr.Core.Etk;
+using Kmehr.Core.Helpers;
+using Kmehr.Core.Kgss;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Kmehr.App
 {
@@ -11,6 +17,20 @@ namespace Kmehr.App
             var prescriptionContent = ""; // TODO : Replace by the kmehr message.
             var prescriptionType = "P0";
             var patientId = 72081061175;
+            var credentialTypes = new List<string>
+            {
+                "urn:be:fgov:certified-namespace:ehealth,urn:be:fgov:person:ssin:ehealth:1.0:doctor:nihii11",
+                "urn:be:fgov:certified-namespace:ehealth,urn:be:fgov:ehealth:1.0:pharmacy:nihii-number:recognisedpharmacy:boolean,true",
+                "urn:be:fgov:identification-namespace,urn:be:fgov:person:ssin,%PATIENT_ID%"
+            };
+
+            var directory = Directory.GetCurrentDirectory();
+            var jksPath = Path.Combine(directory, "caCertificateKeystore.jks");
+            string password = "Password1";
+            var certificate = new X509Certificate2(jksPath, password);
+            string s = "";
+            // TRY TO GET THE NEW KEY.
+
             // 1. RETRIEVE THE STS TOKEN.
             /*
             var prescriptionPayload = System.Text.Encoding.UTF8.GetBytes(prescriptionContent);
@@ -38,6 +58,19 @@ namespace Kmehr.App
             // COMPRESS THE PAYLOAD.
         }
 
+        private static void GetNewKey()
+        {
+            var request = new GetNewKeyRequestContent();
+        }
+
+        private static void GetEtk()
+        {
+            var request = new GetEtkRequest();
+            var searchCriteriaType = new SearchCriteriaType();
+            var lstIdentifiers = new List<EtkIdentifierType>();
+            var identifier = new EtkIdentifierType();            
+        }
+
         private static void GetSamlToken()
         {
             // endpoint.sts : https://services-int.ehealth.fgov.be/IAM/Saml11TokenService/Legacy/v1
@@ -52,7 +85,6 @@ namespace Kmehr.App
       Element assertion = sts.getToken(headerCredential, bodyCredential, attributes, designators, "urn:oasis:names:tc:SAML:1.0:cm:holder-of-key", validityHours);
       return SAMLTokenFactory.getInstance().createSamlToken(assertion, bodyCredential);*/
         }
-
 
         private static void GetKey()
         {
