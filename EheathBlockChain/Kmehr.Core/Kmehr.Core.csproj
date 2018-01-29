@@ -53,5 +53,8 @@
     <Compile Include="Requests\RequestType.cs" />
     <Compile Include="Requests\SecuredContentType.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Sessions\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
