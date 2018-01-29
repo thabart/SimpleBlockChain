@@ -11,9 +11,11 @@ namespace Kmehr.App
             var prescriptionContent = ""; // TODO : Replace by the kmehr message.
             var prescriptionType = "P0";
             var patientId = 72081061175;
+            // 1. RETRIEVE THE STS TOKEN.
+            /*
             var prescriptionPayload = System.Text.Encoding.UTF8.GetBytes(prescriptionContent);
             var compressedPrescriptionPayload = IOHelpers.Compress(prescriptionPayload);
-
+            */
             // TODO:  Get the key.
             /*
              * 
@@ -34,6 +36,27 @@ namespace Kmehr.App
       }
    }*/
             // COMPRESS THE PAYLOAD.
+        }
+
+        private static void GetSamlToken()
+        {
+            // endpoint.sts : https://services-int.ehealth.fgov.be/IAM/Saml11TokenService/Legacy/v1
+
+            /*
+             * 
+      Validate.notNull(headerCredential, "Parameter headerCredential is not nullable");
+      Validate.notNull(bodyCredential, "Parameter bodyCredential is not nullable");
+      List<SAMLAttributeDesignator> designators = SAMLConfigHelper.getSAMLAttributeDesignators("sessionmanager.samlattributedesignator");
+      List<SAMLAttribute> attributes = SAMLConfigHelper.getSAMLAttributes("sessionmanager.samlattribute");
+      STSService sts = STSServiceFactory.getInstance();
+      Element assertion = sts.getToken(headerCredential, bodyCredential, attributes, designators, "urn:oasis:names:tc:SAML:1.0:cm:holder-of-key", validityHours);
+      return SAMLTokenFactory.getInstance().createSamlToken(assertion, bodyCredential);*/
+        }
+
+
+        private static void GetKey()
+        {
+            
         }
     }
 }

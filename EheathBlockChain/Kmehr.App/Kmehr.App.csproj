@@ -48,5 +48,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kmehr.Core\Kmehr.Core.csproj">
+      <Project>{6b7e77b8-b987-4f87-9b86-403af535e9c9}</Project>
+      <Name>Kmehr.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
