@@ -40,3 +40,7 @@ Parameters:
 ==> code : code
 
 Payload : 47d2ac9500000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000004636f646500000000000000000000000000000000000000000000000000000000
+
+freehealth-connector 		: 		https://bitbucket.taktik.be/projects/ICURE/repos/freehealth-connector/browse
+recipe connector sdk 		: 		https://recip-e.be/documentation-medecins/
+document of wsdl			: 		https://recip-e.be/data/SDK/Recip-e_Integration%20Specification_v2%200%200.pdf

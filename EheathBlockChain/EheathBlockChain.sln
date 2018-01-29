@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27130.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EheathBlockChain", "EheathBlockChain\EheathBlockChain.csproj", "{FBAD24C9-5FED-456C-BCD1-13482CEF2A64}"
 EndProject
@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02. Website", "02. Website"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03. Security", "03. Security", "{74098170-D0D6-407A-AAB6-AB6AADAB23DF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04. Tests", "04. Tests", "{32F00863-2EB0-4CE9-A243-8BA83B5F80E5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "05. Tests", "05. Tests", "{32F00863-2EB0-4CE9-A243-8BA83B5F80E5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00. Other", "00. Other", "{CC3A8A60-8BB0-4170-9BC7-AF8AF1613326}"
 EndProject
@@ -72,6 +72,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleIdentityServer.Authentication.Common", "simpleidserver\SimpleIdentityServer\src\SimpleIdentityServer.Authentication.Common\SimpleIdentityServer.Authentication.Common.csproj", "{87959EAD-A227-4600-AD35-4F35519D2647}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EheathBlockChain.OpenId", "EheathBlockChain.OpenId\EheathBlockChain.OpenId.csproj", "{A2490104-A7B2-4585-B56B-C5DE604349F9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "04. Kmehr", "04. Kmehr", "{95CEBD6E-BF46-4178-8BCF-E0DCD77BEB79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kmehr.App", "Kmehr.App\Kmehr.App.csproj", "{B698AB95-61DF-4003-8803-0DEB81D11B29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -187,6 +191,10 @@ Global
 		{A2490104-A7B2-4585-B56B-C5DE604349F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2490104-A7B2-4585-B56B-C5DE604349F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2490104-A7B2-4585-B56B-C5DE604349F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B698AB95-61DF-4003-8803-0DEB81D11B29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B698AB95-61DF-4003-8803-0DEB81D11B29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B698AB95-61DF-4003-8803-0DEB81D11B29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B698AB95-61DF-4003-8803-0DEB81D11B29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -222,6 +230,7 @@ Global
 		{2995A6B4-0D41-4DF4-A294-FEA4DCF60EEE} = {4CC84105-FDC6-42A8-A7A5-A77078DBD4FB}
 		{87959EAD-A227-4600-AD35-4F35519D2647} = {EB6C80ED-750B-4395-B3C3-780958ED69E8}
 		{A2490104-A7B2-4585-B56B-C5DE604349F9} = {44756A5A-8F57-4DDB-98D3-500C28F04DEC}
+		{B698AB95-61DF-4003-8803-0DEB81D11B29} = {95CEBD6E-BF46-4178-8BCF-E0DCD77BEB79}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CCA806A4-DA7A-4A3B-B65E-45BE5D094C6B}

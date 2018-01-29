@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using SimpleIdentityServer.Client;
-using SimpleIdentityServer.UmaManager.Client;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -12,15 +11,11 @@ namespace EheathBlockChain.Controllers
     public class HomeController : Controller
     {
         private readonly IIdentityServerClientFactory _identityServerClientFactory;
-        private readonly IIdentityServerUmaClientFactory _identityServerUmaClientFactory;
-        private readonly IIdentityServerUmaManagerClientFactory _identityServerUmaManagerClientFactory;
         private readonly IConfiguration _configuration;
 
-        public HomeController(IIdentityServerClientFactory identityServerClientFactory, IIdentityServerUmaClientFactory identityServerUmaClientFactory,
-            IIdentityServerUmaManagerClientFactory identityServerUmaManagerClientFactory, IConfiguration configuration)
+        public HomeController(IIdentityServerClientFactory identityServerClientFactory, IConfiguration configuration)
         {
             _identityServerClientFactory = identityServerClientFactory;
-            _identityServerUmaClientFactory = identityServerUmaClientFactory;
             _configuration = configuration;
         }
 

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SimpleIdentityServer.Client;
-using SimpleIdentityServer.UmaManager.Client;
 
 namespace EheathBlockChain
 {
@@ -60,8 +59,6 @@ namespace EheathBlockChain
 
         private IServiceCollection RegisterDependencies(IServiceCollection services)
         {
-            services.AddTransient<IIdentityServerUmaClientFactory, IdentityServerUmaClientFactory>();
-            services.AddTransient<IIdentityServerUmaManagerClientFactory, IdentityServerUmaManagerClientFactory>();
             return services;
         }
     }
