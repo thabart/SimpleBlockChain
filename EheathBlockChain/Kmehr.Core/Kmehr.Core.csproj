@@ -44,6 +44,7 @@
     <Compile Include="Etk\EtkIdentifierType.cs" />
     <Compile Include="Etk\GetEtkRequest.cs" />
     <Compile Include="Etk\SearchCriteriaType.cs" />
+    <Compile Include="GenericRequest.cs" />
     <Compile Include="Helpers\EncryptionHelper.cs" />
     <Compile Include="Helpers\EtkHelper.cs" />
     <Compile Include="Kgss\CredentialType.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Commons\IdentifierType.cs" />
     <Compile Include="Prescriptions\RequestType.cs" />
     <Compile Include="Prescriptions\SecuredContentType.cs" />
+    <Compile Include="STS\SamlNameIdentifier.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Sessions\" />

@@ -1,0 +1,18 @@
+View all the certificates 
+keytool -list -keystore caCertificateKeyStore.jks
+
+Export the certificates
+keytool -export -storepass system -alias "quovadis no reliance ica g3 (quovadis no reliance root ca g2)" -file quovadisNotRelianceIcaG3.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "ehealth ca" -file ehealth.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "trial ehealth citizen ca acc (trial ehealth root ca)" -file trailEhealthCitizen.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "government ct (belgium root ct2)" -file government.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "quovadis no reliance root ca g2" -file quovadisNotRelianceIcaG2.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "trial ehealth government ca acc (trial ehealth root ca)" -file trialEhealthGovernmentCaAcc.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "trail ehealth ca test (trail ehealth root ca test)" -file trailEhealthCaTest.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "trial ehealth government ca int (trial ehealth root ca)" -file trialEhealthGovernmentCaInt.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "government ct (belgium root ct4)" -file governmentCt.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "belgium root ct4" -file belgiumRootCt4.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "trial ehealth root ca" -file trialEhealthRootCa.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "ehealth root ca" -file ehealthRootCa.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "belgium root ct2" -file belgiumRootCt2.cer -keystore caCertificateKeyStore.jks
+keytool -export -storepass system -alias "trail ehealth root ca test" -file trailEhealthRootCaTest.cer -keystore caCertificateKeyStore.jks
