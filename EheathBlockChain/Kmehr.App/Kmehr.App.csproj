@@ -183,6 +183,11 @@
       <Link>j2pcsc.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="samples\sample-feedback.xml" />
+    <Content Include="samples\sample-notification.xml" />
+    <Content Include="samples\sample-prescription.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

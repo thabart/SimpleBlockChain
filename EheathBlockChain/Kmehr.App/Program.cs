@@ -1,5 +1,6 @@
 ﻿using be.business.connector.common;
 using be.business.connector.core.utils;
+using be.business.connector.recipe.prescriber.mock;
 using be.business.connector.session;
 using be.ehealth.technicalconnector.config;
 using Kmehr.Core.Etk;
@@ -8,6 +9,7 @@ using Kmehr.Core.STS;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace Kmehr.App
 {
@@ -17,22 +19,19 @@ namespace Kmehr.App
         {
             const string propertyfile = "../../conf/connector-client.properties";
             const string vslidationFile = "../../conf/validation.properties";
-            const string niss = "81112623980";
-            const string password = "Password1";
-            // 1. Load the configuration.
-            var applicationConfig = ApplicationConfig.getInstance();
-            applicationConfig.initialize(propertyfile, vslidationFile);
-            // 2. Load the properties.
-            var handler = PropertyHandler.getInstance();
-            var properties = PropertyHandler.getInstance().getPropertiesCopy();
-            // 3. Create a session.
-            // SessionUtil.createSession(SessionType.EID_SESSION, properties, null, null); // NO BE ID CARD.
-            // ConfigFactory.setConfigLocation(@"c:\Projects\SimpleBlockChain\EheathBlockChain\conf\connector-client.properties");
-            var location = ConfigFactory.getConfigLocation();
-            // SessionUtil.createSession(SessionType.MANDATE_SESSION, properties, null, null);
-            SessionUtil.createSession(SessionType.FALLBACK_SESSION, properties, niss, password);
+            ApplicationConfig.getInstance().initialize(propertyfile, vslidationFile);
+            var moduleInstance = new PrescriberIntegrationModuleMock();
+            // 1. Create a prescription.
+            var isFeedbackChecked = true;
+            var patientId = "81112623980";
+            var samplePrescription = Path.Combine(Directory.GetCurrentDirectory(), "samples/sample-prescription.xml");
+            var prescriptionPayload = Encoding.UTF8.GetBytes(File.ReadAllText(samplePrescription));
+            var prescriptionType = "P0";
+            var rid = moduleInstance.createPrescription(isFeedbackChecked, patientId, prescriptionPayload, prescriptionType);
+            // 2. Get a prescription.
+            var getPrescriptionResult = moduleInstance.getPrescription(rid);
             string s = "";
-            // SessionUtil.createSession(SessionType.EID_SESSION, );
+            // DEVELOP A WEBSITE TO CREATE A PRESCRIPTION.
         }
 
         private static void CreateSession()
@@ -98,6 +97,26 @@ namespace Kmehr.App
         private static void GetKey()
         {
             
+        }
+
+        private static void TryToAuthenticate()
+        {
+            const string propertyfile = "../../conf/connector-client.properties";
+            const string vslidationFile = "../../conf/validation.properties";
+            const string niss = "81112623980";
+            const string password = "Password1";
+            // 1. Load the configuration.
+            var applicationConfig = ApplicationConfig.getInstance();
+            applicationConfig.initialize(propertyfile, vslidationFile);
+            // 2. Load the properties.
+            var handler = PropertyHandler.getInstance();
+            var properties = PropertyHandler.getInstance().getPropertiesCopy();
+            // 3. Create a session.
+            // SessionUtil.createSession(SessionType.EID_SESSION, properties, null, null); // NO BE ID CARD.
+            // ConfigFactory.setConfigLocation(@"c:\Projects\SimpleBlockChain\EheathBlockChain\conf\connector-client.properties");
+            var location = ConfigFactory.getConfigLocation();
+            // SessionUtil.createSession(SessionType.MANDATE_SESSION, properties, null, null);
+            SessionUtil.createSession(SessionType.FALLBACK_SESSION, properties, niss, password);
         }
     }
 }
