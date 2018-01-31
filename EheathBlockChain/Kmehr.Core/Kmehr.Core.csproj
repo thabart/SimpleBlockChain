@@ -41,14 +41,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="DTOs\KmehrAddress.cs" />
+    <Compile Include="DTOs\KmehrCountry.cs" />
+    <Compile Include="DTOs\KmehrDate.cs" />
+    <Compile Include="DTOs\KmehrFolder.cs" />
     <Compile Include="DTOs\KmehrHcParty.cs" />
     <Compile Include="DTOs\KmehrId.cs" />
     <Compile Include="DTOs\KmehrMessage.cs" />
     <Compile Include="DTOs\KmehrHeader.cs" />
-    <Compile Include="DTOs\KmehrRecipient.cs" />
-    <Compile Include="DTOs\KmehrSender.cs" />
+    <Compile Include="DTOs\KmehrHcParties.cs" />
+    <Compile Include="DTOs\KmehrPatient.cs" />
+    <Compile Include="DTOs\KmehrSex.cs" />
     <Compile Include="DTOs\KmehrTelecom.cs" />
+    <Compile Include="DTOs\KmehrTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\IHealthCarePartyTypeRepository.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
