@@ -16,17 +16,27 @@ namespace Kmehr.Core.Tests
         [TestMethod]
         public async Task WhenBuildKmehrMessage()
         {
-            const string hcTypeCode = "persphysician";
+            const string hcTypeCodePhysician = "persphysician";
+            const string hcTypeCodeApplication = "application";
+            const string nidhiNumberPhysician = "19006951001";
             // 1. Register all the dependencies.
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddKmehrInMemory();
             var serviceProvider = serviceCollection.BuildServiceProvider();
             serviceProvider.EnsureSeedData();
-
-            // use : physician
-            // 2. Get the cd-hcparty
+            
+            // 2. Get the cd-hcparty (médecin + application).
             var repository = serviceProvider.GetService<IHealthCarePartyTypeRepository>();
-            var hcType = await repository.Get(hcTypeCode);
+            var hcTypePhysician = await repository.Get(hcTypeCodePhysician);
+            var hcTypeApplcation = await repository.Get(hcTypeCodeApplication);
+
+            // 3.1 Build the hc-parties (physician)
+            var physicianParty = new KmehrHcParty(hcTypePhysician.Code, nidhiNumberPhysician);
+            physicianParty.FirstName = "Donald";
+            physicianParty.Lastname = "Duck";
+
+            // 3.2 Build the hc-parties (software)
+            var softwareParty = new KmehrHcParty(hcTypeApplcation.Code);
 
             var header = new KmehrHeader();
             var medParty = new KmehrHcParty();

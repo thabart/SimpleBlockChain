@@ -32,122 +32,113 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="be-apb-gfddpp-services-smc">
-      <HintPath>..\lib\be-apb-gfddpp-services-smc.dll</HintPath>
-    </Reference>
-    <Reference Include="be-business-connector-common">
-      <HintPath>..\lib\be-business-connector-common.dll</HintPath>
-    </Reference>
-    <Reference Include="be-business-connector-core">
-      <HintPath>..\lib\be-business-connector-core.dll</HintPath>
-    </Reference>
-    <Reference Include="be-business-connector-projects-core">
-      <HintPath>..\lib\be-business-connector-projects-core.dll</HintPath>
-    </Reference>
-    <Reference Include="be-business-connector-recipe">
-      <HintPath>..\lib\be-business-connector-recipe.dll</HintPath>
-    </Reference>
-    <Reference Include="be-business-connector-sessionutils">
-      <HintPath>..\lib\be-business-connector-sessionutils.dll</HintPath>
-    </Reference>
     <Reference Include="connector-technical-core">
-      <HintPath>..\lib\connector-technical-core.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-technical-core.dll</HintPath>
     </Reference>
     <Reference Include="connector-technical-smartcardio">
-      <HintPath>..\lib\connector-technical-smartcardio.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-technical-smartcardio.dll</HintPath>
     </Reference>
     <Reference Include="connector-utilities-codage">
-      <HintPath>..\lib\connector-utilities-codage.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-utilities-codage.dll</HintPath>
     </Reference>
     <Reference Include="connector-utilities-common">
-      <HintPath>..\lib\connector-utilities-common.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-utilities-common.dll</HintPath>
     </Reference>
     <Reference Include="connector-utilities-core">
-      <HintPath>..\lib\connector-utilities-core.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-utilities-core.dll</HintPath>
     </Reference>
     <Reference Include="connector-utilities-etee">
-      <HintPath>..\lib\connector-utilities-etee.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-utilities-etee.dll</HintPath>
     </Reference>
     <Reference Include="connector-utilities-external">
-      <HintPath>..\lib\connector-utilities-external.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-utilities-external.dll</HintPath>
     </Reference>
     <Reference Include="connector-utilities-kmehr">
-      <HintPath>..\lib\connector-utilities-kmehr.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-utilities-kmehr.dll</HintPath>
     </Reference>
     <Reference Include="connector-utilities-timestamping">
-      <HintPath>..\lib\connector-utilities-timestamping.dll</HintPath>
+      <HintPath>..\lib\connectors\connector-utilities-timestamping.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\lib\ikvm\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.AWT.WinForms">
-      <HintPath>..\lib\IKVM.AWT.WinForms.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.AWT.WinForms.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Beans">
-      <HintPath>..\lib\IKVM.OpenJDK.Beans.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Beans.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Charsets">
-      <HintPath>..\lib\IKVM.OpenJDK.Charsets.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Charsets.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Corba">
-      <HintPath>..\lib\IKVM.OpenJDK.Corba.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Corba.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Core">
-      <HintPath>..\lib\IKVM.OpenJDK.Core.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Core.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Jdbc">
-      <HintPath>..\lib\IKVM.OpenJDK.Jdbc.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Jdbc.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Management">
-      <HintPath>..\lib\IKVM.OpenJDK.Management.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Management.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Media">
-      <HintPath>..\lib\IKVM.OpenJDK.Media.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Media.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Misc">
-      <HintPath>..\lib\IKVM.OpenJDK.Misc.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Misc.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Naming">
-      <HintPath>..\lib\IKVM.OpenJDK.Naming.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Naming.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Remoting">
-      <HintPath>..\lib\IKVM.OpenJDK.Remoting.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Remoting.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Security">
-      <HintPath>..\lib\IKVM.OpenJDK.Security.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Security.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.SwingAWT">
-      <HintPath>..\lib\IKVM.OpenJDK.SwingAWT.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.SwingAWT.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Text">
-      <HintPath>..\lib\IKVM.OpenJDK.Text.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.OpenJDK.Tools">
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Tools.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.Util">
-      <HintPath>..\lib\IKVM.OpenJDK.Util.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.Util.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.API">
-      <HintPath>..\lib\IKVM.OpenJDK.XML.API.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.XML.API.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.Bind">
-      <HintPath>..\lib\IKVM.OpenJDK.XML.Bind.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.XML.Bind.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.Crypto">
-      <HintPath>..\lib\IKVM.OpenJDK.XML.Crypto.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.XML.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.Parse">
-      <HintPath>..\lib\IKVM.OpenJDK.XML.Parse.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.XML.Parse.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.Transform">
-      <HintPath>..\lib\IKVM.OpenJDK.XML.Transform.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.XML.Transform.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.WebServices">
-      <HintPath>..\lib\IKVM.OpenJDK.XML.WebServices.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.XML.WebServices.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.OpenJDK.XML.XPath">
-      <HintPath>..\lib\IKVM.OpenJDK.XML.XPath.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.OpenJDK.XML.XPath.dll</HintPath>
+    </Reference>
+    <Reference Include="IKVM.Reflection">
+      <HintPath>..\lib\ikvm\IKVM.Reflection.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.Runtime">
-      <HintPath>..\lib\IKVM.Runtime.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="IKVM.Runtime.JNI">
-      <HintPath>..\lib\IKVM.Runtime.JNI.dll</HintPath>
+      <HintPath>..\lib\ikvm\IKVM.Runtime.JNI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -177,21 +168,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="certificates\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\lib\ikvm-native-win32-x86.dll">
-      <Link>ikvm-native-win32-x86.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\lib\j2pcsc.dll">
-      <Link>j2pcsc.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="samples\sample-feedback.xml" />
-    <Content Include="samples\sample-notification.xml" />
-    <Content Include="samples\sample-prescription.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

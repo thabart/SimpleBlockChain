@@ -44,25 +44,6 @@
             public const string Work = "work";
         }
 
-        // LIST OF POSSIBLE HEALTHCARE TYPES : https://www.ehealth.fgov.be/standards/kmehr/en/tables/healthcare-party-type
-        public static class KmehrHcPartyTypesNames
-        {
-            public const string Deptanatomopathology = "deptanatomopathology";
-            public const string Deptanesthesiology = "deptanesthesiology";
-            public const string Deptbacteriology = "deptbacteriology";
-            public const string Deptcardiology = "deptcardiology";
-            public const string Deptdermatology = "deptdermatology";
-            public const string Deptdietetics = "deptdietetics";
-            public const string Deptemergency = "deptemergency";
-            public const string Deptgastroenterology = "deptgastroenterology";
-
-            public const string Orghospital = "orghospital";
-            public const string Persdentist = "persdentist";
-            public const string Persphysician = "persphysician";
-            public const string Persmidwife = "persmidwife";
-            public const string Application = "application";
-        }
-
         #endregion
 
         #region DTO values

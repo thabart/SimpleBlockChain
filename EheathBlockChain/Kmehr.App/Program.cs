@@ -1,7 +1,5 @@
-﻿using be.business.connector.common;
-using be.business.connector.recipe.prescriber.mock;
-using System.IO;
-using System.Text;
+﻿using be.ehealth.technicalconnector.config;
+using be.ehealth.technicalconnector.session;
 
 namespace Kmehr.App
 {
@@ -9,21 +7,12 @@ namespace Kmehr.App
     {
         static void Main(string[] args)
         {
-            const string propertyfile = "../../conf/connector-client.properties";
-            const string vslidationFile = "../../conf/validation.properties";
-            ApplicationConfig.getInstance().initialize(propertyfile, vslidationFile);
-            var moduleInstance = new PrescriberIntegrationModuleMock();
-            // 1. Create a prescription.
-            var isFeedbackChecked = true;
-            var patientId = "81112623980";
-            var samplePrescription = Path.Combine(Directory.GetCurrentDirectory(), "samples/sample-prescription.xml");
-            var prescriptionPayload = Encoding.UTF8.GetBytes(File.ReadAllText(samplePrescription));
-            var prescriptionType = "P0";
-            var rid = moduleInstance.createPrescription(isFeedbackChecked, patientId, prescriptionPayload, prescriptionType);
-            // 2. Get a prescription.
-            var getPrescriptionResult = moduleInstance.getPrescription(rid);
-            string s = "";
-            // DEVELOP A WEBSITE TO CREATE A PRESCRIPTION.
+            // 1. Can connect with the EID.
+            var configurationFile = @"c:\Project\SimpleBlockChain\EheathBlockChain\conf\be.ehealth.technicalconnector.properties";
+            ConfigFactory.setConfigLocation(configurationFile);
+            var sessionMgt = Session.getInstance();
+            sessionMgt.unloadSession();
+            var sessionItem = sessionMgt.createSessionEidOnly();
         }
     }
 }

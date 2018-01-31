@@ -1,0 +1,10 @@
+Prerequisiste 
+1. Download SVN source "ehealthconnector" : https://sourceforge.net/p/ehealthconnector/code/HEAD/tarball
+2. Install maven : http://maven.apache.org/download.cgi.
+3. Download the JDK and make sur JAVA_HOME is pointing to JDK8.
+4. Install EVKM and add the "bin" folder to the PATH.
+
+Install
+1. Run the command "mvn clean install" in "/trunk/ehealthconnector"
+2. Run the command "nvm clean install -Pehc4dotnet" in "/trunk/ehealthconnector"
+3. 

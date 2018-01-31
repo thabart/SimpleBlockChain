@@ -44,3 +44,5 @@ Payload : 47d2ac9500000000000000000000000000000000000000000000000000000000000000
 freehealth-connector 		: 		https://bitbucket.taktik.be/projects/ICURE/repos/freehealth-connector/browse
 recipe connector sdk 		: 		https://recip-e.be/documentation-medecins/
 document of wsdl			: 		https://recip-e.be/data/SDK/Recip-e_Integration%20Specification_v2%200%200.pdf
+technical connector			: 		https://www.ehealth.fgov.be/ehealthplatform/fr/service-ehealth-platform-services-connectors
+Médecin connector			:		http://repo.ehealth.fgov.be/artifactory/webapp/#/artifacts/browse/tree/General/maven2/be/fgov/ehealth/connector/connector-business-intrahubv3

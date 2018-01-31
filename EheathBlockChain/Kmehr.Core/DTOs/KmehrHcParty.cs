@@ -3,40 +3,22 @@ using System.Xml.Serialization;
 
 namespace Kmehr.Core.DTOs
 {
-    public enum KmehrHcPartyTypes
-    {
-        Orghospital,
-        Persdentist,
-        Persphysician,
-        Persmidwife,
-        Application
-    }
-
     /// <summary>
     /// Reprents any kind of healthcare party : organization, physician, medical, speciality or even IT systems.
     /// </summary>
     public class KmehrHcParty
     {
-        private Dictionary<KmehrHcPartyTypes, string> _mappingTypesToNames = new Dictionary<KmehrHcPartyTypes, string>
-        {
-            { KmehrHcPartyTypes.Orghospital, Constants.KmehrHcPartyTypesNames.Orghospital },
-            { KmehrHcPartyTypes.Persdentist, Constants.KmehrHcPartyTypesNames.Persdentist },
-            { KmehrHcPartyTypes.Persphysician, Constants.KmehrHcPartyTypesNames.Persphysician },
-            { KmehrHcPartyTypes.Persmidwife, Constants.KmehrHcPartyTypesNames.Persmidwife },
-            { KmehrHcPartyTypes.Application, Constants.KmehrHcPartyTypesNames.Application }
-        };
-
         public KmehrHcParty()
         {
 
         }
 
-        public KmehrHcParty(KmehrHcPartyTypes hcPartyType)
+        public KmehrHcParty(string hcPartyType)
         {
-            Cd = new KmehrId(Constants.KmehrSenderQualifications.CDHCPARTY, "1.9", _mappingTypesToNames[hcPartyType]);
+            Cd = new KmehrId(Constants.KmehrSenderQualifications.CDHCPARTY, "1.9", hcPartyType);
         }
 
-        public KmehrHcParty(KmehrHcPartyTypes hcPartyType, string id) : this(hcPartyType)
+        public KmehrHcParty(string hcPartyType, string id) : this(hcPartyType)
         {
             Id = new KmehrId(Constants.KmehrIdentifiers.IDHCPARTY, "1.0", id);
         }
