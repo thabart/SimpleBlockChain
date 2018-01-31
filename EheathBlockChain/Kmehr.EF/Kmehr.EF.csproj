@@ -96,11 +96,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\KmehrDbContextExtensions.cs" />
     <Compile Include="KmehrDbContext.cs" />
     <Compile Include="Mappings\HealthCareTypeMappings.cs" />
+    <Compile Include="Mappings\LanguageMapping.cs" />
+    <Compile Include="Mappings\TranslationMapping.cs" />
     <Compile Include="Models\HealthCarePartyType.cs" />
+    <Compile Include="Models\Language.cs" />
+    <Compile Include="Models\Translation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\HealthCarePartyTypeRepository.cs" />
+    <Compile Include="Resources\CdHcParty.cs" />
     <Compile Include="ServiceCollectionExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -110,7 +116,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Extensions\" />
+    <EmbeddedResource Include="Resources\cd-hcparty.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

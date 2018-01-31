@@ -16,11 +16,13 @@ namespace Kmehr.EF
         }
 
         public virtual DbSet<HealthCarePartyType> HealthCarePartyTypes { get; set; }
-
+        public virtual DbSet<Language> Languages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.AddHeathCareTypeMapping();
+            modelBuilder.AddHeathCareTypeMapping()
+                .AddLanguageMapping()
+                .AddTranslationMapping();
         }
     }
 }

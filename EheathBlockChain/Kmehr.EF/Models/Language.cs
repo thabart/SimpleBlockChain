@@ -2,9 +2,9 @@
 
 namespace Kmehr.EF.Models
 {
-    internal class HealthCarePartyType
+    internal class Language
     {
-        public string Code { get; set; }
+        public string Id { get; set; }
         public virtual ICollection<Translation> Translations { get; set; }
     }
 }

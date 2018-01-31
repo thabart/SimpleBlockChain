@@ -54,6 +54,7 @@
     <Compile Include="DTOs\KmehrSex.cs" />
     <Compile Include="DTOs\KmehrTelecom.cs" />
     <Compile Include="DTOs\KmehrTransaction.cs" />
+    <Compile Include="Aggregates\HealthCarePartyTypeAggregate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\IHealthCarePartyTypeRepository.cs" />
   </ItemGroup>

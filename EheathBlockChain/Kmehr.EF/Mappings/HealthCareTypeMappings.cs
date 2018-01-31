@@ -17,6 +17,10 @@ namespace Kmehr.EF.Mappings
                 .ToTable("healthcaretypes");
             modelBuilder.Entity<HealthCarePartyType>()
                 .HasKey(h => h.Code);
+            modelBuilder.Entity<HealthCarePartyType>()
+                .HasMany(h => h.Translations)
+                .WithOne(t => t.HealthCarePartyType)
+                .HasForeignKey(t => t.HealthCarePartyTypeId);
             return modelBuilder;
         }
     }

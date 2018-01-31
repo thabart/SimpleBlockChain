@@ -170,6 +170,10 @@
       <Project>{6b7e77b8-b987-4f87-9b86-403af535e9c9}</Project>
       <Name>Kmehr.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Kmehr.EF\Kmehr.EF.csproj">
+      <Project>{366e4860-21d3-4168-aebd-f3c37997c72e}</Project>
+      <Name>Kmehr.EF</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="certificates\" />
